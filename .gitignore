@@ -29,9 +29,6 @@ application-secrets.properties
 application-secrets-cloud.properties
 .DS_Store
 
-# Cau hinh cong cu ca nhan (khong lien quan den do an)
-.claude/
-
 # IDE (Eclipse / STS)
 .classpath
 .project

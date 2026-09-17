@@ -111,7 +111,7 @@ da hoc o Chuong 2 va da ap dung o mon Lap trinh Web).
 
 1. Code tren nhanh ca nhan cua ban (xem bang o Muc 1.4). Truoc khi bat dau, keo `develop` ve
    nhanh minh de khong lam tren ban cu: `git merge origin/develop`.
-2. Code xong, tu kiem tra lai (co the dung skill `engineering:code-review` de tu ra soat truoc).
+2. Code xong, tu kiem tra lai: doc lai diff mot luot va chay `mvn test` cho chac.
 3. Push nhanh ca nhan, mo Pull Request **vao `develop`** (khong mo thang vao `main`), mo ta ro PR
    lam gi, anh chup man hinh neu co giao dien moi.
 4. Can it nhat 1 thanh vien khac approve truoc khi merge — uu tien nguoi lam module lien quan gan nhat.
