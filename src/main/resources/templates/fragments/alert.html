@@ -2,26 +2,30 @@
 <html xmlns:th="http://www.thymeleaf.org">
 <body>
 <!--
-  Fragment thong bao dung chung (Tho quan ly - khong tu y sua).
+  Fragment thông báo dùng chung (Thọ quản lý - không tự ý sửa).
 
-  Fragment nay DA DUOC NHUNG SAN trong layout/base.html, nghia la moi trang ke thua layout
-  deu tu dong co cho hien thong bao - ban KHONG can goi lai trong trang cua minh.
+  Fragment này ĐÃ ĐƯỢC NHÚNG SẴN trong layout/base.html, nghĩa là mọi trang kế thừa
+  layout đều tự động có chỗ hiện thông báo - bạn KHÔNG cần gọi lại trong trang của mình.
 
-  Cach dung trong Controller:
-    // bao thanh cong roi chuyen trang
-    redirectAttributes.addFlashAttribute(Constants.MODEL_SUCCESS_MESSAGE, "Da luu phim moi.");
+  Cách dùng trong Controller:
+    // báo thành công rồi chuyển trang
+    redirectAttributes.addFlashAttribute(Constants.MODEL_SUCCESS_MESSAGE, "Đã lưu phim mới.");
     return "redirect:/admin/movies";
 
-    // bao loi ngay tren trang dang mo
-    model.addAttribute(Constants.MODEL_ERROR_MESSAGE, "Gio chieu bi trung voi suat khac.");
+    // báo lỗi ngay trên trang đang mở
+    model.addAttribute(Constants.MODEL_ERROR_MESSAGE, "Giờ chiếu bị trùng với suất khác.");
     return "movie/showtime-form";
 
-  Luu y: cac loi nem tu Service (BusinessException...) thi KHONG can tu set thong bao o day,
-  GlobalExceptionHandler da lo roi.
+  Lưu ý: các lỗi ném từ Service (BusinessException...) thì KHÔNG cần tự set thông báo ở đây,
+  GlobalExceptionHandler đã lo rồi.
+
+  role="status" / role="alert" để trình đọc màn hình đọc lên ngay khi thông báo xuất hiện.
 -->
 <div th:fragment="alert">
-    <div class="alert alert-success" th:if="${successMessage}" th:text="${successMessage}"></div>
-    <div class="alert alert-error" th:if="${errorMessage}" th:text="${errorMessage}"></div>
+    <div class="alert alert-success" role="status"
+         th:if="${successMessage}" th:text="${successMessage}"></div>
+    <div class="alert alert-error" role="alert"
+         th:if="${errorMessage}" th:text="${errorMessage}"></div>
 </div>
 </body>
 </html>

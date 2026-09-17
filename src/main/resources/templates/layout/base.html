@@ -3,22 +3,44 @@
       xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout">
 <head>
     <meta charset="UTF-8">
-    <title layout:title-pattern="$CONTENT_TITLE - $LAYOUT_TITLE">Cinema Booking - NHOM05</title>
+    <title layout:title-pattern="$CONTENT_TITLE - $LAYOUT_TITLE">Cinema Booking - Nhóm 05</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <!--
+      Đoạn script này PHẢI nằm ngay đây, trước khi nạp CSS và trước khi trang vẽ.
+      Nếu để xuống cuối trang thì người dùng chọn giao diện tối sẽ thấy trang loé
+      trắng một cái rồi mới tối lại - rất khó chịu.
+      Phần xử lý bấm nút nằm ở static/js/theme.js.
+    -->
+    <script th:inline="none">
+        (function () {
+            try {
+                var saved = localStorage.getItem("nhom05-theme");
+                if (saved === "light" || saved === "dark") {
+                    document.documentElement.setAttribute("data-theme", saved);
+                }
+            } catch (e) {
+                /* Không đọc được localStorage thì đi theo cài đặt hệ điều hành. */
+            }
+        })();
+    </script>
+
     <link rel="stylesheet" th:href="@{/css/style.css}">
 </head>
 <body>
     <div th:replace="~{fragments/header :: header}"></div>
 
     <main class="container">
-        <!-- Cho hien thong bao thanh cong / loi cho MOI trang - xem fragments/alert.html -->
+        <!-- Chỗ hiện thông báo thành công / lỗi cho MỌI trang - xem fragments/alert.html -->
         <div th:replace="~{fragments/alert :: alert}"></div>
 
         <div layout:fragment="content">
-            <!-- noi dung trang con se duoc chen vao day -->
+            <!-- nội dung trang con sẽ được chèn vào đây -->
         </div>
     </main>
 
     <div th:replace="~{fragments/footer :: footer}"></div>
+
+    <script th:src="@{/js/theme.js}"></script>
 </body>
 </html>

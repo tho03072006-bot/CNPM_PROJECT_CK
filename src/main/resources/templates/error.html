@@ -3,36 +3,36 @@
       xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
       layout:decorate="~{layout/base}">
 <head>
-    <title>Da co loi xay ra</title>
+    <title>Đã có lỗi xảy ra</title>
 </head>
 <body>
 <!--
-  Trang bao loi chung cho ca he thong (Tho quan ly - khong tu y sua).
+  Trang báo lỗi chung cho cả hệ thống (Thọ quản lý - không tự ý sửa).
 
-  Trang nay duoc dung trong 2 truong hop:
-    1. GlobalExceptionHandler bat duoc loi nghiep vu -> co san errorCode / errorMessage / errorPath.
-    2. Spring Boot tu xu ly loi (vd go nham duong dan -> 404) -> Spring dua vao status / error / path.
-  Vi vay cho nao cung co 2 nhanh du phong.
+  Trang này được dùng trong 2 trường hợp:
+    1. GlobalExceptionHandler bắt được lỗi nghiệp vụ -> có sẵn errorCode / errorMessage / errorPath.
+    2. Spring Boot tự xử lý lỗi (vd gõ nhầm đường dẫn -> 404) -> Spring đưa vào status / error / path.
+  Vì vậy chỗ nào cũng có 2 nhánh dự phòng.
 
-  Cau thong bao (errorMessage) DA duoc fragment alert o layout in ra ben tren roi,
-  o day khong in lai de khoi bi lap 2 lan.
+  Câu thông báo (errorMessage) ĐÃ được fragment alert ở layout in ra bên trên rồi,
+  ở đây không in lại để khỏi bị lặp 2 lần.
 -->
 <div layout:fragment="content">
     <div class="error-page">
         <p class="error-code" th:text="${errorCode != null ? errorCode : status}">500</p>
-        <h1>Da co loi xay ra</h1>
+        <h1>Đã có lỗi xảy ra</h1>
 
         <p class="error-detail" th:if="${errorMessage == null}"
-           th:text="${error != null ? error : 'He thong gap su co khong mong muon. Vui long thu lai sau.'}">
-            Chi tiet loi
+           th:text="${error != null ? error : 'Hệ thống gặp sự cố không mong muốn. Vui lòng thử lại sau.'}">
+            Chi tiết lỗi
         </p>
 
         <p class="error-path" th:if="${errorPath != null or path != null}">
-            Duong dan: <code th:text="${errorPath != null ? errorPath : path}">/duong-dan</code>
+            Đường dẫn: <code th:text="${errorPath != null ? errorPath : path}">/duong-dan</code>
         </p>
 
         <p>
-            <a class="btn" th:href="@{/}">Ve trang chu</a>
+            <a class="btn" th:href="@{/}">Về trang chủ</a>
         </p>
     </div>
 </div>

@@ -3,45 +3,51 @@
       xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
       layout:decorate="~{layout/base}">
 <head>
-    <title>Trang chu</title>
+    <title>Trang chủ</title>
 </head>
 <body>
 <div layout:fragment="content">
 
     <section class="hero animate-in">
-        <h1>Dat ve xem phim chi trong vai cu nhap</h1>
+        <span class="hero-eyebrow">Suất chiếu hôm nay</span>
+        <h1>Đặt vé xem phim chỉ trong vài cú nhấp</h1>
         <p>
-            Chon phim, chon suat chieu, chon ghe tren so do truc quan roi thanh toan.
-            Ghe ban chon duoc giu rieng trong 5 phut de khong ai dat trung.
+            Chọn phim, chọn suất chiếu, chọn ghế trên sơ đồ trực quan rồi thanh toán.
+            Ghế bạn chọn được giữ riêng trong 5 phút để không ai đặt trùng.
         </p>
         <div class="hero-actions">
-            <a class="btn btn-accent" th:href="@{/movies}">Xem phim dang chieu</a>
-            <a class="btn btn-ghost" th:href="@{/login}">Dang nhap</a>
+            <a class="btn btn-accent" th:href="@{/movies}">Xem phim đang chiếu</a>
+            <a class="btn btn-ghost" th:href="@{/login}">Đăng nhập</a>
         </div>
     </section>
 
+    <h2 class="section-title animate-in animate-in-delay-1">Đặt vé chỉ với 3 bước</h2>
+
     <div class="card-grid">
         <article class="card card-hover animate-in animate-in-delay-1">
-            <h2>1. Chon phim &amp; suat chieu</h2>
-            <p>
-                Xem danh sach phim dang chieu kem the loai, thoi luong va do tuoi phu hop,
-                roi chon khung gio thuan tien nhat.
+            <span class="badge badge-brand">Bước 1</span>
+            <h3>Chọn phim &amp; suất chiếu</h3>
+            <p class="text-muted">
+                Xem danh sách phim đang chiếu kèm thể loại, thời lượng và độ tuổi phù hợp,
+                rồi chọn khung giờ thuận tiện nhất.
             </p>
         </article>
 
         <article class="card card-hover animate-in animate-in-delay-2">
-            <h2>2. Chon ghe tren so do</h2>
-            <p>
-                So do ghe hien ro ghe con trong, ghe dang co nguoi giu va ghe da ban -
-                cap nhat theo dung tinh trang thuc te cua suat chieu.
+            <span class="badge badge-accent">Bước 2</span>
+            <h3>Chọn ghế trên sơ đồ</h3>
+            <p class="text-muted">
+                Sơ đồ ghế hiện rõ ghế còn trống, ghế đang có người giữ và ghế đã bán —
+                cập nhật theo đúng tình trạng thực tế của suất chiếu.
             </p>
         </article>
 
         <article class="card card-hover animate-in animate-in-delay-3">
-            <h2>3. Thanh toan &amp; nhan ve</h2>
-            <p>
-                Hoan tat thanh toan trong thoi gian giu ghe, thong tin ve se duoc gui
-                ve email cua ban.
+            <span class="badge badge-ok">Bước 3</span>
+            <h3>Thanh toán &amp; nhận vé</h3>
+            <p class="text-muted">
+                Hoàn tất thanh toán trong thời gian giữ ghế, thông tin vé sẽ được gửi
+                về email của bạn.
             </p>
         </article>
     </div>
