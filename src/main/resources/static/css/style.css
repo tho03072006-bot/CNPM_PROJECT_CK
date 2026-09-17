@@ -1,51 +1,49 @@
+@charset "UTF-8";
 /* =====================================================================
-   Cinema Booking - NHOM05 - Design system dung chung
-   Phu trach: Tho (Module 4). Xem docs/LO_TRINH_GIAO_DIEN.md
+   Cinema Booking - NHÓM 05 - Design system dùng chung
+   Phụ trách: Thọ (Module 4). Xem docs/LO_TRINH_GIAO_DIEN.md
 
-   Tong mau lay theo logo truong: xanh duong + trang, them vang ho phach
-   cho ra chat rap chieu phim.
+   Ý tưởng: không khí RẠP CHIẾU PHIM (phòng tối, màn hình sáng, đèn vàng,
+   vé xé răng cưa) nhưng dùng bộ màu của logo trường: xanh dương + trắng,
+   thêm vàng hổ phách làm màu điểm nhấn.
 
-   QUY UOC CHO CA NHOM:
-   - Chi dung bien mau o :root, KHONG go thang ma mau (#1b5fd0...) vao class.
-   - Them class MOI thi noi vao CUOI file, khong sua class nguoi khac dang dung.
-   - Moi animation deu nam trong bien --motion-* de tat duoc mot luot
-     (xem khoi prefers-reduced-motion o cuoi file).
+   QUY ƯỚC CHO CẢ NHÓM
+   - Chỉ dùng biến màu, KHÔNG gõ thẳng mã màu (#1b5fd0...) vào class.
+     Nhờ vậy đổi tông màu hoặc đổi sáng/tối chỉ cần sửa biến.
+   - Thêm class MỚI thì nối vào CUỐI file, không sửa class người khác đang dùng.
+   - Mọi animation đều dùng biến --motion-* để tắt được một lượt
+     (xem khối prefers-reduced-motion ở mục 19).
+
+   HAI CHẾ ĐỘ SÁNG / TỐI
+   - Mặc định đi theo cài đặt hệ điều hành.
+   - Người dùng bấm nút đổi thì lưu vào localStorage, lần sau vào vẫn nhớ
+     (xem static/js/theme.js).
+   - Cơ chế: thuộc tính data-theme trên thẻ <html>.
    ===================================================================== */
 
+/* =====================================================================
+   1. Biến không đổi theo chế độ sáng/tối
+   ===================================================================== */
 :root {
-    /* ---- Mau thuong hieu (theo logo truong) ---- */
+    /* ---- Màu thương hiệu (theo logo trường) ---- */
     --brand-900: #0a1a3c;
+    --brand-800: #0e2a5c;
     --brand-700: #123a7a;
     --brand-500: #1b5fd0;
+    --brand-400: #3d7ce8;
     --brand-300: #7aa9f0;
-    --brand-050: #eaf1fd;
 
-    /* ---- Mau diem nhan (chat rap phim) ---- */
+    /* ---- Màu điểm nhấn (đèn vàng trong rạp, vé xem phim) ---- */
+    --accent-600: #b9760a;
     --accent-500: #f0a828;
-    --accent-050: #fff5e3;
+    --accent-400: #ffc255;
 
-    /* ---- Mau trang thai ---- */
+    /* ---- Màu trạng thái ---- */
     --ok-500: #1c8a52;
-    --ok-050: #e7f7ed;
     --danger-500: #c8362f;
-    --danger-050: #fdeaea;
+    --warn-500: #d98f14;
 
-    /* ---- Mau nen & chu ---- */
-    --bg: #f5f7fb;
-    --surface: #ffffff;
-    --border: #dfe4ee;
-    --text: #1a2233;
-    --text-muted: #5c6681;
-    --text-on-dark: #ffffff;
-    --text-muted-on-dark: #b7c2da;
-
-    /* ---- Ghe (Module 2 dua vao cac bien nay) ---- */
-    --seat-available: var(--surface);
-    --seat-held: var(--accent-500);
-    --seat-booked: #94a0b8;
-    --seat-selected: var(--brand-500);
-
-    /* ---- Khoang cach ---- */
+    /* ---- Khoảng cách ---- */
     --space-1: 4px;
     --space-2: 8px;
     --space-3: 12px;
@@ -55,17 +53,16 @@
     --space-7: 48px;
     --space-8: 72px;
 
-    /* ---- Bo goc & do bong ---- */
+    /* ---- Bo góc ---- */
     --radius-sm: 6px;
     --radius-md: 10px;
     --radius-lg: 16px;
+    --radius-xl: 24px;
     --radius-pill: 999px;
-    --shadow-sm: 0 1px 2px rgba(10, 26, 60, .06), 0 1px 3px rgba(10, 26, 60, .08);
-    --shadow-md: 0 4px 12px rgba(10, 26, 60, .10);
-    --shadow-lg: 0 12px 32px rgba(10, 26, 60, .16);
 
-    /* ---- Chu ---- */
+    /* ---- Chữ ---- */
     --font-body: "Segoe UI", system-ui, -apple-system, Arial, sans-serif;
+    --text-xs: .75rem;
     --text-sm: .875rem;
     --text-base: 1rem;
     --text-lg: 1.125rem;
@@ -75,14 +72,139 @@
 
     --container-max: 1100px;
 
-    /* ---- Chuyen dong (dat ve 0s trong prefers-reduced-motion) ---- */
+    /* ---- Chuyển động ---- */
     --motion-fast: .15s;
     --motion-base: .25s;
     --motion-slow: .4s;
     --ease-out: cubic-bezier(.22, .61, .36, 1);
 }
 
+/* =====================================================================
+   2. Bảng màu CHẾ ĐỘ SÁNG (mặc định)
+   ===================================================================== */
+:root,
+[data-theme="light"] {
+    color-scheme: light;
+
+    --bg: #eef1f8;
+    --surface: #ffffff;
+    --surface-2: #f6f8fd;
+    --surface-inverse: #0a1a3c;
+    --border: #d8deec;
+    --border-strong: #b9c4db;
+
+    --text: #131a2b;
+    --text-muted: #58627d;
+    --link: #1b5fd0;
+
+    --header-bg: linear-gradient(135deg, #0a1a3c 0%, #123a7a 100%);
+    --header-text: #ffffff;
+    --header-text-muted: #c3cde3;
+
+    --hero-bg: radial-gradient(120% 130% at 50% -20%, #123a7a 0%, #0a1a3c 55%, #060d1e 100%);
+
+    --tint-brand: #e9f0fd;
+    --tint-accent: #fff5e3;
+    --tint-ok: #e7f7ed;
+    --tint-danger: #fdeaea;
+
+    --shadow-sm: 0 1px 2px rgba(10, 26, 60, .06), 0 1px 3px rgba(10, 26, 60, .08);
+    --shadow-md: 0 4px 14px rgba(10, 26, 60, .10);
+    --shadow-lg: 0 14px 38px rgba(10, 26, 60, .16);
+    --glow-accent: 0 0 24px rgba(240, 168, 40, .35);
+
+    /* Ghế - Module 2 dựa vào các biến này */
+    --seat-available-bg: #ffffff;
+    --seat-available-border: #b9c4db;
+    --seat-held-bg: #f0a828;
+    --seat-booked-bg: #8a95ad;
+    --seat-selected-bg: #1b5fd0;
+}
+
+/* =====================================================================
+   3. Bảng màu CHẾ ĐỘ TỐI - không khí trong rạp: phòng tối, đèn vàng
+   ===================================================================== */
+[data-theme="dark"] {
+    color-scheme: dark;
+
+    --bg: #070b16;
+    --surface: #101829;
+    --surface-2: #161f33;
+    --surface-inverse: #04070f;
+    --border: #253150;
+    --border-strong: #35456b;
+
+    --text: #e9eefb;
+    --text-muted: #9aa8c6;
+    --link: #7aa9f0;
+
+    --header-bg: linear-gradient(135deg, #060b16 0%, #0a1a3c 100%);
+    --header-text: #ffffff;
+    --header-text-muted: #a8b5d0;
+
+    --hero-bg: radial-gradient(120% 130% at 50% -25%, #1b3f80 0%, #0a1a3c 50%, #04070f 100%);
+
+    --tint-brand: #12203c;
+    --tint-accent: #2c2110;
+    --tint-ok: #0f2a1d;
+    --tint-danger: #2e1618;
+
+    --shadow-sm: 0 1px 2px rgba(0, 0, 0, .5);
+    --shadow-md: 0 6px 18px rgba(0, 0, 0, .55);
+    --shadow-lg: 0 18px 44px rgba(0, 0, 0, .65);
+    --glow-accent: 0 0 28px rgba(240, 168, 40, .45);
+
+    --seat-available-bg: #1c2740;
+    --seat-available-border: #35456b;
+    --seat-held-bg: #f0a828;
+    --seat-booked-bg: #4a5878;
+    --seat-selected-bg: #3d7ce8;
+}
+
+/* Khi người dùng CHƯA tự chọn thì đi theo cài đặt hệ điều hành */
+@media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+        color-scheme: dark;
+
+        --bg: #070b16;
+        --surface: #101829;
+        --surface-2: #161f33;
+        --surface-inverse: #04070f;
+        --border: #253150;
+        --border-strong: #35456b;
+
+        --text: #e9eefb;
+        --text-muted: #9aa8c6;
+        --link: #7aa9f0;
+
+        --header-bg: linear-gradient(135deg, #060b16 0%, #0a1a3c 100%);
+        --header-text-muted: #a8b5d0;
+
+        --hero-bg: radial-gradient(120% 130% at 50% -25%, #1b3f80 0%, #0a1a3c 50%, #04070f 100%);
+
+        --tint-brand: #12203c;
+        --tint-accent: #2c2110;
+        --tint-ok: #0f2a1d;
+        --tint-danger: #2e1618;
+
+        --shadow-sm: 0 1px 2px rgba(0, 0, 0, .5);
+        --shadow-md: 0 6px 18px rgba(0, 0, 0, .55);
+        --shadow-lg: 0 18px 44px rgba(0, 0, 0, .65);
+        --glow-accent: 0 0 28px rgba(240, 168, 40, .45);
+
+        --seat-available-bg: #1c2740;
+        --seat-available-border: #35456b;
+        --seat-booked-bg: #4a5878;
+        --seat-selected-bg: #3d7ce8;
+    }
+}
+
+/* =====================================================================
+   4. Nền tảng
+   ===================================================================== */
 * { box-sizing: border-box; }
+
+html { scroll-behavior: smooth; }
 
 body {
     margin: 0;
@@ -91,18 +213,27 @@ body {
     line-height: 1.6;
     color: var(--text);
     background: var(--bg);
+    /* Đổi màu mượt khi bấm nút sáng/tối thay vì giật một cái */
+    transition: background-color var(--motion-base) var(--ease-out),
+                color var(--motion-base) var(--ease-out);
 }
 
 h1, h2, h3 { line-height: 1.25; margin: 0 0 var(--space-3); }
 h1 { font-size: var(--text-2xl); }
 h2 { font-size: var(--text-xl); }
+h3 { font-size: var(--text-lg); }
 p { margin: 0 0 var(--space-4); }
 
-a { color: var(--brand-500); }
+/* Màu link đi qua biến --link, KHÔNG viết kiểu [data-theme="dark"] a { ... }.
+   Lý do: selector đó có độ ưu tiên (0,1,1), cao hơn .btn-accent (0,1,0), nên nó
+   đè luôn màu chữ của mọi nút viết bằng thẻ <a> và làm nút vàng gần như không
+   đọc được (tương phản tụt còn 1.18:1). Dùng biến thì a chỉ có (0,0,1), thua
+   mọi class nút - đúng ý muốn. */
+a { color: var(--link); }
 
-/* Vien focus - phai thay ro khi di chuyen bang phim Tab */
+/* Viền focus - phải thấy rõ khi di chuyển bằng phím Tab */
 :focus-visible {
-    outline: 3px solid var(--brand-500);
+    outline: 3px solid var(--accent-500);
     outline-offset: 2px;
     border-radius: var(--radius-sm);
 }
@@ -113,16 +244,31 @@ a { color: var(--brand-500); }
     padding: 0 var(--space-4);
 }
 
+/* Chỉ trình đọc màn hình đọc được, không hiện ra mắt */
+.sr-only {
+    position: absolute;
+    width: 1px; height: 1px;
+    padding: 0; margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+}
+
+.text-muted { color: var(--text-muted); }
+.section-title { margin-bottom: var(--space-5); }
+
 /* =====================================================================
-   Header
+   5. Header
    ===================================================================== */
 .site-header {
-    background: linear-gradient(135deg, var(--brand-900) 0%, var(--brand-700) 100%);
-    color: var(--text-on-dark);
+    background: var(--header-bg);
+    color: var(--header-text);
     box-shadow: var(--shadow-md);
     position: sticky;
     top: 0;
     z-index: 50;
+    border-bottom: 1px solid rgba(255, 255, 255, .08);
 }
 
 .header-inner {
@@ -137,8 +283,8 @@ a { color: var(--brand-500); }
 .logo {
     display: inline-flex;
     align-items: center;
-    gap: var(--space-2);
-    color: var(--text-on-dark);
+    gap: var(--space-3);
+    color: var(--header-text);
     font-weight: 700;
     font-size: var(--text-lg);
     text-decoration: none;
@@ -146,10 +292,11 @@ a { color: var(--brand-500); }
 }
 
 .logo-mark {
-    width: 34px;
-    height: 34px;
+    width: 36px;
+    height: 36px;
     flex: none;
     color: var(--accent-500);
+    filter: drop-shadow(0 0 10px rgba(240, 168, 40, .45));
     transition: transform var(--motion-slow) var(--ease-out);
 }
 
@@ -157,33 +304,33 @@ a { color: var(--brand-500); }
 
 .logo-text small {
     display: block;
-    font-size: .7rem;
+    font-size: var(--text-xs);
     font-weight: 500;
-    letter-spacing: 1.5px;
+    letter-spacing: 1.6px;
     text-transform: uppercase;
-    color: var(--text-muted-on-dark);
+    color: var(--header-text-muted);
 }
 
-.site-header nav {
+.header-nav {
     display: flex;
     align-items: center;
     gap: var(--space-5);
     flex-wrap: wrap;
 }
 
-.site-header nav a {
+.header-nav a {
     position: relative;
-    color: var(--text-muted-on-dark);
+    color: var(--header-text-muted);
     text-decoration: none;
     padding: var(--space-1) 0;
     transition: color var(--motion-fast) var(--ease-out);
 }
 
-.site-header nav a::after {
+.header-nav a::after {
     content: "";
     position: absolute;
     left: 0;
-    bottom: -2px;
+    bottom: -3px;
     width: 100%;
     height: 2px;
     background: var(--accent-500);
@@ -193,12 +340,48 @@ a { color: var(--brand-500); }
     transition: transform var(--motion-base) var(--ease-out);
 }
 
-.site-header nav a:hover,
-.site-header nav a:focus-visible { color: var(--text-on-dark); }
-.site-header nav a:hover::after { transform: scaleX(1); }
+.header-nav a:hover,
+.header-nav a:focus-visible { color: var(--header-text); }
+.header-nav a:hover::after { transform: scaleX(1); }
+
+/* ---- Nút đổi chế độ sáng / tối ---- */
+.theme-toggle {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    padding: 0;
+    border: 1px solid rgba(255, 255, 255, .25);
+    border-radius: var(--radius-pill);
+    background: rgba(255, 255, 255, .08);
+    color: var(--accent-500);
+    cursor: pointer;
+    transition: background-color var(--motion-fast) var(--ease-out),
+                transform var(--motion-base) var(--ease-out);
+}
+
+.theme-toggle:hover {
+    background: rgba(255, 255, 255, .18);
+    transform: rotate(-25deg);
+}
+
+.theme-toggle svg { width: 20px; height: 20px; }
+
+/* Đang ở chế độ sáng thì hiện mặt trăng (bấm để sang chế độ tối), và ngược lại */
+.theme-toggle .icon-to-dark { display: block; }
+.theme-toggle .icon-to-light { display: none; }
+
+[data-theme="dark"] .theme-toggle .icon-to-dark { display: none; }
+[data-theme="dark"] .theme-toggle .icon-to-light { display: block; }
+
+@media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) .theme-toggle .icon-to-dark { display: none; }
+    :root:not([data-theme="light"]) .theme-toggle .icon-to-light { display: block; }
+}
 
 /* =====================================================================
-   Main & Footer
+   6. Khối nội dung chính & chân trang
    ===================================================================== */
 main.container {
     min-height: 60vh;
@@ -207,8 +390,8 @@ main.container {
 }
 
 .site-footer {
-    background: var(--brand-900);
-    color: var(--text-muted-on-dark);
+    background: var(--surface-inverse);
+    color: var(--header-text-muted);
     padding: var(--space-5) 0;
     margin-top: var(--space-8);
     font-size: var(--text-sm);
@@ -217,39 +400,90 @@ main.container {
 }
 
 /* =====================================================================
-   Hero (trang chu)
+   7. Chi tiết trang trí kiểu rạp phim
+   ===================================================================== */
+
+/* Màn chiếu cong - đặt phía trên sơ đồ ghế */
+.screen {
+    height: 46px;
+    margin: 0 auto var(--space-6);
+    max-width: 520px;
+    border-radius: 50% 50% 8px 8px / 100% 100% 8px 8px;
+    background: linear-gradient(to bottom, var(--brand-300), transparent);
+    box-shadow: 0 -14px 44px rgba(122, 169, 240, .4);
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+    font-size: var(--text-xs);
+    letter-spacing: 4px;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    padding-bottom: var(--space-1);
+}
+
+/* =====================================================================
+   8. Hero
    ===================================================================== */
 .hero {
     position: relative;
     overflow: hidden;
-    border-radius: var(--radius-lg);
-    padding: var(--space-8) var(--space-5);
+    border-radius: var(--radius-xl);
+    padding: var(--space-8) var(--space-6);
     margin-bottom: var(--space-6);
-    background: linear-gradient(135deg, var(--brand-900) 0%, var(--brand-700) 55%, #1c4fa0 100%);
-    color: var(--text-on-dark);
+    background: var(--hero-bg);
+    color: #fff;
     box-shadow: var(--shadow-lg);
 }
 
-/* Vet sang chay ngang cho giong anh den chieu trong rap */
-.hero::after {
+/* Quầng đèn chiếu hắt xuống từ góc trên bên phải */
+.hero::before {
     content: "";
     position: absolute;
     inset: 0;
-    background: radial-gradient(circle at 78% 18%, rgba(240, 168, 40, .30), transparent 45%);
+    background: radial-gradient(circle at 80% 8%, rgba(240, 168, 40, .32), transparent 42%);
     pointer-events: none;
+}
+
+/* Hàng bóng đèn viền trên - kiểu biển hiệu rạp chiếu bóng */
+.hero::after {
+    content: "";
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 6px;
+    background-image: radial-gradient(circle, var(--accent-400) 1.6px, transparent 2px);
+    background-size: 22px 6px;
+    background-repeat: repeat-x;
+    opacity: .85;
 }
 
 .hero > * { position: relative; z-index: 1; }
 
 .hero h1 {
     font-size: var(--text-3xl);
-    max-width: 22ch;
+    max-width: 20ch;
+    letter-spacing: -.5px;
 }
 
 .hero p {
-    color: var(--text-muted-on-dark);
-    max-width: 60ch;
+    color: #c9d4e8;
+    max-width: 56ch;
     font-size: var(--text-lg);
+}
+
+.hero-eyebrow {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-2);
+    margin-bottom: var(--space-3);
+    padding: var(--space-1) var(--space-3);
+    border-radius: var(--radius-pill);
+    background: rgba(240, 168, 40, .16);
+    border: 1px solid rgba(240, 168, 40, .45);
+    color: var(--accent-400);
+    font-size: var(--text-sm);
+    font-weight: 600;
+    letter-spacing: .6px;
+    text-transform: uppercase;
 }
 
 .hero-actions {
@@ -260,7 +494,7 @@ main.container {
 }
 
 /* =====================================================================
-   Nut
+   9. Nút
    ===================================================================== */
 .btn {
     display: inline-flex;
@@ -282,25 +516,43 @@ main.container {
 }
 
 .btn:hover {
-    background: var(--brand-700);
+    background: var(--brand-400);
     transform: translateY(-2px);
     box-shadow: var(--shadow-md);
 }
 
 .btn:active { transform: translateY(0); }
 
-.btn-accent { background: var(--accent-500); color: var(--brand-900); }
-.btn-accent:hover { background: #e09a1c; }
+.btn:disabled,
+.btn[aria-disabled="true"] {
+    opacity: .5;
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
+}
+
+.btn-accent {
+    background: var(--accent-500);
+    color: var(--brand-900);
+}
+
+.btn-accent:hover {
+    background: var(--accent-400);
+    box-shadow: var(--glow-accent);
+}
 
 .btn-ghost {
     background: transparent;
     border-color: currentColor;
     color: inherit;
 }
+
 .btn-ghost:hover { background: rgba(255, 255, 255, .12); }
 
+.btn-sm { padding: var(--space-2) var(--space-3); font-size: var(--text-sm); }
+
 /* =====================================================================
-   The (card)
+   10. Thẻ (card) & thẻ phim
    ===================================================================== */
 .card {
     background: var(--surface);
@@ -309,12 +561,14 @@ main.container {
     padding: var(--space-5);
     box-shadow: var(--shadow-sm);
     transition: transform var(--motion-base) var(--ease-out),
-                box-shadow var(--motion-base) var(--ease-out);
+                box-shadow var(--motion-base) var(--ease-out),
+                border-color var(--motion-base) var(--ease-out);
 }
 
 .card-hover:hover {
     transform: translateY(-4px);
     box-shadow: var(--shadow-lg);
+    border-color: var(--brand-400);
 }
 
 .card-grid {
@@ -323,8 +577,195 @@ main.container {
     gap: var(--space-5);
 }
 
+/* ---- Thẻ phim: poster + thông tin ---- */
+.movie-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+    box-shadow: var(--shadow-sm);
+    display: flex;
+    flex-direction: column;
+    transition: transform var(--motion-base) var(--ease-out),
+                box-shadow var(--motion-base) var(--ease-out);
+}
+
+.movie-card:hover {
+    transform: translateY(-6px);
+    box-shadow: var(--shadow-lg);
+}
+
+.movie-poster {
+    position: relative;
+    aspect-ratio: 2 / 3;
+    overflow: hidden;
+    background: linear-gradient(160deg, var(--brand-800), var(--brand-900));
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.movie-poster img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+    transition: transform var(--motion-slow) var(--ease-out);
+}
+
+.movie-card:hover .movie-poster img { transform: scale(1.06); }
+
+/* Nhãn độ tuổi dán góc poster */
+.movie-poster .badge {
+    position: absolute;
+    top: var(--space-2);
+    right: var(--space-2);
+}
+
+.movie-body {
+    padding: var(--space-4);
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2);
+    flex: 1;
+}
+
+.movie-title { font-size: var(--text-base); font-weight: 700; margin: 0; }
+.movie-meta { font-size: var(--text-sm); color: var(--text-muted); margin: 0; }
+
+/* ---- Thẻ hình cái vé, có răng cưa hai bên ---- */
+.ticket {
+    position: relative;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    padding: var(--space-5) var(--space-6);
+    box-shadow: var(--shadow-sm);
+}
+
+.ticket::before,
+.ticket::after {
+    content: "";
+    position: absolute;
+    top: 50%;
+    width: 22px;
+    height: 22px;
+    border: 1px solid var(--border);
+    border-radius: 50%;
+    background: var(--bg);
+    transform: translateY(-50%);
+}
+
+.ticket::before { left: -12px; }
+.ticket::after { right: -12px; }
+
 /* =====================================================================
-   Thong bao (fragments/alert.html)
+   11. Nhãn trạng thái (badge)
+   ===================================================================== */
+.badge {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-1);
+    padding: 2px var(--space-2);
+    border-radius: var(--radius-pill);
+    font-size: var(--text-xs);
+    font-weight: 700;
+    letter-spacing: .4px;
+    text-transform: uppercase;
+    border: 1px solid transparent;
+}
+
+.badge-brand  { background: var(--tint-brand);  color: var(--brand-500);  border-color: var(--brand-300); }
+.badge-accent { background: var(--tint-accent); color: var(--accent-600); border-color: var(--accent-500); }
+.badge-ok     { background: var(--tint-ok);     color: var(--ok-500);     border-color: var(--ok-500); }
+.badge-danger { background: var(--tint-danger); color: var(--danger-500); border-color: var(--danger-500); }
+
+[data-theme="dark"] .badge-brand  { color: var(--brand-300); }
+[data-theme="dark"] .badge-accent { color: var(--accent-400); }
+[data-theme="dark"] .badge-ok     { color: #6fd79f; }
+[data-theme="dark"] .badge-danger { color: #ff9d97; }
+
+@media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) .badge-brand  { color: var(--brand-300); }
+    :root:not([data-theme="light"]) .badge-accent { color: var(--accent-400); }
+    :root:not([data-theme="light"]) .badge-ok     { color: #6fd79f; }
+    :root:not([data-theme="light"]) .badge-danger { color: #ff9d97; }
+}
+
+/* =====================================================================
+   12. Form
+   ===================================================================== */
+.form-field {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2);
+    margin-bottom: var(--space-4);
+}
+
+.form-field label { font-weight: 600; font-size: var(--text-sm); }
+
+.form-control {
+    width: 100%;
+    padding: var(--space-3) var(--space-4);
+    border: 1px solid var(--border-strong);
+    border-radius: var(--radius-md);
+    background: var(--surface);
+    color: var(--text);
+    font: inherit;
+    transition: border-color var(--motion-fast) var(--ease-out),
+                box-shadow var(--motion-fast) var(--ease-out);
+}
+
+.form-control:focus {
+    outline: none;
+    border-color: var(--brand-500);
+    box-shadow: 0 0 0 3px var(--tint-brand);
+}
+
+.form-control::placeholder { color: var(--text-muted); }
+
+.form-hint { font-size: var(--text-sm); color: var(--text-muted); }
+.form-error { font-size: var(--text-sm); color: var(--danger-500); font-weight: 600; }
+
+/* =====================================================================
+   13. Bảng dữ liệu (khu vực quản trị)
+   ===================================================================== */
+.table-wrap {
+    overflow-x: auto;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    background: var(--surface);
+}
+
+.admin-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: var(--text-sm);
+}
+
+.admin-table th,
+.admin-table td {
+    padding: var(--space-3) var(--space-4);
+    text-align: left;
+    border-bottom: 1px solid var(--border);
+    white-space: nowrap;
+}
+
+.admin-table thead th {
+    background: var(--surface-2);
+    font-weight: 700;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    font-size: var(--text-xs);
+    letter-spacing: .6px;
+}
+
+.admin-table tbody tr { transition: background-color var(--motion-fast) var(--ease-out); }
+.admin-table tbody tr:hover { background: var(--tint-brand); }
+.admin-table tbody tr:last-child td { border-bottom: none; }
+
+/* =====================================================================
+   14. Thông báo (fragments/alert.html)
    ===================================================================== */
 .alert {
     padding: var(--space-3) var(--space-4);
@@ -337,19 +778,27 @@ main.container {
 }
 
 .alert-success {
-    background: var(--ok-050);
+    background: var(--tint-ok);
     border-color: var(--ok-500);
     color: #14663a;
 }
 
 .alert-error {
-    background: var(--danger-050);
+    background: var(--tint-danger);
     border-color: var(--danger-500);
     color: #8d1c1c;
 }
 
+[data-theme="dark"] .alert-success { color: #7fe0a8; }
+[data-theme="dark"] .alert-error { color: #ff9d97; }
+
+@media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) .alert-success { color: #7fe0a8; }
+    :root:not([data-theme="light"]) .alert-error { color: #ff9d97; }
+}
+
 /* =====================================================================
-   Trang loi (error.html)
+   15. Trang lỗi (error.html)
    ===================================================================== */
 .error-page {
     text-align: center;
@@ -357,11 +806,11 @@ main.container {
 }
 
 .error-code {
-    font-size: 5rem;
+    font-size: 5.5rem;
     font-weight: 800;
     line-height: 1;
     margin: 0;
-    background: linear-gradient(135deg, var(--brand-500), var(--accent-500));
+    background: linear-gradient(135deg, var(--brand-400), var(--accent-500));
     -webkit-background-clip: text;
     background-clip: text;
     color: transparent;
@@ -374,63 +823,78 @@ main.container {
 }
 
 .error-path code {
-    background: var(--brand-050);
-    color: var(--brand-700);
+    background: var(--tint-brand);
+    color: var(--brand-500);
     padding: 2px var(--space-2);
     border-radius: var(--radius-sm);
     font-size: var(--text-sm);
 }
 
+[data-theme="dark"] .error-path code { color: var(--brand-300); }
+
 /* =====================================================================
-   So do ghe (Module 2 - Thang)
+   16. Sơ đồ ghế (Module 2 - Thắng)
    ===================================================================== */
+.seat-map-scroll {
+    overflow-x: auto;
+    padding-bottom: var(--space-3);
+}
+
 .seat-map {
     display: grid;
     gap: var(--space-2);
     justify-content: center;
+    min-width: max-content;
+    margin: 0 auto;
 }
 
 .seat {
     width: 34px;
     height: 34px;
-    border-radius: var(--radius-sm);
-    border: 1px solid var(--border);
-    background: var(--seat-available);
+    border-radius: 9px 9px var(--radius-sm) var(--radius-sm);
+    border: 1px solid var(--seat-available-border);
+    background: var(--seat-available-bg);
+    color: var(--text);
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: .75rem;
+    font-size: var(--text-xs);
     font-weight: 600;
     cursor: pointer;
     transition: transform var(--motion-fast) var(--ease-out),
-                background-color var(--motion-fast) var(--ease-out);
+                background-color var(--motion-fast) var(--ease-out),
+                box-shadow var(--motion-fast) var(--ease-out);
 }
 
-.seat:hover { transform: translateY(-2px); }
+.seat:hover {
+    transform: translateY(-3px);
+    box-shadow: var(--shadow-md);
+}
 
-.seat.available { background: var(--seat-available); }
+.seat.available { background: var(--seat-available-bg); }
 
 .seat.held {
-    background: var(--seat-held);
+    background: var(--seat-held-bg);
     color: var(--brand-900);
-    border-color: var(--seat-held);
+    border-color: var(--seat-held-bg);
     cursor: not-allowed;
 }
 
 .seat.booked {
-    background: var(--seat-booked);
+    background: var(--seat-booked-bg);
     color: #fff;
-    border-color: var(--seat-booked);
+    border-color: var(--seat-booked-bg);
     cursor: not-allowed;
 }
 
 .seat.held:hover,
-.seat.booked:hover { transform: none; }
+.seat.booked:hover { transform: none; box-shadow: none; }
 
 .seat.selected {
-    background: var(--seat-selected);
-    border-color: var(--seat-selected);
+    background: var(--seat-selected-bg);
+    border-color: var(--seat-selected-bg);
     color: #fff;
+    box-shadow: var(--glow-accent);
     animation: seat-pop var(--motion-fast) var(--ease-out);
 }
 
@@ -451,14 +915,19 @@ main.container {
 }
 
 .seat-legend i {
-    width: 16px;
-    height: 16px;
-    border-radius: 4px;
-    border: 1px solid var(--border);
+    width: 18px;
+    height: 18px;
+    border-radius: 6px 6px 3px 3px;
+    border: 1px solid var(--seat-available-border);
 }
 
+.legend-available { background: var(--seat-available-bg); }
+.legend-held      { background: var(--seat-held-bg);     border-color: var(--seat-held-bg); }
+.legend-booked    { background: var(--seat-booked-bg);   border-color: var(--seat-booked-bg); }
+.legend-selected  { background: var(--seat-selected-bg); border-color: var(--seat-selected-bg); }
+
 /* =====================================================================
-   Animation
+   17. Animation
    ===================================================================== */
 @keyframes fade-up {
     from { opacity: 0; transform: translateY(16px); }
@@ -480,17 +949,13 @@ main.container {
     to { transform: rotate(360deg); }
 }
 
-/* Hieu ung vao trang - them class nay cho khoi noi dung chinh */
-.animate-in {
-    animation: fade-up var(--motion-slow) var(--ease-out) both;
-}
-
-/* Cho vai phan tu hien lan luot thay vi hien cung mot luc */
+.animate-in { animation: fade-up var(--motion-slow) var(--ease-out) both; }
 .animate-in-delay-1 { animation-delay: .08s; }
 .animate-in-delay-2 { animation-delay: .16s; }
 .animate-in-delay-3 { animation-delay: .24s; }
+.animate-in-delay-4 { animation-delay: .32s; }
 
-/* Vong xoay "dang tai" - hinh banh rang, nhac lai logo truong */
+/* Vòng xoay "đang tải" - hình bánh răng, nhắc lại logo trường */
 .spinner {
     display: inline-block;
     width: 22px;
@@ -500,7 +965,7 @@ main.container {
 }
 
 /* =====================================================================
-   Man hinh nho
+   18. Màn hình nhỏ
    ===================================================================== */
 @media (max-width: 640px) {
     :root {
@@ -510,48 +975,29 @@ main.container {
 
     .header-inner {
         flex-direction: column;
-        align-items: flex-start;
+        align-items: stretch;
         gap: var(--space-3);
     }
 
-    .site-header nav { gap: var(--space-4); }
+    .header-nav {
+        width: 100%;
+        justify-content: space-between;
+        gap: var(--space-3);
+    }
 
     .hero { padding: var(--space-6) var(--space-4); }
 
-    /* Khong thu nho ghe them nua - de nho qua se bam khong trung.
-       Thay vao do cho cuon ngang trong khung rieng. */
-    .seat-map-scroll {
-        overflow-x: auto;
-        padding-bottom: var(--space-3);
-    }
+    /* Không thu nhỏ ghế thêm nữa - nhỏ quá sẽ bấm không trúng.
+       Vùng chạm tối thiểu 32x32px, thay vào đó cho cuộn ngang. */
+    .seat { width: 32px; height: 32px; }
 }
 
 /* =====================================================================
-   Che do toi cua he dieu hanh
-   ===================================================================== */
-@media (prefers-color-scheme: dark) {
-    :root {
-        --bg: #0d1220;
-        --surface: #161d2f;
-        --border: #2a3450;
-        --text: #e8ecf5;
-        --text-muted: #9aa6c2;
-        --brand-050: #16233f;
-        --ok-050: #12291e;
-        --danger-050: #2c1618;
-        --seat-available: #1f2840;
-    }
-
-    .alert-success { color: #7fe0a8; }
-    .alert-error { color: #ff9d97; }
-}
-
-/* =====================================================================
-   Ton trong cai dat giam chuyen dong cua nguoi dung.
-   Ai bat "reduce motion" trong he dieu hanh (vi say chuyen dong, roi loan
-   tien dinh...) thi trang phai dung yen - day cung la muc cham kha nang
-   tiep can. Dat thoi luong ve gan 0 thay vi xoa han de animation van
-   chay het va phan tu khong bi ket o trang thai opacity: 0.
+   19. Tôn trọng cài đặt giảm chuyển động của người dùng.
+   Ai bật "reduce motion" trong hệ điều hành (vì say chuyển động, rối loạn
+   tiền đình...) thì trang phải đứng yên - đây cũng là mục chấm khả năng
+   tiếp cận. Đặt thời lượng về gần 0 thay vì xoá hẳn, để animation vẫn
+   chạy hết và phần tử không bị kẹt ở trạng thái opacity: 0.
    ===================================================================== */
 @media (prefers-reduced-motion: reduce) {
     :root {
@@ -560,12 +1006,13 @@ main.container {
         --motion-slow: .01ms;
     }
 
+    html { scroll-behavior: auto; }
+
     *,
     *::before,
     *::after {
         animation-duration: .01ms !important;
         animation-iteration-count: 1 !important;
         transition-duration: .01ms !important;
-        scroll-behavior: auto !important;
     }
 }

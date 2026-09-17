@@ -2,11 +2,11 @@
 <html xmlns:th="http://www.thymeleaf.org">
 <body>
 <!--
-  Thanh dieu huong dung chung (Tho quan ly - khong tu y sua).
-  Module nao can them muc menu thi bao truoc trong nhom chat.
+  Thanh điều hướng dùng chung (Thọ quản lý - không tự ý sửa).
+  Module nào cần thêm mục menu thì báo trước trong nhóm chat.
 
-  Hinh logo: banh rang lay y tuong tu logo truong, o giua la lo phim.
-  Mau lay tu bien CSS nen doi tong mau ca trang thi hinh nay tu doi theo.
+  Hình logo: bánh răng lấy ý tưởng từ logo trường, ở giữa là lỗ phim.
+  Màu lấy từ biến CSS nên đổi tông màu cả trang thì hình này tự đổi theo.
 -->
 <header th:fragment="header" class="site-header">
     <div class="container header-inner">
@@ -25,18 +25,38 @@
                     </g>
                 </g>
                 <circle cx="24" cy="24" r="15" fill="currentColor"/>
-                <circle cx="24" cy="24" r="9.5" fill="var(--brand-900)"/>
+                <circle cx="24" cy="24" r="9.5" fill="var(--surface-inverse)"/>
                 <circle cx="24" cy="24" r="3.2" fill="currentColor"/>
             </svg>
             <span class="logo-text">
-                NHOM05 Cinema
-                <small>Dat ve xem phim</small>
+                Nhóm 05 Cinema
+                <small>Đặt vé xem phim</small>
             </span>
         </a>
-        <nav>
-            <a th:href="@{/}">Trang chu</a>
+
+        <nav class="header-nav" aria-label="Điều hướng chính">
+            <a th:href="@{/}">Trang chủ</a>
             <a th:href="@{/movies}">Phim</a>
-            <a th:href="@{/login}">Dang nhap</a>
+            <a th:href="@{/login}">Đăng nhập</a>
+
+            <!--
+              Nút đổi sáng/tối. Nhãn aria-label do theme.js đặt lại theo chế độ
+              đang dùng, nên người dùng trình đọc màn hình biết bấm vào sẽ ra gì.
+            -->
+            <button type="button" class="theme-toggle" data-theme-toggle
+                    aria-label="Chuyển giao diện sáng tối">
+                <svg class="icon-to-dark" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                     stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                     aria-hidden="true" focusable="false">
+                    <path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8Z"/>
+                </svg>
+                <svg class="icon-to-light" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                     stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                     aria-hidden="true" focusable="false">
+                    <circle cx="12" cy="12" r="4.2"/>
+                    <path d="M12 2v2.5M12 19.5V22M2 12h2.5M19.5 12H22M4.9 4.9l1.8 1.8M17.3 17.3l1.8 1.8M19.1 4.9l-1.8 1.8M6.7 17.3l-1.8 1.8"/>
+                </svg>
+            </button>
         </nav>
     </div>
 </header>
