@@ -11,7 +11,7 @@ Do an cuoi ky mon Cong nghe phan mem (CNPM) - Nhom 05.
 | **Thang** | Thanh vien | Module 2: Ghe & Ve - dat ve, seat-map, giu ghe (core booking) |
 | **Thanh** | Thanh vien | Module 3: User/Auth, thanh toan, email, dashboard |
 
-Chi tiet cong viec tung nguoi: xem tai lieu ke hoach du an (Claude Docs) hoac file `docs/PHAN_CONG.md` (se bo sung).
+Chi tiet cong viec tung nguoi: xem tai lieu ke hoach du an hoac file `docs/PHAN_CONG.md` (se bo sung).
 
 ## Cong nghe su dung
 
