@@ -34,14 +34,19 @@
     --brand-300: #7aa9f0;
 
     /* ---- Màu điểm nhấn (đèn vàng trong rạp, vé xem phim) ---- */
-    --accent-600: #b9760a;
     --accent-500: #f0a828;
     --accent-400: #ffc255;
+    /* Bản đậm, CHỈ dùng làm màu CHỮ đặt trên nền vàng nhạt --tint-accent.
+       Vàng #f0a828 làm chữ trên nền nhạt chỉ đạt 3.4:1, không đủ 4.5:1. */
+    --accent-600: #96600a;
 
     /* ---- Màu trạng thái ---- */
     --ok-500: #1c8a52;
     --danger-500: #c8362f;
     --warn-500: #d98f14;
+    /* Bản đậm hơn để làm chữ trên nền nhạt tương ứng (cùng lý do như --accent-600) */
+    --ok-700: #15683d;
+    --danger-700: #a82a24;
 
     /* ---- Khoảng cách ---- */
     --space-1: 4px;
@@ -113,11 +118,13 @@
     --shadow-lg: 0 14px 38px rgba(10, 26, 60, .16);
     --glow-accent: 0 0 24px rgba(240, 168, 40, .35);
 
-    /* Ghế - Module 2 dựa vào các biến này */
+    /* Ghế - Module 2 dựa vào các biến này.
+       Ghế đã bán phải đủ đậm (#646e8a): xám nhạt hơn thì chữ trắng chỉ đạt 3:1,
+       người nhìn kém sẽ không đọc được số ghế. */
     --seat-available-bg: #ffffff;
     --seat-available-border: #b9c4db;
     --seat-held-bg: #f0a828;
-    --seat-booked-bg: #8a95ad;
+    --seat-booked-bg: #646e8a;
     --seat-selected-bg: #1b5fd0;
 }
 
@@ -154,11 +161,14 @@
     --shadow-lg: 0 18px 44px rgba(0, 0, 0, .65);
     --glow-accent: 0 0 28px rgba(240, 168, 40, .45);
 
+    /* Ghế đang chọn giữ nguyên #1b5fd0 như chế độ sáng: nếu dùng #3d7ce8 cho tươi
+       hơn thì chữ trắng trên nền đó chỉ còn 4:1, chưa đạt chuẩn. Độ nổi bật đã có
+       quầng sáng --glow-accent lo rồi. */
     --seat-available-bg: #1c2740;
     --seat-available-border: #35456b;
     --seat-held-bg: #f0a828;
     --seat-booked-bg: #4a5878;
-    --seat-selected-bg: #3d7ce8;
+    --seat-selected-bg: #1b5fd0;
 }
 
 /* Khi người dùng CHƯA tự chọn thì đi theo cài đặt hệ điều hành */
@@ -195,7 +205,7 @@
         --seat-available-bg: #1c2740;
         --seat-available-border: #35456b;
         --seat-booked-bg: #4a5878;
-        --seat-selected-bg: #3d7ce8;
+        --seat-selected-bg: #1b5fd0;
     }
 }
 
@@ -677,8 +687,8 @@ main.container {
 
 .badge-brand  { background: var(--tint-brand);  color: var(--brand-500);  border-color: var(--brand-300); }
 .badge-accent { background: var(--tint-accent); color: var(--accent-600); border-color: var(--accent-500); }
-.badge-ok     { background: var(--tint-ok);     color: var(--ok-500);     border-color: var(--ok-500); }
-.badge-danger { background: var(--tint-danger); color: var(--danger-500); border-color: var(--danger-500); }
+.badge-ok     { background: var(--tint-ok);     color: var(--ok-700);     border-color: var(--ok-500); }
+.badge-danger { background: var(--tint-danger); color: var(--danger-700); border-color: var(--danger-500); }
 
 [data-theme="dark"] .badge-brand  { color: var(--brand-300); }
 [data-theme="dark"] .badge-accent { color: var(--accent-400); }
@@ -722,10 +732,26 @@ main.container {
     box-shadow: 0 0 0 3px var(--tint-brand);
 }
 
+/* Khi người dùng đi tới ô này bằng phím Tab thì phải có viền ĐẬM thấy rõ.
+   Không được chỉ dựa vào quầng box-shadow ở trên: ở chế độ tối, --tint-brand
+   chỉ tương phản 1.1:1 với nền ô, nhìn như không có gì. */
+.form-control:focus-visible {
+    outline: 3px solid var(--accent-500);
+    outline-offset: 2px;
+}
+
 .form-control::placeholder { color: var(--text-muted); }
 
 .form-hint { font-size: var(--text-sm); color: var(--text-muted); }
-.form-error { font-size: var(--text-sm); color: var(--danger-500); font-weight: 600; }
+.form-error { font-size: var(--text-sm); color: var(--danger-700); font-weight: 600; }
+
+/* Đỏ đậm đọc tốt trên nền sáng nhưng chìm nghỉm trên nền tối (chỉ 3.4:1),
+   nên chế độ tối đổi sang đỏ nhạt. */
+[data-theme="dark"] .form-error { color: #ff9d97; }
+
+@media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) .form-error { color: #ff9d97; }
+}
 
 /* =====================================================================
    13. Bảng dữ liệu (khu vực quản trị)
