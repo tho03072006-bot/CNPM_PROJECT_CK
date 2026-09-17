@@ -7,9 +7,45 @@
 </head>
 <body>
 <div layout:fragment="content">
-    <h1>Chao mung den voi he thong dat ve xem phim - NHOM05</h1>
-    <p>Day la trang chu tam thoi (nen mong du an). Cac trang danh sach phim, chon ghe,
-       thanh toan... se duoc cac thanh vien trong nhom xay dung theo module da phan cong.</p>
+
+    <section class="hero animate-in">
+        <h1>Dat ve xem phim chi trong vai cu nhap</h1>
+        <p>
+            Chon phim, chon suat chieu, chon ghe tren so do truc quan roi thanh toan.
+            Ghe ban chon duoc giu rieng trong 5 phut de khong ai dat trung.
+        </p>
+        <div class="hero-actions">
+            <a class="btn btn-accent" th:href="@{/movies}">Xem phim dang chieu</a>
+            <a class="btn btn-ghost" th:href="@{/login}">Dang nhap</a>
+        </div>
+    </section>
+
+    <div class="card-grid">
+        <article class="card card-hover animate-in animate-in-delay-1">
+            <h2>1. Chon phim &amp; suat chieu</h2>
+            <p>
+                Xem danh sach phim dang chieu kem the loai, thoi luong va do tuoi phu hop,
+                roi chon khung gio thuan tien nhat.
+            </p>
+        </article>
+
+        <article class="card card-hover animate-in animate-in-delay-2">
+            <h2>2. Chon ghe tren so do</h2>
+            <p>
+                So do ghe hien ro ghe con trong, ghe dang co nguoi giu va ghe da ban -
+                cap nhat theo dung tinh trang thuc te cua suat chieu.
+            </p>
+        </article>
+
+        <article class="card card-hover animate-in animate-in-delay-3">
+            <h2>3. Thanh toan &amp; nhan ve</h2>
+            <p>
+                Hoan tat thanh toan trong thoi gian giu ghe, thong tin ve se duoc gui
+                ve email cua ban.
+            </p>
+        </article>
+    </div>
+
 </div>
 </body>
 </html>
