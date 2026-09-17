@@ -84,3 +84,61 @@ main.container {
 .seat.held { background: #ffe08a; cursor: not-allowed; }
 .seat.booked { background: #ccc; cursor: not-allowed; }
 .seat.selected { background: var(--primary); color: #fff; }
+
+/* ==========================================================================
+   Thong bao & trang loi (dung chung - Tho quan ly, xem fragments/alert.html)
+   ========================================================================== */
+.alert {
+    padding: 12px 16px;
+    border-radius: 6px;
+    margin-bottom: 16px;
+    border: 1px solid transparent;
+    font-size: 0.95rem;
+}
+.alert-success {
+    background: #e7f7ed;
+    border-color: #a6ddb9;
+    color: #14663a;
+}
+.alert-error {
+    background: #fdeaea;
+    border-color: #f0b4b4;
+    color: #8d1c1c;
+}
+
+.error-page {
+    text-align: center;
+    padding: 48px 16px;
+}
+.error-code {
+    font-size: 4rem;
+    font-weight: 700;
+    color: var(--primary);
+    margin: 0;
+    line-height: 1;
+}
+.error-detail {
+    color: var(--muted);
+    max-width: 520px;
+    margin: 8px auto 16px;
+}
+.error-path code {
+    background: #ececf3;
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-size: 0.9rem;
+}
+
+.btn {
+    display: inline-block;
+    padding: 10px 20px;
+    border-radius: 6px;
+    background: var(--primary);
+    color: #fff;
+    text-decoration: none;
+    border: none;
+    cursor: pointer;
+}
+.btn:hover {
+    filter: brightness(0.92);
+}
