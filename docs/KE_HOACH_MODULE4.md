@@ -65,6 +65,9 @@ Ky hieu: `[x]` da xong - `[ ]` chua lam - `[~]` dang lam / cho dieu kien ben ngo
       (`VIEW_ERROR`, `MODEL_SUCCESS_MESSAGE`, `MODEL_ERROR_MESSAGE`, `MODEL_ERROR_CODE`, `MODEL_ERROR_PATH`).
 - [x] **3.6** Them Muc 5 (xu ly loi) va Muc 6 (quy uoc viet test) vao CONTRIBUTING.md.
 - [x] **3.7** `GlobalExceptionHandlerIntegrationTest` - 4 test case kiem chung phan tren chay that.
+- [~] **3.8** Giao dien dung chung (design system): lam theo lo trinh rieng 7 ngay o
+      `docs/LO_TRINH_GIAO_DIEN.md`. Ngay 1 da xong (he mau theo logo truong, typography,
+      animation nen, header/footer/trang chu moi, ho tro che do toi + giam chuyen dong).
 
 ## GIAI DOAN 4 - CI tren GitHub Actions
 
@@ -140,3 +143,5 @@ Ky hieu: `[x]` da xong - `[ ]` chua lam - `[~]` dang lam / cho dieu kien ben ngo
 | V9 | **Commit nen mong `a3d087e` chua tung duoc push.** Ca 6 nhanh tren remote (main, develop, 4 nhanh ca nhan) deu dang o `3764755 Initial commit` - chi co README + .gitignore | 3 thanh vien clone ve khong co pom.xml, khong co entity, khong co gi de code | Buoc 5.0 - **lam ngay** |
 | V10 | `mvn spring-boot:run` bao `Could not find or load main class`. Nguyen nhan: duong dan du an co dau tieng Viet (`D:\Cong nghe phan mem\...`) ma JVM tren may dang co `sun.jnu.encoding=Cp1252` nen giai ma sai classpath khi fork tien trinh con | Khong chay duoc ung dung bang lenh Maven (rieng `mvn test` van chay duoc vi surefire truyen classpath kieu khac) | 2 cach: (a) doi thu muc du an sang duong dan khong dau, vi du `D:\CNPM\Project_CK_NHOM05`; hoac (b) bat "Beta: Use Unicode UTF-8 for worldwide language support" trong Windows Region settings. Nen chon (a) vi khong dung cham cai dat he thong |
 | V11 | 17/09 da xay ra 1 lan mat file: doi nhanh sang `Minh_Thọ` (dang o Initial commit) lam bay het file chua commit | Mat cong lam lai | **Bai hoc: commit som, commit thuong xuyen.** Truoc khi doi nhanh phai `git status` xem con gi chua commit |
+| V12 | Entity va `schema.sql` lech nhau ve kieu so: `Showtime.basePrice` / `Ticket.price` khong khai bao `precision`/`scale` nen Hibernate hieu la `numeric(38,2)`, trong khi `schema.sql` ghi `DECIMAL(10,2)`. Luc chay app o may leader, Hibernate da tu `alter table` doi 2 cot nay | Tren cloud dat `ddl-auto=validate` -> co the bao loi lech schema khi khoi dong | Them `precision = 10, scale = 2` vao `@Column` cua 2 truong do. **Ticket la file cua Thang (Module 2), Showtime la cua Tai (Module 1)** -> phai hoi 2 ban truoc khi sua |
+| V13 | Ten tac gia cua commit nen mong `a3d087e` khong phai ten that cua Tho (dang la mot ten tam dat luc khoi tao), va email cung khac email dang dung | Ho so git nop cho truong nen dung ten that va nhat quan | Noi dung tai lieu da don o commit `c2da0fe`. **Con ten tac gia cua `a3d087e`: phai viet lai lich su git moi doi duoc - chua lam, cho Tho dong y** |
