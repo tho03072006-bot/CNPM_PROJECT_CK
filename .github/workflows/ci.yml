@@ -1,0 +1,94 @@
+# =====================================================================
+# Cinema Booking - NHÓM 05 - Kiểm thử tự động
+# Phụ trách: Thọ (Module 4)
+#
+# Chạy toàn bộ test mỗi khi có người push hoặc mở Pull Request, để không ai
+# merge nhầm code làm hỏng luồng đặt vé mà không ai biết.
+#
+# Vì sao phải dựng SQL Server trong CI: test tích hợp của nhóm (đặc biệt là
+# test chống đặt trùng ghế - ADR-1) dựa vào ràng buộc UNIQUE và cơ chế khoá
+# dòng của SQL Server thật. Dùng database giả lập trong bộ nhớ thì test vẫn
+# xanh nhưng không còn chứng minh được điều cần chứng minh.
+#
+# Repo đang để PUBLIC nên GitHub Actions miễn phí không giới hạn phút chạy.
+# =====================================================================
+name: Kiểm thử
+
+on:
+  push:
+    branches: ['**']
+  pull_request:
+    branches: [main, develop]
+
+env:
+  # Mật khẩu của container SQL Server dựng tạm cho CI. Container này bị xoá
+  # ngay sau khi chạy xong và không chứa dữ liệu thật, nên đây KHÔNG phải là
+  # bí mật của nhóm. Ai muốn chặt chẽ hơn thì tạo secret tên CI_SQL_PASSWORD
+  # trong Settings > Secrets, workflow sẽ tự ưu tiên dùng secret đó.
+  MSSQL_SA_PASSWORD: ${{ secrets.CI_SQL_PASSWORD || 'Nhom05@CI#2026' }}
+
+jobs:
+  test:
+    name: Build và chạy test
+    runs-on: ubuntu-latest
+
+    services:
+      sqlserver:
+        image: mcr.microsoft.com/mssql/server:2022-latest
+        env:
+          ACCEPT_EULA: 'Y'
+          MSSQL_SA_PASSWORD: ${{ secrets.CI_SQL_PASSWORD || 'Nhom05@CI#2026' }}
+          MSSQL_PID: Developer
+        ports:
+          - 1433:1433
+        options: >-
+          --health-cmd "/opt/mssql-tools18/bin/sqlcmd -S localhost -U sa -P \"$MSSQL_SA_PASSWORD\" -C -Q 'SELECT 1'"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 12
+          --health-start-period 30s
+
+    steps:
+      - name: Lấy mã nguồn
+        uses: actions/checkout@v4
+
+      - name: Cài JDK 21
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+          cache: maven
+
+      - name: Tạo database dành riêng cho test
+        # Bảng và cột bên trong do Hibernate tự sinh từ các @Entity
+        # (profile test đặt ddl-auto=update), nên ở đây chỉ cần database rỗng.
+        #
+        # Chạy sqlcmd ngay BÊN TRONG container SQL Server thay vì kéo thêm ảnh
+        # mssql-tools: ảnh mcr.microsoft.com/mssql-tools18 không có tag "latest"
+        # nên "docker run" sẽ hỏng, còn ảnh mssql/server thì đã có sẵn sqlcmd
+        # (chính health check ở trên đang dùng đường dẫn này).
+        run: |
+          docker exec "${{ job.services.sqlserver.id }}" \
+            /opt/mssql-tools18/bin/sqlcmd -S localhost -U sa -P "$MSSQL_SA_PASSWORD" -C \
+            -Q "IF DB_ID('cinema_booking_test') IS NULL CREATE DATABASE cinema_booking_test;"
+
+      - name: Chạy test
+        # Biến môi trường ghi đè cấu hình trong application-test.properties.
+        # Trên máy cá nhân thì thông tin này nằm ở application-secrets.properties
+        # (đã gitignore), còn ở đây lấy từ container tạm phía trên.
+        env:
+          SPRING_DATASOURCE_USERNAME: sa
+          SPRING_DATASOURCE_PASSWORD: ${{ secrets.CI_SQL_PASSWORD || 'Nhom05@CI#2026' }}
+          TEST_DB_HOST: localhost
+          TEST_DB_PORT: '1433'
+          TEST_DB_NAME: cinema_booking_test
+        run: mvn -B test
+
+      - name: Lưu báo cáo test khi có test đỏ
+        # Test hỏng thì tải file này về đọc chi tiết, khỏi phải đoán qua log.
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: bao-cao-test
+          path: target/surefire-reports/
+          retention-days: 7
