@@ -1,0 +1,89 @@
+# Bảng phân công chi tiết - Nhóm 05
+
+> **Bản nháp do Thọ soạn — 3 bạn đọc và phản hồi trước khi chốt.**
+> Mỗi dòng trong bảng sẽ trở thành một Issue trên GitHub, nên chỗ nào thấy mô tả chưa đúng
+> hoặc ước lượng lệch thì báo lại trước, sửa trên giấy dễ hơn sửa sau khi đã tạo Issue.
+
+Ước lượng tính bằng giờ làm thật, không tính thời gian ngồi nghĩ. Cột **Cần có trước** ghi
+mã công việc phải xong trước thì mới làm được việc này.
+
+---
+
+## Module 1 — Phim / Phòng chiếu / Suất chiếu (Tài)
+
+| Mã | Công việc | Cần có trước | Ước lượng | Tuần |
+|---|---|---|---|---|
+| M1.1 | `MovieService`: `findActiveMovies()`, `findById()`, `createMovie()`, `updateMovie()`, `deactivateMovie()` | M4.2 | 3h | 1 |
+| M1.2 | Trang danh sách phim công khai `/movies` — dùng `.movie-card` có sẵn | M1.1 | 2h | 1 |
+| M1.3 | Trang chi tiết phim `/movies/{id}` kèm danh sách suất chiếu sắp tới | M1.1, M1.8 | 3h | 2 |
+| M1.4 | Trang quản trị danh sách phim `/admin/movies` — dùng `.admin-table` có sẵn | M1.1, M3.3 | 2h | 2 |
+| M1.5 | Form thêm/sửa phim + kiểm tra dữ liệu nhập (tên không rỗng, thời lượng > 0) | M1.4 | 3h | 2 |
+| M1.6 | `RoomService` + quản trị phòng chiếu | M4.2 | 3h | 2 |
+| M1.7 | Tự sinh ghế khi tạo phòng (theo số hàng × số cột, 2 hàng cuối là VIP) | M1.6 | 2h | 2 |
+| M1.8 | `ShowtimeService` + quản trị suất chiếu | M1.1, M1.6 | 3h | 2 |
+| M1.9 | **Chặn xếp 2 suất chiếu trùng giờ trong cùng một phòng** (tính cả thời gian dọn phòng) | M1.8 | 2h | 2 |
+| M1.10 | Unit test cho M1.9: các trường hợp trùng đầu, trùng cuối, lồng nhau, sát nút | M1.9 | 2h | 3 |
+
+## Module 2 — Ghế & Vé, lõi đặt vé (Thắng)
+
+| Mã | Công việc | Cần có trước | Ước lượng | Tuần |
+|---|---|---|---|---|
+| M2.1 | `SeatService`: lấy sơ đồ ghế của một suất chiếu kèm trạng thái từng ghế (trống / đang giữ / đã bán) | M1.7, M1.8 | 3h | 2 |
+| M2.2 | Trang chọn ghế `/booking/showtime/{id}` — dùng `.seat-map` và `.screen` có sẵn | M2.1 | 3h | 2 |
+| M2.3 | **`SeatBookingService.holdSeats()` — mấu chốt của ADR-1.** Bắt `DataIntegrityViolationException` và ném `SeatAlreadyTakenException` | M2.1, M4.5 | 4h | 2 |
+| M2.4 | API giữ ghế gọi bằng AJAX, trả JSON `{success, message}` | M2.3 | 2h | 3 |
+| M2.5 | Đồng hồ đếm ngược thời gian giữ ghế trên giao diện (5 phút) | M2.4 | 2h | 3 |
+| M2.6 | Xử lý vé quá hạn giữ: `HELD` quá `SEAT_HOLD_MINUTES` phút thì chuyển `EXPIRED` và trả ghế về trạng thái trống | M2.3 | 3h | 3 |
+| M2.7 | Cho người dùng tự huỷ giữ ghế trước khi thanh toán | M2.3 | 2h | 3 |
+| M2.8 | Tính tiền theo loại ghế: `NORMAL` giá gốc, `VIP` +50%, `COUPLE` ×2 | M2.1 | 2h | 3 |
+| M2.9 | Test tranh chấp ở tầng Service: 2 request cùng gọi `holdSeats()` thì đúng 1 thành công, request kia nhận `SeatAlreadyTakenException` chứ không phải lỗi 500 | M2.3 | 2h | 3 |
+
+## Module 3 — Người dùng, thanh toán, email, thống kê (Thanh)
+
+| Mã | Công việc | Cần có trước | Ước lượng | Tuần |
+|---|---|---|---|---|
+| M3.1 | `AuthService`: đăng ký tài khoản, **mật khẩu hash bằng BCrypt** (dữ liệu mẫu hiện đang để mật khẩu thô, phải thay) | M4.2 | 3h | 1 |
+| M3.2 | Đăng nhập / đăng xuất bằng session, dùng hằng số `Constants.SESSION_USER` | M3.1 | 3h | 1 |
+| M3.3 | Chặn truy cập: tài khoản `CUSTOMER` không vào được trang `/admin/**` | M3.2 | 2h | 2 |
+| M3.4 | Trang hồ sơ cá nhân + lịch sử vé đã đặt | M3.2, M2.3 | 3h | 3 |
+| M3.5 | `PaymentService`: xác nhận thanh toán, chuyển vé `HELD` sang `PAID` và ghi `paid_at` | M2.3 | 3h | 3 |
+| M3.6 | Trang xác nhận thanh toán — dùng `.ticket` có sẵn | M3.5 | 3h | 3 |
+| M3.7 | Gửi email xác nhận vé sau khi thanh toán thành công (Gmail App Password) | M3.5 | 3h | 3 |
+| M3.8 | Trang thống kê cho quản trị: doanh thu theo ngày, phim bán chạy | M3.5, M3.3 | 4h | 4 |
+| M3.9 | Test phân quyền: khách hàng gọi thẳng URL trang admin phải bị chặn | M3.3 | 2h | 3 |
+
+## Module 4 — Kiến trúc dùng chung, kiểm thử, quản lý (Thọ)
+
+Chi tiết đầy đủ ở `docs/KE_HOACH_MODULE4.md` và `docs/LO_TRINH_GIAO_DIEN.md`. Tóm tắt các
+việc mà 3 bạn kia **phải chờ**, nên làm sớm:
+
+| Mã | Công việc | Trạng thái |
+|---|---|---|
+| M4.1 | Nền móng dự án, schema, entity, repository | Xong |
+| M4.2 | Hạ tầng test dùng chung (`IntegrationTestBase`, `TestDataFactory`) + database test riêng | Xong |
+| M4.3 | Test chống đặt trùng ghế (ADR-1) | Xong |
+| M4.4 | Design system + hai chế độ sáng/tối + trang `/ui-kit` | Xong |
+| M4.5 | Bộ exception nghiệp vụ + `GlobalExceptionHandler` | Xong |
+| M4.6 | Dữ liệu mẫu dùng chung `seed-data.sql` | Xong |
+| M4.7 | CI tự động chạy test trên mỗi Pull Request | Xong, chờ push để chạy thử |
+| M4.8 | Database dùng chung trên cloud | Chờ tạo tài khoản Azure |
+| M4.9 | Test luồng đặt vé end-to-end | Chờ M1, M2, M3 |
+| M4.10 | Tài liệu kiểm thử + báo cáo tổng hợp | Tuần 4 |
+
+---
+
+## Timeline 4 tuần
+
+| Tuần | Mục tiêu | Mốc kiểm tra |
+|---|---|---|
+| 1 | Nền móng + đăng nhập + CRUD phim cơ bản | Chạy được ứng dụng, đăng nhập được, xem được danh sách phim |
+| 2 | Quản trị đầy đủ + chọn ghế + giữ ghế | **Đặt được một vé từ đầu đến cuối** (dù chưa thanh toán) |
+| 3 | Thanh toán + email + hết hạn giữ ghế + test | Luồng đặt vé hoàn chỉnh, test tự động chạy xanh |
+| 4 | Thống kê + tích hợp + tài liệu + tập demo | Merge `develop` vào `main`, chạy thử trên database chung |
+
+## Việc ai cũng phải làm, không chia cho riêng ai
+
+- Review Pull Request của người khác (mỗi PR cần ít nhất 1 người duyệt).
+- Viết mô tả PR tử tế, có ảnh chụp màn hình nếu đụng tới giao diện.
+- Tự chạy `mvn test` trước khi mở PR, đừng để CI báo đỏ rồi mới sửa.
+- Báo ngay trong nhóm chat khi cần sửa file thuộc module người khác.

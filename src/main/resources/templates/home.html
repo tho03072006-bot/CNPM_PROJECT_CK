@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout/base}">
+<head>
+    <title>Trang chủ</title>
+</head>
+<body>
+<div layout:fragment="content">
+
+    <section class="hero animate-in">
+        <span class="hero-eyebrow">Suất chiếu hôm nay</span>
+        <h1>Đặt vé xem phim chỉ trong vài cú nhấp</h1>
+        <p>
+            Chọn phim, chọn suất chiếu, chọn ghế trên sơ đồ trực quan rồi thanh toán.
+            Ghế bạn chọn được giữ riêng trong 5 phút để không ai đặt trùng.
+        </p>
+        <div class="hero-actions">
+            <a class="btn btn-accent" th:href="@{/movies}">Xem phim đang chiếu</a>
+            <a class="btn btn-ghost" th:href="@{/login}">Đăng nhập</a>
+        </div>
+    </section>
+
+    <h2 class="section-title animate-in animate-in-delay-1">Đặt vé chỉ với 3 bước</h2>
+
+    <div class="card-grid">
+        <article class="card card-hover animate-in animate-in-delay-1">
+            <span class="badge badge-brand">Bước 1</span>
+            <h3>Chọn phim &amp; suất chiếu</h3>
+            <p class="text-muted">
+                Xem danh sách phim đang chiếu kèm thể loại, thời lượng và độ tuổi phù hợp,
+                rồi chọn khung giờ thuận tiện nhất.
+            </p>
+        </article>
+
+        <article class="card card-hover animate-in animate-in-delay-2">
+            <span class="badge badge-accent">Bước 2</span>
+            <h3>Chọn ghế trên sơ đồ</h3>
+            <p class="text-muted">
+                Sơ đồ ghế hiện rõ ghế còn trống, ghế đang có người giữ và ghế đã bán —
+                cập nhật theo đúng tình trạng thực tế của suất chiếu.
+            </p>
+        </article>
+
+        <article class="card card-hover animate-in animate-in-delay-3">
+            <span class="badge badge-ok">Bước 3</span>
+            <h3>Thanh toán &amp; nhận vé</h3>
+            <p class="text-muted">
+                Hoàn tất thanh toán trong thời gian giữ ghế, thông tin vé sẽ được gửi
+                về email của bạn.
+            </p>
+        </article>
+    </div>
+
+</div>
+</body>
+</html>

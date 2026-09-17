@@ -1,0 +1,39 @@
+# =====================================================================
+# Cinema Booking - NHÓM 05 - Ai phải duyệt khi file nào bị sửa
+#
+# GitHub sẽ tự động mời đúng người vào review khi Pull Request đụng tới file
+# thuộc quyền họ. Mục đích không phải để làm khó nhau, mà để tránh cảnh hai
+# người cùng sửa một file dùng chung rồi đè mất công của nhau.
+#
+# CHƯA HOÀN CHỈNH: mới có tài khoản GitHub của Thọ. Ba bạn còn lại gửi tên
+# tài khoản GitHub của mình để điền nốt các dòng đang để trống bên dưới.
+# =====================================================================
+
+# Mặc định: Thọ xem qua mọi thứ với vai trò leader
+*                                       @tho03072006-bot
+
+# ---- Phần dùng chung: bắt buộc Thọ duyệt ----
+/src/main/resources/templates/layout/    @tho03072006-bot
+/src/main/resources/templates/fragments/ @tho03072006-bot
+/src/main/resources/templates/error.html @tho03072006-bot
+/src/main/resources/static/              @tho03072006-bot
+/src/main/java/edu/hcmute/cnpm/cinema/exception/  @tho03072006-bot
+/src/main/java/edu/hcmute/cnpm/cinema/constants/  @tho03072006-bot
+/src/test/java/edu/hcmute/cnpm/cinema/support/    @tho03072006-bot
+/database/                               @tho03072006-bot
+/docs/                                   @tho03072006-bot
+/.github/                                @tho03072006-bot
+/pom.xml                                 @tho03072006-bot
+/CONTRIBUTING.md                         @tho03072006-bot
+
+# ---- Phần riêng của từng module ----
+# Điền tên tài khoản GitHub vào rồi bỏ dấu # ở đầu dòng.
+
+# Module 1 - Phim / Phòng chiếu / Suất chiếu (Tài)
+# /src/main/resources/templates/movie/   @tai-github-username
+
+# Module 2 - Ghế & Vé (Thắng)
+# /src/main/resources/templates/booking/ @thang-github-username
+
+# Module 3 - Người dùng / Thanh toán (Thanh)
+# /src/main/resources/templates/account/ @thanh-github-username
