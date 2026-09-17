@@ -40,11 +40,46 @@ Nguyên tắc không được phá:
       sáng/tối có nút bấm và nhớ lựa chọn**, header + footer + trang chủ + trang lỗi thiết kế lại.
 - [x] **Ngày 2** — 18/09: bộ component (nút, nhãn, thẻ, thẻ phim, vé, form, bảng, sơ đồ ghế,
       trạng thái đang tải) + trang `/ui-kit`.
-- [ ] Ngày 3 — trang chủ nối dữ liệu phim thật
-- [ ] Ngày 4 — sơ đồ ghế hoàn chỉnh
-- [ ] Ngày 5 — khu vực quản trị
-- [ ] Ngày 6 — form & thanh toán
-- [ ] Ngày 7 — rà soát responsive + tương phản màu
+- [x] **Ngày 7 (làm sớm)** — 18/09: rà soát responsive + độ tương phản màu + viền focus bàn phím.
+      Kết quả đo được ghi ở mục "Kết quả rà soát" bên dưới.
+- [ ] Ngày 3 — trang chủ nối dữ liệu phim thật *(chờ Tài làm xong `MovieService` — M1.1)*
+- [ ] Ngày 4 — sơ đồ ghế hoàn chỉnh *(chờ Thắng làm xong `SeatService` — M2.1)*
+- [ ] Ngày 5 — khu vực quản trị *(chờ Tài — M1.4)*
+- [ ] Ngày 6 — form & thanh toán *(chờ Thanh — M3.5)*
+
+Ngày 7 được làm sớm vì 4 ngày còn lại đều phải chờ dữ liệu của người khác, trong khi rà soát
+chất lượng thì làm được ngay trên những gì đã có.
+
+## Kết quả rà soát (18/09)
+
+Đo trên trang `/` và `/ui-kit`, cả hai chế độ sáng và tối:
+
+| Hạng mục | Kết quả |
+|---|---|
+| Tràn ngang ở khổ điện thoại 375px | Không có, ở cả 2 trang |
+| Vùng chạm của ghế trên điện thoại | 32×32px — đạt mức tối thiểu |
+| Độ tương phản màu, chế độ sáng | **20/20 đạt** chuẩn WCAG AA, thấp nhất 4.89:1 |
+| Độ tương phản màu, chế độ tối | **20/20 đạt** chuẩn WCAG AA, thấp nhất 5.84:1 |
+| Viền focus khi đi bằng phím Tab | Thấy rõ trên mọi nút, link và ô nhập liệu |
+
+### Năm lỗi tương phản đã sửa trong đợt rà soát này
+
+Cả năm lỗi này nhìn bằng mắt đều thấy "hơi khó đọc" chứ không ai nghĩ là sai chuẩn —
+phải đo bằng số mới lòi ra:
+
+| Chỗ | Trước | Sau | Cách sửa |
+|---|---|---|---|
+| Chữ trên nút vàng (chế độ tối) | 1.18:1 | 8.43:1 | Bỏ selector `[data-theme="dark"] a`, cho màu link đi qua biến `--link` |
+| Nhãn vàng `.badge-accent` | 3.43:1 | 4.89:1 | Thêm `--accent-600` đậm hơn, chỉ dùng làm màu chữ |
+| Nhãn xanh lá `.badge-ok` | 3.94:1 | 5.5:1 | Thêm `--ok-700` |
+| Ghế đã bán | 3.01:1 | 5.07:1 | Đổi `--seat-booked-bg` từ `#8a95ad` sang `#646e8a` |
+| Chữ báo lỗi trong form (chế độ tối) | 3.40:1 | ~7:1 | Chế độ tối dùng đỏ nhạt `#ff9d97` |
+| Ghế đang chọn (chế độ tối) | 4.00:1 | 5.84:1 | Bỏ `#3d7ce8`, dùng chung `#1b5fd0` với chế độ sáng |
+
+Và một lỗi về viền focus: ô nhập liệu để `outline: none`, chỉ dựa vào quầng `box-shadow`
+màu `--tint-brand` — ở chế độ tối quầng này chỉ tương phản **1.1:1** với nền ô, tức là
+người dùng bàn phím không thấy mình đang đứng ở ô nào. Đã thêm `.form-control:focus-visible`
+có viền vàng đậm.
 
 ## Bảng màu
 
