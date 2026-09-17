@@ -1,0 +1,15 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<body>
+<header th:fragment="header" class="site-header">
+    <div class="container header-inner">
+        <a th:href="@{/}" class="logo">NHOM05 Cinema</a>
+        <nav>
+            <a th:href="@{/}">Trang chu</a>
+            <a th:href="@{/movies}">Phim</a>
+            <a th:href="@{/login}">Dang nhap</a>
+        </nav>
+    </div>
+</header>
+</body>
+</html>
