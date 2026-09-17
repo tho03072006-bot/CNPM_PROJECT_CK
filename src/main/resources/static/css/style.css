@@ -1,0 +1,86 @@
+:root {
+    --primary: #0d6efd;
+    --dark-bg: #1a1a2e;
+    --text: #222;
+    --muted: #666;
+}
+
+* { box-sizing: border-box; }
+
+body {
+    margin: 0;
+    font-family: "Segoe UI", Arial, sans-serif;
+    color: var(--text);
+    background: #f7f7fb;
+}
+
+.container {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 0 16px;
+}
+
+.site-header {
+    background: var(--dark-bg);
+    color: #fff;
+}
+
+.header-inner {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 14px 16px;
+}
+
+.logo {
+    color: #fff;
+    font-weight: 700;
+    text-decoration: none;
+    font-size: 1.2rem;
+}
+
+.site-header nav a {
+    color: #ddd;
+    text-decoration: none;
+    margin-left: 20px;
+}
+
+.site-header nav a:hover {
+    color: var(--primary);
+}
+
+main.container {
+    min-height: 60vh;
+    padding-top: 24px;
+    padding-bottom: 24px;
+}
+
+.site-footer {
+    background: var(--dark-bg);
+    color: #aaa;
+    padding: 16px 0;
+    margin-top: 40px;
+    font-size: 0.9rem;
+    text-align: center;
+}
+
+/* Seat map (dung chung cho module dat ve) */
+.seat-map {
+    display: grid;
+    gap: 8px;
+}
+.seat {
+    width: 32px;
+    height: 32px;
+    border-radius: 4px;
+    border: 1px solid #ccc;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.75rem;
+    cursor: pointer;
+}
+.seat.available { background: #fff; }
+.seat.held { background: #ffe08a; cursor: not-allowed; }
+.seat.booked { background: #ccc; cursor: not-allowed; }
+.seat.selected { background: var(--primary); color: #fff; }
