@@ -1,58 +1,73 @@
-# Lo trinh lam giao dien dung chung (Module 4 - Tho)
+# Lộ trình làm giao diện dùng chung (Module 4 - Thọ)
 
-Moi ngay lam DUNG 1 viec nho nhung **hoan chinh** (code xong - chay thu xong - commit xong),
-khong de viec do dang qua ngay hom sau.
+Mỗi ngày làm ĐÚNG 1 việc nhỏ nhưng **hoàn chỉnh** (code xong - chạy thử xong - commit xong),
+không để việc dở dang qua ngày hôm sau.
 
-## Dinh huong thiet ke
+## Định hướng thiết kế
 
-Lay y tuong tu **logo truong (HCMUTE)**: mau chu dao **xanh duong + trang**, hoa tiet
-**banh rang - compa - sach mo** (ky thuat, chinh xac, tri thuc). Them tong **vang ho phach**
-cho ra chat rap chieu phim (ve, den vang, ghe nhung).
+Không khí **rạp chiếu phim** — phòng tối, màn hình sáng, đèn vàng, vé xé răng cưa — nhưng dùng
+bộ màu lấy từ **logo trường (HCMUTE)**: xanh dương + trắng, hoạ tiết bánh răng - compa - sách mở.
+Thêm tông **vàng hổ phách** làm màu điểm nhấn cho ra chất rạp phim.
 
-Nguyen tac khong duoc pha:
-- **Dep nhung khong lam sai logic.** Animation chi de dan mat nguoi dung, khong duoc lam
-  cham thao tac hay che mat thong tin.
-- Moi hieu ung deu phai tat duoc: ai bat `prefers-reduced-motion` trong he dieu hanh thi
-  trang tu dong bo animation (nguoi bi say chuyen dong / roi loan tien dinh can dieu nay).
-- Chi dung **bien CSS** trong `:root`, khong go thang ma mau vao tung class -> sau nay doi
-  tong mau ca trang chi sua 1 cho.
-- Khong keo them thu vien CSS ngoai (Bootstrap, Tailwind...): de bai cham ky nang tu viet,
-  va them thu vien la them rui ro xung dot khi 4 nguoi cung sua.
+Nguyên tắc không được phá:
 
-## Lo trinh 7 ngay
+- **Đẹp nhưng không làm sai logic.** Animation chỉ để dẫn mắt người dùng, không được làm
+  chậm thao tác hay che mất thông tin.
+- Mọi hiệu ứng đều phải tắt được: ai bật `prefers-reduced-motion` trong hệ điều hành thì
+  trang tự động bỏ animation (người bị say chuyển động / rối loạn tiền đình cần điều này).
+- **Hai chế độ sáng và tối**, người dùng tự bấm chọn và hệ thống nhớ lựa chọn đó. Chưa chọn
+  bao giờ thì đi theo cài đặt của hệ điều hành.
+- Chỉ dùng **biến CSS** trong `:root`, không gõ thẳng mã màu vào từng class → sau này đổi
+  tông màu cả trang chỉ sửa 1 chỗ, và chế độ tối cũng chỉ là đổi giá trị biến.
+- Không kéo thêm thư viện CSS ngoài (Bootstrap, Tailwind...): đề bài chấm kỹ năng tự viết,
+  và thêm thư viện là thêm rủi ro xung đột khi 4 người cùng sửa.
 
-| Ngay | Viec | Ket qua ban giao | Ai dung ket qua nay |
+## Lộ trình 7 ngày
+
+| Ngày | Việc | Kết quả bàn giao | Ai dùng kết quả này |
 |---|---|---|---|
-| **1** | **He mau + typography + animation nen** | `style.css` thanh mot bo design system: bien mau theo logo truong, thang spacing, bo shadow, font, hieu ung vao trang. Header/footer thiet ke lai | Ca 4 nguoi |
-| 2 | Bo component dung chung | Nut, the (card), o nhap lieu, bang, nhan trang thai, hop thoai - kem trang demo `/ui-kit` de ca nhom xem va copy | Ca 4 nguoi |
-| 3 | Trang chu | Hero + luoi phim dang chieu (con dung du lieu gia cho den khi Tai xong Module 1) | Tai |
-| 4 | So do ghe (seat-map) | CSS + animation chon ghe, trang thai trong / dang giu / da ban, chu thich mau | Thang |
-| 5 | Khu vuc quan tri | Layout trang admin + bang du lieu, phan trang, thanh loc | Tai |
-| 6 | Form & thanh toan | Dang nhap / dang ky / xac nhan thanh toan, kem trang thai loi va dang xu ly | Thanh |
-| 7 | Ra soat cuoi | Responsive tren dien thoai + kiem tra do tuong phan mau, vien focus khi di ban phim + viet huong dan dung design system | Ca 4 nguoi |
+| **1** | Hệ màu + typography + animation nền + 2 chế độ sáng/tối | `style.css` thành bộ design system, nút đổi sáng/tối ở header, header/footer/trang chủ/trang lỗi thiết kế lại | Cả 4 người |
+| **2** | Bộ component dùng chung | Nút, thẻ, thẻ phim, vé, ô nhập liệu, bảng, nhãn trạng thái, sơ đồ ghế mẫu — kèm trang `/ui-kit` để cả nhóm xem và chép | Cả 4 người |
+| 3 | Trang chủ | Hero + lưới phim đang chiếu, nối vào dữ liệu thật khi Module 1 xong | Tài |
+| 4 | Sơ đồ ghế hoàn chỉnh | Trang chọn ghế, đếm ngược thời gian giữ ghế, tổng tiền | Thắng |
+| 5 | Khu vực quản trị | Layout trang admin + bảng dữ liệu, phân trang, thanh lọc | Tài |
+| 6 | Form & thanh toán | Đăng nhập / đăng ký / xác nhận thanh toán, kèm trạng thái lỗi và đang xử lý | Thanh |
+| 7 | Rà soát cuối | Responsive trên điện thoại + kiểm tra độ tương phản màu, viền focus khi đi bằng bàn phím + viết hướng dẫn dùng design system | Cả 4 người |
 
-## Tien do
+## Tiến độ
 
-- [x] **Ngay 1** - 17/09: he mau theo logo truong, typography, bo animation nen, header + footer moi,
-      trang chu va trang loi ap dung giao dien moi.
-- [ ] Ngay 2 - bo component + trang `/ui-kit`
-- [ ] Ngay 3 - trang chu hoan chinh
-- [ ] Ngay 4 - so do ghe
-- [ ] Ngay 5 - khu vuc quan tri
-- [ ] Ngay 6 - form & thanh toan
-- [ ] Ngay 7 - ra soat responsive + tuong phan mau
+- [x] **Ngày 1** — 17/09: hệ màu theo logo trường, typography, bộ animation nền, **hai chế độ
+      sáng/tối có nút bấm và nhớ lựa chọn**, header + footer + trang chủ + trang lỗi thiết kế lại.
+- [x] **Ngày 2** — 18/09: bộ component (nút, nhãn, thẻ, thẻ phim, vé, form, bảng, sơ đồ ghế,
+      trạng thái đang tải) + trang `/ui-kit`.
+- [ ] Ngày 3 — trang chủ nối dữ liệu phim thật
+- [ ] Ngày 4 — sơ đồ ghế hoàn chỉnh
+- [ ] Ngày 5 — khu vực quản trị
+- [ ] Ngày 6 — form & thanh toán
+- [ ] Ngày 7 — rà soát responsive + tương phản màu
 
-## Bang mau (Ngay 1 da chot)
+## Bảng màu
 
-| Bien | Ma mau | Dung o dau |
-|---|---|---|
-| `--brand-900` | `#0a1a3c` | Nen header/footer, chu tieu de dam |
-| `--brand-700` | `#123a7a` | Nen phu, hover |
-| `--brand-500` | `#1b5fd0` | Mau chinh: nut, link, vien focus |
-| `--brand-300` | `#7aa9f0` | Nhan, vien nhat |
-| `--accent-500` | `#f0a828` | Diem nhan: gia ve, sao danh gia, ghe VIP |
-| `--seat-held` | `#f0a828` | Ghe dang co nguoi giu |
-| `--seat-booked` | `#94a0b8` | Ghe da ban |
-| `--ok-500` / `--danger-500` | `#1c8a52` / `#c8362f` | Thong bao thanh cong / loi |
+| Biến | Chế độ sáng | Chế độ tối | Dùng ở đâu |
+|---|---|---|---|
+| `--brand-900` | `#0a1a3c` | `#0a1a3c` | Nền header/footer, chữ trên nút vàng |
+| `--brand-500` | `#1b5fd0` | `#1b5fd0` | Màu chính: nút, viền focus |
+| `--brand-300` | `#7aa9f0` | `#7aa9f0` | Màn chiếu, nhãn nhạt |
+| `--accent-500` | `#f0a828` | `#f0a828` | Điểm nhấn: nút đặt vé, ghế đang giữ, đèn viền hero |
+| `--bg` | `#eef1f8` | `#070b16` | Nền trang |
+| `--surface` | `#ffffff` | `#101829` | Nền thẻ, bảng, ô nhập liệu |
+| `--text` | `#131a2b` | `#e9eefb` | Chữ chính |
+| `--text-muted` | `#58627d` | `#9aa8c6` | Chữ phụ |
+| `--link` | `#1b5fd0` | `#7aa9f0` | Màu link |
 
-Mau chu tren nen da duoc kiem tra do tuong phan dat chuan WCAG AA (>= 4.5:1) o Ngay 7.
+## Bài học rút ra khi làm (ghi lại để không dẫm lại)
+
+**Đừng viết `[data-theme="dark"] a { color: ... }`.** Selector đó có độ ưu tiên (0,1,1), cao hơn
+`.btn-accent` (0,1,0), nên nó đè luôn màu chữ của mọi nút viết bằng thẻ `<a>`. Hậu quả: nút vàng
+"Xem phim đang chiếu" ở chế độ tối có chữ xanh nhạt trên nền vàng, tỉ số tương phản tụt còn
+**1.18:1** (chuẩn tối thiểu là 4.5:1) — nhìn bằng mắt thường vẫn thấy "hơi khó đọc" chứ không
+nghĩ là lỗi. Cách đúng: cho màu link đi qua biến `--link`, rồi chỉ viết `a { color: var(--link); }`
+với độ ưu tiên (0,0,1) — thua mọi class nút.
+
+Bài học chung: **đổi màu theo chế độ thì đổi GIÁ TRỊ BIẾN, đừng thêm selector mới.**
+Và phải đo tỉ số tương phản bằng số, đừng tin mắt.
