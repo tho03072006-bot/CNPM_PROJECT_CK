@@ -11,6 +11,9 @@
     <div th:replace="~{fragments/header :: header}"></div>
 
     <main class="container">
+        <!-- Cho hien thong bao thanh cong / loi cho MOI trang - xem fragments/alert.html -->
+        <div th:replace="~{fragments/alert :: alert}"></div>
+
         <div layout:fragment="content">
             <!-- noi dung trang con se duoc chen vao day -->
         </div>

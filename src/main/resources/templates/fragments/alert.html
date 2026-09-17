@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<body>
+<!--
+  Fragment thong bao dung chung (Tho quan ly - khong tu y sua).
+
+  Fragment nay DA DUOC NHUNG SAN trong layout/base.html, nghia la moi trang ke thua layout
+  deu tu dong co cho hien thong bao - ban KHONG can goi lai trong trang cua minh.
+
+  Cach dung trong Controller:
+    // bao thanh cong roi chuyen trang
+    redirectAttributes.addFlashAttribute(Constants.MODEL_SUCCESS_MESSAGE, "Da luu phim moi.");
+    return "redirect:/admin/movies";
+
+    // bao loi ngay tren trang dang mo
+    model.addAttribute(Constants.MODEL_ERROR_MESSAGE, "Gio chieu bi trung voi suat khac.");
+    return "movie/showtime-form";
+
+  Luu y: cac loi nem tu Service (BusinessException...) thi KHONG can tu set thong bao o day,
+  GlobalExceptionHandler da lo roi.
+-->
+<div th:fragment="alert">
+    <div class="alert alert-success" th:if="${successMessage}" th:text="${successMessage}"></div>
+    <div class="alert alert-error" th:if="${errorMessage}" th:text="${errorMessage}"></div>
+</div>
+</body>
+</html>
