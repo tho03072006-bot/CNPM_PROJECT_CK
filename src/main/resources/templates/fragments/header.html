@@ -1,9 +1,38 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
 <body>
+<!--
+  Thanh dieu huong dung chung (Tho quan ly - khong tu y sua).
+  Module nao can them muc menu thi bao truoc trong nhom chat.
+
+  Hinh logo: banh rang lay y tuong tu logo truong, o giua la lo phim.
+  Mau lay tu bien CSS nen doi tong mau ca trang thi hinh nay tu doi theo.
+-->
 <header th:fragment="header" class="site-header">
     <div class="container header-inner">
-        <a th:href="@{/}" class="logo">NHOM05 Cinema</a>
+        <a th:href="@{/}" class="logo">
+            <svg class="logo-mark" viewBox="0 0 48 48" aria-hidden="true" focusable="false">
+                <g fill="currentColor">
+                    <rect x="21" y="1" width="6" height="11" rx="2"/>
+                    <rect x="21" y="36" width="6" height="11" rx="2"/>
+                    <rect x="1" y="21" width="11" height="6" rx="2"/>
+                    <rect x="36" y="21" width="11" height="6" rx="2"/>
+                    <g transform="rotate(45 24 24)">
+                        <rect x="21" y="1" width="6" height="11" rx="2"/>
+                        <rect x="21" y="36" width="6" height="11" rx="2"/>
+                        <rect x="1" y="21" width="11" height="6" rx="2"/>
+                        <rect x="36" y="21" width="11" height="6" rx="2"/>
+                    </g>
+                </g>
+                <circle cx="24" cy="24" r="15" fill="currentColor"/>
+                <circle cx="24" cy="24" r="9.5" fill="var(--brand-900)"/>
+                <circle cx="24" cy="24" r="3.2" fill="currentColor"/>
+            </svg>
+            <span class="logo-text">
+                NHOM05 Cinema
+                <small>Dat ve xem phim</small>
+            </span>
+        </a>
         <nav>
             <a th:href="@{/}">Trang chu</a>
             <a th:href="@{/movies}">Phim</a>

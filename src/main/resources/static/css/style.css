@@ -1,144 +1,571 @@
+/* =====================================================================
+   Cinema Booking - NHOM05 - Design system dung chung
+   Phu trach: Tho (Module 4). Xem docs/LO_TRINH_GIAO_DIEN.md
+
+   Tong mau lay theo logo truong: xanh duong + trang, them vang ho phach
+   cho ra chat rap chieu phim.
+
+   QUY UOC CHO CA NHOM:
+   - Chi dung bien mau o :root, KHONG go thang ma mau (#1b5fd0...) vao class.
+   - Them class MOI thi noi vao CUOI file, khong sua class nguoi khac dang dung.
+   - Moi animation deu nam trong bien --motion-* de tat duoc mot luot
+     (xem khoi prefers-reduced-motion o cuoi file).
+   ===================================================================== */
+
 :root {
-    --primary: #0d6efd;
-    --dark-bg: #1a1a2e;
-    --text: #222;
-    --muted: #666;
+    /* ---- Mau thuong hieu (theo logo truong) ---- */
+    --brand-900: #0a1a3c;
+    --brand-700: #123a7a;
+    --brand-500: #1b5fd0;
+    --brand-300: #7aa9f0;
+    --brand-050: #eaf1fd;
+
+    /* ---- Mau diem nhan (chat rap phim) ---- */
+    --accent-500: #f0a828;
+    --accent-050: #fff5e3;
+
+    /* ---- Mau trang thai ---- */
+    --ok-500: #1c8a52;
+    --ok-050: #e7f7ed;
+    --danger-500: #c8362f;
+    --danger-050: #fdeaea;
+
+    /* ---- Mau nen & chu ---- */
+    --bg: #f5f7fb;
+    --surface: #ffffff;
+    --border: #dfe4ee;
+    --text: #1a2233;
+    --text-muted: #5c6681;
+    --text-on-dark: #ffffff;
+    --text-muted-on-dark: #b7c2da;
+
+    /* ---- Ghe (Module 2 dua vao cac bien nay) ---- */
+    --seat-available: var(--surface);
+    --seat-held: var(--accent-500);
+    --seat-booked: #94a0b8;
+    --seat-selected: var(--brand-500);
+
+    /* ---- Khoang cach ---- */
+    --space-1: 4px;
+    --space-2: 8px;
+    --space-3: 12px;
+    --space-4: 16px;
+    --space-5: 24px;
+    --space-6: 32px;
+    --space-7: 48px;
+    --space-8: 72px;
+
+    /* ---- Bo goc & do bong ---- */
+    --radius-sm: 6px;
+    --radius-md: 10px;
+    --radius-lg: 16px;
+    --radius-pill: 999px;
+    --shadow-sm: 0 1px 2px rgba(10, 26, 60, .06), 0 1px 3px rgba(10, 26, 60, .08);
+    --shadow-md: 0 4px 12px rgba(10, 26, 60, .10);
+    --shadow-lg: 0 12px 32px rgba(10, 26, 60, .16);
+
+    /* ---- Chu ---- */
+    --font-body: "Segoe UI", system-ui, -apple-system, Arial, sans-serif;
+    --text-sm: .875rem;
+    --text-base: 1rem;
+    --text-lg: 1.125rem;
+    --text-xl: 1.5rem;
+    --text-2xl: 2rem;
+    --text-3xl: 2.75rem;
+
+    --container-max: 1100px;
+
+    /* ---- Chuyen dong (dat ve 0s trong prefers-reduced-motion) ---- */
+    --motion-fast: .15s;
+    --motion-base: .25s;
+    --motion-slow: .4s;
+    --ease-out: cubic-bezier(.22, .61, .36, 1);
 }
 
 * { box-sizing: border-box; }
 
 body {
     margin: 0;
-    font-family: "Segoe UI", Arial, sans-serif;
+    font-family: var(--font-body);
+    font-size: var(--text-base);
+    line-height: 1.6;
     color: var(--text);
-    background: #f7f7fb;
+    background: var(--bg);
+}
+
+h1, h2, h3 { line-height: 1.25; margin: 0 0 var(--space-3); }
+h1 { font-size: var(--text-2xl); }
+h2 { font-size: var(--text-xl); }
+p { margin: 0 0 var(--space-4); }
+
+a { color: var(--brand-500); }
+
+/* Vien focus - phai thay ro khi di chuyen bang phim Tab */
+:focus-visible {
+    outline: 3px solid var(--brand-500);
+    outline-offset: 2px;
+    border-radius: var(--radius-sm);
 }
 
 .container {
-    max-width: 1100px;
+    max-width: var(--container-max);
     margin: 0 auto;
-    padding: 0 16px;
+    padding: 0 var(--space-4);
 }
 
+/* =====================================================================
+   Header
+   ===================================================================== */
 .site-header {
-    background: var(--dark-bg);
-    color: #fff;
+    background: linear-gradient(135deg, var(--brand-900) 0%, var(--brand-700) 100%);
+    color: var(--text-on-dark);
+    box-shadow: var(--shadow-md);
+    position: sticky;
+    top: 0;
+    z-index: 50;
 }
 
 .header-inner {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 14px 16px;
+    gap: var(--space-4);
+    padding: var(--space-3) var(--space-4);
+    flex-wrap: wrap;
 }
 
 .logo {
-    color: #fff;
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-2);
+    color: var(--text-on-dark);
     font-weight: 700;
+    font-size: var(--text-lg);
     text-decoration: none;
-    font-size: 1.2rem;
+    letter-spacing: .2px;
+}
+
+.logo-mark {
+    width: 34px;
+    height: 34px;
+    flex: none;
+    color: var(--accent-500);
+    transition: transform var(--motion-slow) var(--ease-out);
+}
+
+.logo:hover .logo-mark { transform: rotate(60deg); }
+
+.logo-text small {
+    display: block;
+    font-size: .7rem;
+    font-weight: 500;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: var(--text-muted-on-dark);
+}
+
+.site-header nav {
+    display: flex;
+    align-items: center;
+    gap: var(--space-5);
+    flex-wrap: wrap;
 }
 
 .site-header nav a {
-    color: #ddd;
+    position: relative;
+    color: var(--text-muted-on-dark);
     text-decoration: none;
-    margin-left: 20px;
+    padding: var(--space-1) 0;
+    transition: color var(--motion-fast) var(--ease-out);
 }
 
-.site-header nav a:hover {
-    color: var(--primary);
+.site-header nav a::after {
+    content: "";
+    position: absolute;
+    left: 0;
+    bottom: -2px;
+    width: 100%;
+    height: 2px;
+    background: var(--accent-500);
+    border-radius: var(--radius-pill);
+    transform: scaleX(0);
+    transform-origin: left;
+    transition: transform var(--motion-base) var(--ease-out);
 }
 
+.site-header nav a:hover,
+.site-header nav a:focus-visible { color: var(--text-on-dark); }
+.site-header nav a:hover::after { transform: scaleX(1); }
+
+/* =====================================================================
+   Main & Footer
+   ===================================================================== */
 main.container {
     min-height: 60vh;
-    padding-top: 24px;
-    padding-bottom: 24px;
+    padding-top: var(--space-6);
+    padding-bottom: var(--space-6);
 }
 
 .site-footer {
-    background: var(--dark-bg);
-    color: #aaa;
-    padding: 16px 0;
-    margin-top: 40px;
-    font-size: 0.9rem;
+    background: var(--brand-900);
+    color: var(--text-muted-on-dark);
+    padding: var(--space-5) 0;
+    margin-top: var(--space-8);
+    font-size: var(--text-sm);
     text-align: center;
+    border-top: 3px solid var(--accent-500);
 }
 
-/* Seat map (dung chung cho module dat ve) */
-.seat-map {
-    display: grid;
-    gap: 8px;
+/* =====================================================================
+   Hero (trang chu)
+   ===================================================================== */
+.hero {
+    position: relative;
+    overflow: hidden;
+    border-radius: var(--radius-lg);
+    padding: var(--space-8) var(--space-5);
+    margin-bottom: var(--space-6);
+    background: linear-gradient(135deg, var(--brand-900) 0%, var(--brand-700) 55%, #1c4fa0 100%);
+    color: var(--text-on-dark);
+    box-shadow: var(--shadow-lg);
 }
-.seat {
-    width: 32px;
-    height: 32px;
-    border-radius: 4px;
-    border: 1px solid #ccc;
+
+/* Vet sang chay ngang cho giong anh den chieu trong rap */
+.hero::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(circle at 78% 18%, rgba(240, 168, 40, .30), transparent 45%);
+    pointer-events: none;
+}
+
+.hero > * { position: relative; z-index: 1; }
+
+.hero h1 {
+    font-size: var(--text-3xl);
+    max-width: 22ch;
+}
+
+.hero p {
+    color: var(--text-muted-on-dark);
+    max-width: 60ch;
+    font-size: var(--text-lg);
+}
+
+.hero-actions {
     display: flex;
+    gap: var(--space-3);
+    flex-wrap: wrap;
+    margin-top: var(--space-5);
+}
+
+/* =====================================================================
+   Nut
+   ===================================================================== */
+.btn {
+    display: inline-flex;
     align-items: center;
     justify-content: center;
-    font-size: 0.75rem;
-    cursor: pointer;
-}
-.seat.available { background: #fff; }
-.seat.held { background: #ffe08a; cursor: not-allowed; }
-.seat.booked { background: #ccc; cursor: not-allowed; }
-.seat.selected { background: var(--primary); color: #fff; }
-
-/* ==========================================================================
-   Thong bao & trang loi (dung chung - Tho quan ly, xem fragments/alert.html)
-   ========================================================================== */
-.alert {
-    padding: 12px 16px;
-    border-radius: 6px;
-    margin-bottom: 16px;
+    gap: var(--space-2);
+    padding: var(--space-3) var(--space-5);
     border: 1px solid transparent;
-    font-size: 0.95rem;
+    border-radius: var(--radius-md);
+    background: var(--brand-500);
+    color: #fff;
+    font: inherit;
+    font-weight: 600;
+    text-decoration: none;
+    cursor: pointer;
+    transition: transform var(--motion-fast) var(--ease-out),
+                box-shadow var(--motion-fast) var(--ease-out),
+                background-color var(--motion-fast) var(--ease-out);
 }
+
+.btn:hover {
+    background: var(--brand-700);
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-md);
+}
+
+.btn:active { transform: translateY(0); }
+
+.btn-accent { background: var(--accent-500); color: var(--brand-900); }
+.btn-accent:hover { background: #e09a1c; }
+
+.btn-ghost {
+    background: transparent;
+    border-color: currentColor;
+    color: inherit;
+}
+.btn-ghost:hover { background: rgba(255, 255, 255, .12); }
+
+/* =====================================================================
+   The (card)
+   ===================================================================== */
+.card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    padding: var(--space-5);
+    box-shadow: var(--shadow-sm);
+    transition: transform var(--motion-base) var(--ease-out),
+                box-shadow var(--motion-base) var(--ease-out);
+}
+
+.card-hover:hover {
+    transform: translateY(-4px);
+    box-shadow: var(--shadow-lg);
+}
+
+.card-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
+    gap: var(--space-5);
+}
+
+/* =====================================================================
+   Thong bao (fragments/alert.html)
+   ===================================================================== */
+.alert {
+    padding: var(--space-3) var(--space-4);
+    border-radius: var(--radius-md);
+    margin-bottom: var(--space-4);
+    border: 1px solid transparent;
+    border-left-width: 4px;
+    font-size: .95rem;
+    animation: slide-down var(--motion-base) var(--ease-out) both;
+}
+
 .alert-success {
-    background: #e7f7ed;
-    border-color: #a6ddb9;
+    background: var(--ok-050);
+    border-color: var(--ok-500);
     color: #14663a;
 }
+
 .alert-error {
-    background: #fdeaea;
-    border-color: #f0b4b4;
+    background: var(--danger-050);
+    border-color: var(--danger-500);
     color: #8d1c1c;
 }
 
+/* =====================================================================
+   Trang loi (error.html)
+   ===================================================================== */
 .error-page {
     text-align: center;
-    padding: 48px 16px;
-}
-.error-code {
-    font-size: 4rem;
-    font-weight: 700;
-    color: var(--primary);
-    margin: 0;
-    line-height: 1;
-}
-.error-detail {
-    color: var(--muted);
-    max-width: 520px;
-    margin: 8px auto 16px;
-}
-.error-path code {
-    background: #ececf3;
-    padding: 2px 6px;
-    border-radius: 4px;
-    font-size: 0.9rem;
+    padding: var(--space-8) var(--space-4);
 }
 
-.btn {
-    display: inline-block;
-    padding: 10px 20px;
-    border-radius: 6px;
-    background: var(--primary);
-    color: #fff;
-    text-decoration: none;
-    border: none;
-    cursor: pointer;
+.error-code {
+    font-size: 5rem;
+    font-weight: 800;
+    line-height: 1;
+    margin: 0;
+    background: linear-gradient(135deg, var(--brand-500), var(--accent-500));
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
 }
-.btn:hover {
-    filter: brightness(0.92);
+
+.error-detail {
+    color: var(--text-muted);
+    max-width: 52ch;
+    margin: var(--space-2) auto var(--space-5);
+}
+
+.error-path code {
+    background: var(--brand-050);
+    color: var(--brand-700);
+    padding: 2px var(--space-2);
+    border-radius: var(--radius-sm);
+    font-size: var(--text-sm);
+}
+
+/* =====================================================================
+   So do ghe (Module 2 - Thang)
+   ===================================================================== */
+.seat-map {
+    display: grid;
+    gap: var(--space-2);
+    justify-content: center;
+}
+
+.seat {
+    width: 34px;
+    height: 34px;
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--border);
+    background: var(--seat-available);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: .75rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: transform var(--motion-fast) var(--ease-out),
+                background-color var(--motion-fast) var(--ease-out);
+}
+
+.seat:hover { transform: translateY(-2px); }
+
+.seat.available { background: var(--seat-available); }
+
+.seat.held {
+    background: var(--seat-held);
+    color: var(--brand-900);
+    border-color: var(--seat-held);
+    cursor: not-allowed;
+}
+
+.seat.booked {
+    background: var(--seat-booked);
+    color: #fff;
+    border-color: var(--seat-booked);
+    cursor: not-allowed;
+}
+
+.seat.held:hover,
+.seat.booked:hover { transform: none; }
+
+.seat.selected {
+    background: var(--seat-selected);
+    border-color: var(--seat-selected);
+    color: #fff;
+    animation: seat-pop var(--motion-fast) var(--ease-out);
+}
+
+.seat-legend {
+    display: flex;
+    gap: var(--space-5);
+    flex-wrap: wrap;
+    justify-content: center;
+    margin-top: var(--space-5);
+    font-size: var(--text-sm);
+    color: var(--text-muted);
+}
+
+.seat-legend span {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-2);
+}
+
+.seat-legend i {
+    width: 16px;
+    height: 16px;
+    border-radius: 4px;
+    border: 1px solid var(--border);
+}
+
+/* =====================================================================
+   Animation
+   ===================================================================== */
+@keyframes fade-up {
+    from { opacity: 0; transform: translateY(16px); }
+    to   { opacity: 1; transform: none; }
+}
+
+@keyframes slide-down {
+    from { opacity: 0; transform: translateY(-10px); }
+    to   { opacity: 1; transform: none; }
+}
+
+@keyframes seat-pop {
+    0%   { transform: scale(1); }
+    60%  { transform: scale(1.15); }
+    100% { transform: scale(1); }
+}
+
+@keyframes gear-spin {
+    to { transform: rotate(360deg); }
+}
+
+/* Hieu ung vao trang - them class nay cho khoi noi dung chinh */
+.animate-in {
+    animation: fade-up var(--motion-slow) var(--ease-out) both;
+}
+
+/* Cho vai phan tu hien lan luot thay vi hien cung mot luc */
+.animate-in-delay-1 { animation-delay: .08s; }
+.animate-in-delay-2 { animation-delay: .16s; }
+.animate-in-delay-3 { animation-delay: .24s; }
+
+/* Vong xoay "dang tai" - hinh banh rang, nhac lai logo truong */
+.spinner {
+    display: inline-block;
+    width: 22px;
+    height: 22px;
+    color: var(--brand-500);
+    animation: gear-spin 1.6s linear infinite;
+}
+
+/* =====================================================================
+   Man hinh nho
+   ===================================================================== */
+@media (max-width: 640px) {
+    :root {
+        --text-3xl: 2rem;
+        --text-2xl: 1.5rem;
+    }
+
+    .header-inner {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: var(--space-3);
+    }
+
+    .site-header nav { gap: var(--space-4); }
+
+    .hero { padding: var(--space-6) var(--space-4); }
+
+    /* Khong thu nho ghe them nua - de nho qua se bam khong trung.
+       Thay vao do cho cuon ngang trong khung rieng. */
+    .seat-map-scroll {
+        overflow-x: auto;
+        padding-bottom: var(--space-3);
+    }
+}
+
+/* =====================================================================
+   Che do toi cua he dieu hanh
+   ===================================================================== */
+@media (prefers-color-scheme: dark) {
+    :root {
+        --bg: #0d1220;
+        --surface: #161d2f;
+        --border: #2a3450;
+        --text: #e8ecf5;
+        --text-muted: #9aa6c2;
+        --brand-050: #16233f;
+        --ok-050: #12291e;
+        --danger-050: #2c1618;
+        --seat-available: #1f2840;
+    }
+
+    .alert-success { color: #7fe0a8; }
+    .alert-error { color: #ff9d97; }
+}
+
+/* =====================================================================
+   Ton trong cai dat giam chuyen dong cua nguoi dung.
+   Ai bat "reduce motion" trong he dieu hanh (vi say chuyen dong, roi loan
+   tien dinh...) thi trang phai dung yen - day cung la muc cham kha nang
+   tiep can. Dat thoi luong ve gan 0 thay vi xoa han de animation van
+   chay het va phan tu khong bi ket o trang thai opacity: 0.
+   ===================================================================== */
+@media (prefers-reduced-motion: reduce) {
+    :root {
+        --motion-fast: .01ms;
+        --motion-base: .01ms;
+        --motion-slow: .01ms;
+    }
+
+    *,
+    *::before,
+    *::after {
+        animation-duration: .01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: .01ms !important;
+        scroll-behavior: auto !important;
+    }
 }
