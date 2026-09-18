@@ -44,10 +44,10 @@ class GlobalExceptionHandlerIntegrationTest extends IntegrationTestBase {
                 .andExpect(status().isConflict())
                 .andExpect(view().name("error"))
                 .andExpect(model().attribute("errorCode", 409))
-                .andExpect(model().attribute("errorMessage", containsString("chon ghe khac")))
+                .andExpect(model().attribute("errorMessage", containsString("chọn ghế khác")))
                 // thong bao phai that su duoc in ra HTML qua fragment alert trong layout chung
                 .andExpect(content().string(containsString("alert-error")))
-                .andExpect(content().string(containsString("chon ghe khac")));
+                .andExpect(content().string(containsString("chọn ghế khác")));
     }
 
     @Test
@@ -57,7 +57,7 @@ class GlobalExceptionHandlerIntegrationTest extends IntegrationTestBase {
                         .header("X-Requested-With", "XMLHttpRequest"))
                 .andExpect(status().isConflict())
                 .andExpect(jsonPath("$.success").value(false))
-                .andExpect(jsonPath("$.message").value(containsString("chon ghe khac")));
+                .andExpect(jsonPath("$.message").value(containsString("chọn ghế khác")));
     }
 
     @Test
@@ -66,7 +66,7 @@ class GlobalExceptionHandlerIntegrationTest extends IntegrationTestBase {
         mockMvc.perform(get("/test-loi/khong-tim-thay"))
                 .andExpect(status().isNotFound())
                 .andExpect(view().name("error"))
-                .andExpect(model().attribute("errorMessage", containsString("Khong tim thay phim")));
+                .andExpect(model().attribute("errorMessage", containsString("Không tìm thấy phim")));
     }
 
     @Test
@@ -104,7 +104,7 @@ class GlobalExceptionHandlerIntegrationTest extends IntegrationTestBase {
 
         @GetMapping("/dat-ve-khong-hop-le")
         String throwInvalidBooking() {
-            throw new InvalidBookingException("Suat chieu nay da bat dau, ban khong the dat ve nua.");
+            throw new InvalidBookingException("Suất chiếu này đã bắt đầu, bạn không thể đặt vé nữa.");
         }
     }
 }
