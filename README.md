@@ -1,5 +1,7 @@
 # CNPM_PROJECT_CK_NHOM5 - He thong dat ve xem phim
 
+[![Kiem thu](https://github.com/tho03072006-bot/CNPM_PROJECT_CK_NHOM5/actions/workflows/ci.yml/badge.svg?branch=develop)](https://github.com/tho03072006-bot/CNPM_PROJECT_CK_NHOM5/actions/workflows/ci.yml)
+
 Do an cuoi ky mon Cong nghe phan mem (CNPM) - Nhom 05.
 
 ## Thanh vien & phan cong
@@ -21,6 +23,36 @@ Chi tiet cong viec tung nguoi: xem tai lieu ke hoach du an hoac file `docs/PHAN_
 - SQL Server (mssql-jdbc 13.6.0.jre11)
 - Spring Mail (gui email xac nhan ve)
 - Maven
+
+## Moi truong phat trien - 4 nguoi cai giong nhau
+
+Ca nhom dung DUNG cac phien ban duoi day. Lech phien ban la nguon goc cua kieu loi
+"may tao chay duoc ma may may khong chay duoc", rat ton thoi gian do.
+
+| Thanh phan | Phien ban chot | Ghi chu |
+|---|---|---|
+| JDK | **21** (Temurin 21.0.12) | `mvn -v` phai bao Java version 21.x. Bao 1.8 hay 17 la sai |
+| Maven | 3.9.x | Ban da thu tren 3.9.16 |
+| Spring Boot | 3.5.16 | Khoa trong `pom.xml`, khong tu y nang |
+| Hibernate ORM | 6.6.53.Final | Di kem Spring Boot, khong khai bao rieng |
+| Tomcat nhung | 10.1.55 | Di kem Spring Boot |
+| thymeleaf-layout-dialect | 4.0.1 | Khoa trong `pom.xml` |
+| mssql-jdbc | 13.6.0.jre11 | Khoa trong `pom.xml` |
+| SQL Server | 2022 Express tro len | Ban da thu: Microsoft SQL Server 2022 (16.0.1000.6) Express |
+| Cong ung dung | 8082 | Doi trong `application.properties` neu may ban da dung cong nay |
+
+**Khong ai duoc tu nang phien ban trong `pom.xml`.** Can nang thi bao ca nhom truoc,
+vi nang mot cai keo theo ca chuoi phu thuoc va co the lam do test cua nguoi khac.
+
+**Truoc khi bat dau code, kiem tra nhanh 3 dong nay:**
+
+```
+mvn -v                 -> Apache Maven 3.9.x, Java version: 21.x
+sqlcmd -S localhost,1433 -U sa -C -Q "SELECT @@VERSION"   -> ket noi duoc SQL Server
+mvn test               -> BUILD SUCCESS
+```
+
+Ba dong deu xanh thi moi truong cua ban giong ca nhom, bat dau lam duoc.
 
 ## Cau truc thu muc
 
