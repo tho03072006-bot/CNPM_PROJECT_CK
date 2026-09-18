@@ -1,17 +1,17 @@
 package edu.hcmute.cnpm.cinema.exception;
 
 /**
- * Nem ra khi yeu cau dat ve khong hop le ve mat nghiep vu, vi du:
- *   - suat chieu da bat dau hoac da chieu xong;
- *   - ve da het han giu (qua {@code Constants.SEAT_HOLD_MINUTES} phut);
- *   - dat qua so ghe toi da cho 1 lan;
- *   - thanh toan cho ve khong con o trang thai HELD;
- *   - ghe duoc chon khong thuoc phong chieu cua suat chieu do.
+ * Ném ra khi yêu cầu đặt vé không hợp lệ về mặt nghiệp vụ, ví dụ:
+ *   - suất chiếu đã bắt đầu hoặc đã chiếu xong;
+ *   - vé đã hết hạn giữ (quá {@code Constants.SEAT_HOLD_MINUTES} phút);
+ *   - đặt quá số ghế tối đa cho 1 lần;
+ *   - thanh toán cho vé không còn ở trạng thái HELD;
+ *   - ghế được chọn không thuộc phòng chiếu của suất chiếu đó.
  *
- * Message truyen vao phai noi RO ly do cho nguoi dung biet phai lam gi tiep,
- * vi du: "Suat chieu nay da bat dau, ban khong the dat ve nua."
+ * Message truyền vào phải nói RÕ lý do cho người dùng biết phải làm gì tiếp,
+ * ví dụ: "Suất chiếu này đã bắt đầu, bạn không thể đặt vé nữa."
  *
- * Phu trach: Tho (Module 4) - nguoi dung chinh: Thang (Module 2), Thanh (Module 3).
+ * Phụ trách: Thọ (Module 4) - người dùng chính: Thắng (Module 2), Thanh (Module 3).
  */
 public class InvalidBookingException extends BusinessException {
 

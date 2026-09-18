@@ -1,20 +1,20 @@
 package edu.hcmute.cnpm.cinema.exception;
 
 /**
- * Lop CHA cho moi loi NGHIEP VU cua he thong (ghe da co nguoi giu, khong tim thay phim,
- * suat chieu da bat dau...).
+ * Lớp CHA cho mọi lỗi NGHIỆP VỤ của hệ thống (ghế đã có người giữ, không tìm thấy phim,
+ * suất chiếu đã bắt đầu...).
  *
- * Nguyen tac dung:
- *   - Tang Service nem exception loai nay khi nghiep vu khong cho phep tiep tuc.
- *   - Message truyen vao phai la cau NGUOI DUNG DOC HIEU, vi no se duoc hien thi thang
- *     ra man hinh. Khong nhet ten class hay stack trace vao message.
- *   - Exception nay CO Y KHONG mang ma HTTP: tang Service khong can biet gi ve web.
- *     Viec doi sang ma HTTP (404 / 409 / 400) la cua {@link GlobalExceptionHandler}.
+ * Nguyên tắc dùng:
+ *   - Tầng Service ném exception loại này khi nghiệp vụ không cho phép tiếp tục.
+ *   - Message truyền vào phải là câu NGƯỜI DÙNG ĐỌC HIỂU, vì nó sẽ được hiển thị thẳng
+ *     ra màn hình. Không nhét tên class hay stack trace vào message.
+ *   - Exception này CỐ Ý KHÔNG mang mã HTTP: tầng Service không cần biết gì về web.
+ *     Việc đổi sang mã HTTP (404 / 409 / 400) là của {@link GlobalExceptionHandler}.
  *
- * La RuntimeException (unchecked) nen khong bat buoc khai bao throws - tranh cho code
- * cua 4 nguoi day try/catch lung tung.
+ * Là RuntimeException (unchecked) nên không bắt buộc khai báo throws - tránh cho code
+ * của 4 người đầy try/catch lung tung.
  *
- * Phu trach: Tho (Module 4 - Kien truc dung chung).
+ * Phụ trách: Thọ (Module 4 - Kiến trúc dùng chung).
  */
 public class BusinessException extends RuntimeException {
 

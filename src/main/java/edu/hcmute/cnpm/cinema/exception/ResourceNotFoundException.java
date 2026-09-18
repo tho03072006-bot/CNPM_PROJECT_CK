@@ -1,29 +1,29 @@
 package edu.hcmute.cnpm.cinema.exception;
 
 /**
- * Nem ra khi khong tim thay du lieu theo ma (id) - phim, phong chieu, suat chieu, ghe, ve...
+ * Ném ra khi không tìm thấy dữ liệu theo mã (id) - phim, phòng chiếu, suất chiếu, ghế, vé...
  *
- * Cach dung goi y trong Service:
+ * Cách dùng gợi ý trong Service:
  * <pre>
  *   Movie movie = movieRepository.findById(movieId)
  *           .orElseThrow(() -&gt; new ResourceNotFoundException("phim", movieId));
  * </pre>
  *
- * {@link GlobalExceptionHandler} se doi loi nay thanh trang 404.
+ * {@link GlobalExceptionHandler} sẽ đổi lỗi này thành trang 404.
  *
- * Phu trach: Tho (Module 4 - Kien truc dung chung).
+ * Phụ trách: Thọ (Module 4 - Kiến trúc dùng chung).
  */
 public class ResourceNotFoundException extends BusinessException {
 
     private static final long serialVersionUID = 1L;
 
     /**
-     * @param resourceName ten du lieu bang tieng Viet de hien thi cho nguoi dung,
-     *                     vi du "phim", "suat chieu", "ghe"
-     * @param resourceId   ma cua du lieu khong tim thay
+     * @param resourceName tên dữ liệu bằng tiếng Việt để hiển thị cho người dùng,
+     *                     ví dụ "phim", "suất chiếu", "ghế"
+     * @param resourceId   mã của dữ liệu không tìm thấy
      */
     public ResourceNotFoundException(String resourceName, Object resourceId) {
-        super("Khong tim thay " + resourceName + " (ma: " + resourceId + ").");
+        super("Không tìm thấy " + resourceName + " (mã: " + resourceId + ").");
     }
 
     public ResourceNotFoundException(String message) {
