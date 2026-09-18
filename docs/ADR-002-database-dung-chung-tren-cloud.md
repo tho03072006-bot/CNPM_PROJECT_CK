@@ -1,178 +1,205 @@
-# ADR-002: Database dung chung tren cloud cho ca nhom
+# ADR-002: Database dùng chung trên cloud cho cả nhóm
 
-- **Trang thai:** DA CHOT - **da doi nha cung cap ngay 18/09/2026, xem muc 2c**
-- **Ngay:** 17/09/2026
-- **Nguoi de xuat:** Tho (Module 4 - Kien truc dung chung)
-- **Lien quan:** ADR-001 (chong dat trung ghe bang UNIQUE (showtime_id, seat_id))
+- **Trạng thái:** ĐÃ CHỐT và **đã triển khai xong** (18/09/2026)
+- **Ngày đề xuất:** 17/09/2026 · **Đổi nhà cung cấp:** 18/09/2026 (xem mục 2c)
+- **Người đề xuất:** Thọ (Module 4 — Kiến trúc dùng chung)
+- **Liên quan:** ADR-001 (chống đặt trùng ghế bằng UNIQUE (showtime_id, seat_id))
 
 ---
 
-## 1. Van de
+## 1. Vấn đề
 
-Hien tai moi thanh vien chay SQL Server rieng tren may minh. Hau qua:
+Ban đầu mỗi thành viên chạy SQL Server riêng trên máy mình. Hậu quả:
 
-- Du lieu 4 may khac nhau: Tai them phim moi, Thang khong thay phim do de test seat-map.
-- Khong ai chac schema cua minh con giong schema cua nguoi khac -> den luc merge moi vo ra.
-- Luc demo cho thay phai chay tren 1 may cu the, may do hong la hong ca buoi demo.
-- Bao cao do an kho chung minh "he thong nhieu nguoi dung cung luc" neu chi co 1 may.
+- Dữ liệu 4 máy khác nhau: Tài thêm phim mới, Thắng không thấy phim đó để test seat-map.
+- Không ai chắc schema của mình còn giống schema người khác — đến lúc merge mới vỡ ra.
+- Lúc demo cho thầy phải chạy trên một máy cụ thể, máy đó hỏng là hỏng cả buổi demo.
+- Báo cáo đồ án khó chứng minh "hệ thống nhiều người dùng cùng lúc" nếu chỉ có một máy.
 
-Can 1 database dung chung, mien phi (sinh vien khong co the tin dung de tra phi).
+Cần một database dùng chung, miễn phí (sinh viên không có thẻ tín dụng để trả phí).
 
-## 2. Cac phuong an da xet
+## 2. Các phương án đã xét
 
-| # | Phuong an | Uu diem | Nhuoc diem |
+| # | Phương án | Ưu điểm | Nhược điểm |
 |---|---|---|---|
-| 1 | **Azure SQL Database - goi free** | Van la SQL Server that, khong phai sua 1 dong code nao, khong doi driver `mssql-jdbc`, co ban mien phi vinh vien | Can tai khoan Azure; goi free co han muc thang; database tu tam dung khi het han muc |
-| 2 | Moi nguoi giu local + dung chung file `seed-data.sql` | Don gian nhat, khong can mang | Van khong phai du lieu chung that; van lech nhau khi ai do sua tay |
-| 3 | Doi sang PostgreSQL cloud (Neon / Supabase free) | Han muc free rong rai hon Azure | **Phai doi driver, doi dialect, doi kieu du lieu `NVARCHAR`/`DATETIME2`, sua lai ca `schema.sql`** - qua ton thoi gian voi do an 4 tuan, va de bai/nhom da thong nhat SQL Server |
-| 4 | Hosting free co kem MSSQL (somee.com, MonsterASP...) | Dang ky nhanh | Khong on dinh, hay gioi han so ket noi dong thoi - dung chet dung luc demo; nhieu noi chan ket noi tu ngoai |
+| 1 | **Azure SQL Database — gói free** | Vẫn là SQL Server thật, không phải sửa một dòng code nào | Cần tài khoản Azure; gói free có hạn mức tháng |
+| 2 | Mỗi người giữ local + dùng chung `seed-data.sql` | Đơn giản nhất, không cần mạng | Vẫn không phải dữ liệu chung thật; vẫn lệch nhau khi ai đó sửa tay |
+| 3 | Đổi sang PostgreSQL cloud (Neon / Supabase) | Hạn mức free rộng rãi hơn | **Phải đổi driver, dialect, kiểu dữ liệu, viết lại cả `schema.sql`** — quá tốn với đồ án 4 tuần |
+| 4 | Hosting free có kèm MSSQL (Somee, MonsterASP...) | Đăng ký nhanh, không cần thẻ | Không có cam kết uptime, có thể giới hạn số kết nối đồng thời |
 
-## 2b. So sanh dung luong mien phi (tieu chi Tho yeu cau: free + dung luong du xai)
+## 2b. So sánh dung lượng miễn phí (khảo sát 09/2026)
 
-Da ra soat lai cac goi free dang co (thang 09/2026):
-
-| Dich vu | Loai database | Dung luong free | Dung duoc cho du an nay? |
+| Dịch vụ | Loại database | Dung lượng free | Dùng được cho dự án này? |
 |---|---|---|---|
-| **Azure SQL Database (goi free)** | **SQL Server** | **32 GB / database, toi da 10 database** | **Co - va la goi free dung luong LON NHAT trong danh sach** |
-| CockroachDB Serverless | PostgreSQL-compatible | 10 GiB | Duoc ve dung luong nhung phai doi toan bo sang PostgreSQL |
-| Aiven | PostgreSQL / MySQL | 1 GB (da bi cat tu 5 GB xuong 1 GB) | Phai doi sang PostgreSQL |
-| Neon | PostgreSQL | 0.5 GB / project | Phai doi sang PostgreSQL |
-| Supabase | PostgreSQL | 500 MB | Phai doi sang PostgreSQL |
+| Azure SQL Database (gói free) | SQL Server | 32 GB / database, tối đa 10 database | Được — dung lượng lớn nhất trong danh sách |
+| CockroachDB Serverless | PostgreSQL-compatible | 10 GiB | Được về dung lượng nhưng phải đổi sang PostgreSQL |
+| Aiven | PostgreSQL / MySQL | 1 GB (đã bị cắt từ 5 GB xuống) | Phải đổi sang PostgreSQL |
+| Neon | PostgreSQL | 0,5 GB / project | Phải đổi sang PostgreSQL |
+| Supabase | PostgreSQL | 500 MB | Phải đổi sang PostgreSQL |
 
-**Ket luan luc do (17/09):** Azure SQL free vua cho dung luong cao nhat (32 GB), vua **khong
-phai doi driver hay schema**. Cac lua chon PostgreSQL deu nho hon VA bat doi cong nghe.
+**Kết luận lúc đó (17/09):** Azure SQL free vừa cho dung lượng cao nhất, vừa không phải đổi
+driver hay schema.
 
-> **Ket luan nay da bi thay the ngay 18/09** vi Azure tu choi cho dang ky - xem muc 2c.
-> Phan so sanh ben tren van giu lai de sau nay con biet da can nhac nhung gi.
+> **Kết luận này đã bị thay thế ngày 18/09** vì Azure từ chối cho đăng ký — xem mục 2c.
+> Phần so sánh bên trên vẫn giữ lại để sau này còn biết nhóm đã cân nhắc những gì.
 
-Noi thang cho de hinh dung: database cua do an nay (vai chuc phim, vai phong, vai nghin ve)
-**chua toi 100 MB**. 32 GB la thua rat nhieu lan - dung luong khong phai thu can lo.
-Thu that su gioi han la **thoi gian chay (compute)**: 100.000 vCore-giay/thang, o muc 0.5 vCore
-tuong duong khoang **55 gio database thuc su hoat dong moi thang** cho ca 4 nguoi. Chi can nho
-dong SSMS khi khong dung (xem muc 4) la du xai thoai mai trong 4 tuan lam do an.
+Nói thẳng cho dễ hình dung: database của đồ án này (vài chục phim, vài phòng, vài nghìn vé)
+**chưa tới 100 MB**. Dung lượng chưa bao giờ là thứ đáng lo — thứ đáng lo là độ ổn định và
+việc có phải đổi công nghệ hay không.
 
-## 2c. Doi nha cung cap - Azure khong dang ky duoc (18/09/2026)
+## 2c. Đổi nhà cung cấp — Azure không đăng ký được (18/09/2026)
 
-Ngay 18/09 Tho dang ky Azure thi bi tu choi:
+Ngày 18/09 Thọ đăng ký Azure thì bị từ chối:
 
 > You're not eligible for an Azure free account
 
-Nguyen nhan: loi nay noi ve **Azure free account** (goi dung thu 200 USD), thuong xay ra khi
-email truong chua nam trong danh sach truong Microsoft cong nhan, hoac khu vuc Viet Nam chi
-duoc xep vao goi **Azure for Students Starter** - ma goi Starter thi KHONG dung duoc uu dai
+Nguyên nhân: lỗi này nói về **Azure free account** (gói dùng thử 200 USD), thường xảy ra khi
+email trường chưa nằm trong danh sách trường Microsoft công nhận, hoặc khu vực Việt Nam chỉ
+được xếp vào gói **Azure for Students Starter** — mà gói Starter thì không dùng được ưu đãi
 SQL Database free.
 
-Co mot duong vong: goi SQL Database free van chay tren moi loai subscription, ke ca
-Pay-As-You-Go. Nhung Pay-As-You-Go bat buoc gan the tin dung va chi can lo tay tao them tai
-nguyen khac la bi tinh tien that. **Da loai phuong an nay** - do an sinh vien khong dang mang
-rui ro do.
+Có một đường vòng: gói SQL Database free vẫn chạy trên mọi loại subscription, kể cả
+Pay-As-You-Go. Nhưng Pay-As-You-Go bắt buộc gắn thẻ tín dụng, chỉ cần lỡ tay tạo thêm tài
+nguyên khác là bị tính tiền thật. **Đã loại phương án này** — đồ án sinh viên không đáng mang
+rủi ro đó.
 
-Luc dang ky Azure co mot giao dich **1 USD tai Microsoft Store** hien tren sao ke. Day la
-khoan giu tam de xac minh the, khong phai phi dich vu, va da co thong bao **Huy giao dich**
-ngay trong cung mot giay.
+Lúc đăng ký Azure có một giao dịch **1 USD tại Microsoft Store** hiện trên sao kê. Đó là khoản
+giữ tạm để xác minh thẻ, không phải phí dịch vụ, và đã có thông báo **huỷ giao dịch** ngay
+trong cùng một giây.
 
-### Nha cung cap moi: MonsterASP.NET (goi Free)
+### Nhà cung cấp mới: MonsterASP.NET (gói Free)
 
-| Tieu chi | MonsterASP.NET | Somee.com | Neon (PostgreSQL) |
+| Tiêu chí | MonsterASP.NET | Somee.com | Neon (PostgreSQL) |
 |---|---|---|---|
-| Loai database | **MSSQL 2025** | MSSQL Express | PostgreSQL |
-| Dung luong free | **1 GB** | 30 MB | 3 GiB |
-| Can the tin dung? | **Khong** | Khong | Khong |
-| Phai sua code? | **Khong** | Khong | **Co, rat nhieu** |
-| Datacenter | Chau Au | My | Nhieu noi |
+| Loại database | **MSSQL 2025** | MSSQL Express | PostgreSQL |
+| Dung lượng free | **1 GB, 5 database** | 30 MB | 3 GiB |
+| Cần thẻ tín dụng? | **Không** | Không | Không |
+| Phải sửa code? | **Không** | Không | **Có, rất nhiều** |
+| Datacenter | Châu Âu | Mỹ | Nhiều nơi |
 
-Chon MonsterASP vi **van la SQL Server** nen khong phai sua mot dong code nao, 1 GB gap hon
-10 lan nhu cau that (database do an chua toi 100 MB), dang ky khong can the, va co ho tro
-bat remote access de noi tu ung dung.
+Chọn MonsterASP vì **vẫn là SQL Server** nên không phải sửa một dòng code nào, 1 GB gấp hơn
+10 lần nhu cầu thật, đăng ký không cần thẻ, và có hỗ trợ bật remote access để nối từ ứng dụng.
 
-**Vi sao khong chon Neon du dung luong rong hon:** doi sang PostgreSQL khong chi la doi driver.
-Phai sua dialect, viet lai `schema.sql` (`NVARCHAR` -> `TEXT`, `DATETIME2` -> `TIMESTAMP`,
-`IDENTITY` -> `GENERATED`), viet lai `seed-data.sql`, sua `columnDefinition="NVARCHAR(MAX)"`
-trong `Movie.java`, va sua 2 cau truy van rieng cua SQL Server trong test. Te hon nua: **ca 4
-nguoi se phai go SQL Server va cai PostgreSQL tren may** - vi neu may ca nhan chay SQL Server
-con cloud chay PostgreSQL thi se sinh ra dung loai loi "chay may minh duoc, len cloud thi hong",
-rat kho truy. Giua tuan thu hai cua do an 4 tuan, doi dong co database la qua mao hiem.
+**Vì sao không chọn Neon dù dung lượng rộng hơn:** đổi sang PostgreSQL không chỉ là đổi driver.
+Phải sửa dialect, viết lại `schema.sql` (`NVARCHAR` → `TEXT`, `DATETIME2` → `TIMESTAMP`,
+`IDENTITY` → `GENERATED`), viết lại `seed-data.sql`, sửa `columnDefinition="NVARCHAR(MAX)"`
+trong `Movie.java`, và sửa hai câu truy vấn riêng của SQL Server trong test. Tệ hơn nữa:
+**cả 4 người sẽ phải gỡ SQL Server và cài PostgreSQL trên máy** — vì nếu máy cá nhân chạy
+SQL Server còn cloud chạy PostgreSQL thì sẽ sinh ra đúng loại lỗi "chạy máy mình được, lên cloud
+thì hỏng", rất khó truy. Giữa tuần thứ hai của đồ án 4 tuần, đổi động cơ database là quá mạo hiểm.
 
-**Nhuoc diem phai chap nhan:** datacenter dat o chau Au nen do tre tu Viet Nam khoang
-250-300ms, va goi free ghi ro "no guarantees or warranties". Vi vay van giu dung mo hinh 2 tang
-o muc 3: **code hang ngay tren SQL Server o may ca nhan**, cloud chi dung de tich hop va demo.
+**Nếu MonsterASP chạy chập chờn** thì lùi về phương án 2 ở bảng mục 2 (mỗi người chạy local,
+dùng chung `database/seed-data.sql` để dữ liệu giống nhau) chứ **không** đổi sang PostgreSQL.
 
-**Neu MonsterASP chay chap chon** thi lui ve phuong an 2 o bang muc 2 (moi nguoi chay local,
-dung chung `database/seed-data.sql` de du lieu giong nhau) chu KHONG doi sang PostgreSQL.
+## 3. Quyết định
 
-## 3. Quyet dinh
-
-**Chon MonsterASP.NET goi Free** (xem muc 2c ve ly do doi tu Azure sang), dung theo
-mo hinh **2 tang**:
+**Chọn MonsterASP.NET gói Free**, dùng theo mô hình **2 tầng**:
 
 ```
 +----------------------------+      +------------------------------------+
-|  May ca nhan (4 nguoi)     |      |  MonsterASP.NET (goi Free)         |
-|  SQL Server local          |      |  MSSQL dung chung, 1 GB            |
+|  Máy cá nhân (4 người)     |      |  MonsterASP.NET (gói Free)         |
+|  SQL Server local          |      |  MSSQL dùng chung, 1 GB            |
 |  cinema_booking            |      |  ddl-auto = validate               |
-|  ddl-auto = update         |      |  -> tich hop, demo, du lieu that   |
-|  -> code hang ngay, offline|      |                                    |
+|  ddl-auto = update         |      |  -> tích hợp, demo, dữ liệu thật   |
+|  -> code hằng ngày, offline|      |                                    |
 +----------------------------+      +------------------------------------+
-         profile: (mac dinh)                  profile: cloud
+         profile: (mặc định)                  profile: cloud
 ```
 
-- **Hang ngay moi nguoi van code tren SQL Server local** (nhanh, khong ton han muc, khong can mang).
-- **Database cloud la noi tich hop + demo**: chay bang `-Dspring-boot.run.profiles=cloud`.
-- Tren cloud dat `spring.jpa.hibernate.ddl-auto=validate`: **Hibernate khong duoc tu y sua schema chung**.
-  Muon doi bang/cot tren cloud thi sua `database/schema-cloud.sql` roi bao ca nhom - tranh canh
-  4 nguoi cung `update` lam schema chung bien dang.
-- **Test tich hop KHONG chay tren cloud** (xem `docs/KE_HOACH_MODULE4.md`), vi test xoa sach du lieu
-  truoc moi test case va se dot han muc vCore.
+- **Hằng ngày mọi người vẫn code trên SQL Server local** — nhanh, không cần mạng.
+- **Database cloud là nơi tích hợp và demo**, chạy bằng `-Dspring-boot.run.profiles=cloud`.
+- Trên cloud đặt `spring.jpa.hibernate.ddl-auto=validate`: **Hibernate không được tự ý sửa
+  schema chung.** Muốn đổi bảng/cột thì sửa `database/schema-cloud.sql`, chạy tay lên cloud,
+  rồi báo cả nhóm — tránh cảnh 4 người cùng `update` làm schema chung biến dạng.
+- **Test tích hợp KHÔNG chạy trên cloud**, vì test xoá sạch dữ liệu trước mỗi test case.
 
-## 4. Gioi han cua goi Free MonsterASP (can biet truoc)
+## 4. Giới hạn của gói Free MonsterASP (cần biết trước)
 
-- **5 database**, tong **1 GB** dung luong. Du an nay chua toi 100 MB nen thoai mai.
-- **Khong can the tin dung**, khong co ngay het han.
-- **Remote access mac dinh bi TAT**, phai vao tung database bat thu cong.
-- Datacenter dat o **chau Au** -> do tre tu Viet Nam khoang **250-300ms**. Dung de tich hop
-  va demo thi chap nhan duoc, nhung **dung lay lam database code hang ngay** - van giu
-  SQL Server o may ca nhan cho viec do.
-- Goi Free ghi ro **"no guarantees or warranties"**: co the cham hoac gian doan bat ky luc nao.
-  Vi vay **truoc buoi demo phai chay thu truoc it nhat 1 ngay**, va luon co san phuong an du
-  phong la chay local voi `database/seed-data.sql`.
-- Goi Free gioi han so ket noi dong thoi (khong cong bo con so cu the) -> `application-cloud.properties`
-  da dat `maximum-pool-size=5` cho moi may, 4 nguoi cung chay la khoang 20 ket noi.
-  Neu bi tu choi ket noi thi ha so nay xuong.
+- **5 database, tổng 1 GB.** Dự án này chưa tới 100 MB nên thoải mái.
+- **Không cần thẻ tín dụng**, không có ngày hết hạn.
+- **Remote access mặc định bị TẮT**, phải vào từng database bật thủ công.
+- Datacenter đặt ở **châu Âu** → độ trễ từ Việt Nam khoảng **250–300ms**. Khởi động ứng dụng
+  mất ~10 giây thay vì ~4 giây khi chạy local. Dùng để tích hợp và demo thì chấp nhận được,
+  nhưng **đừng lấy làm database code hằng ngày**.
+- Gói Free ghi rõ **"no guarantees or warranties"**. Đây là chuyện bình thường: **không gói
+  free nào của bất kỳ nhà cung cấp nào có cam kết uptime** — SLA chỉ đi kèm gói trả tiền, vì
+  SLA nghĩa là nhà cung cấp phải đền tiền khi dịch vụ chết.
+- Gói Free giới hạn số kết nối đồng thời (không công bố con số) → `application-cloud.properties`
+  đã đặt `maximum-pool-size=5` cho mỗi máy, 4 người cùng chạy là khoảng 20 kết nối. Nếu bị từ
+  chối kết nối thì hạ số này xuống.
 
-**Meo:** dong SSMS khi khong dung. Goi free nao cung gioi han ket noi, de Object Explorer
-mo lien tuc la chiem mat mot ket noi cua ca nhom.
+**Vì không có cam kết uptime, quy định của nhóm là:**
 
-## 5. Viec can lam de trien khai
+1. **Hôm bảo vệ demo từ máy cá nhân.** Cloud chỉ mở ra chứng minh với thầy là có database dùng
+   chung thật. Mạng trường chập hoặc datacenter trễ là mất điểm oan.
+2. **Chạy thử trước buổi demo ít nhất một ngày.**
+3. Phương án dự phòng luôn sẵn: `schema-cloud.sql` + `seed-data.sql` dựng lại toàn bộ database
+   trong 30 giây ở bất kỳ đâu. Thứ duy nhất không được sao lưu là dữ liệu phát sinh khi dùng
+   (vé đã đặt, tài khoản đăng ký thêm) — gần ngày bảo vệ thấy cần thì dùng mục **Backups**
+   hoặc **Export** trong trang quản trị MonsterASP tải một bản về.
 
-1. **Tho** dang ky tai khoan tai `monsterasp.net`, chon goi **Free** (da xong 18/09,
-   goi Free cho toi 5 database).
-2. Trong trang quan tri: **Databases** -> **Create** -> chon loai **MSSQL** (khong phai MySQL).
-   Ghi lai ten database that ma he thong sinh ra - thuong KHONG phai `cinema_booking` ma la
-   mot ten dang `db_xxxxx`.
-3. Mo database vua tao -> muc **Users and remote** -> bam **Enabled** de bat remote access.
-   Mac dinh remote access bi TAT, khong bat thi ung dung khong noi vao duoc.
-4. Ngay tai man hinh do, chep lai: **server**, **login**, **password**.
-5. Chay `database/schema-cloud.sql` roi `database/seed-data.sql` len database do.
-6. Gui cho 3 thanh vien: server, ten database, user, password -> moi nguoi tu dien vao
-   `application-secrets-cloud.properties` tren may minh (**khong bo vao Git, khong gui trong file code**).
+**Mẹo:** đóng SSMS khi không dùng. Gói free nào cũng giới hạn kết nối, để Object Explorer mở
+liên tục là chiếm mất một kết nối của cả nhóm.
 
-## 6. He qua
+## 5. Các bước triển khai
 
-**Tich cuc**
-- Ca nhom nhin chung 1 bo du lieu; demo chay tu bat ky may nao.
-- Khong phai sua code/dependency: van `mssql-jdbc`, van `SQLServerDialect`.
-- Co the demo that canh "2 may cung dat 1 ghe" - dung y ADR-001.
+1. **Thọ** đăng ký tài khoản tại `monsterasp.net`, chọn gói **Free** (xong 18/09).
+2. Trong trang quản trị: **Databases → Create**, chọn loại **MSSQL** (không phải MySQL).
+   Ghi lại tên database thật mà hệ thống sinh ra — thường **không** phải `cinema_booking` mà
+   là một tên dạng `db_xxxxx`.
+3. Mở database vừa tạo → mục **Users and remote** → bấm **Enabled** để bật remote access.
+   Mặc định remote access bị TẮT, không bật thì ứng dụng không nối vào được.
+4. Ngay tại màn hình đó, chép lại **server**, **login**, **password**.
+5. Chạy `database/schema-cloud.sql` rồi `database/seed-data.sql` lên database đó.
+6. Gửi cho 3 thành viên: server, tên database, user, password — mỗi người tự điền vào
+   `application-secrets-cloud.properties` trên máy mình. **Không bỏ vào Git, không gửi kèm
+   trong file code** (repo để public).
 
-**Tieu cuc / rui ro**
-- Phu thuoc mang; mat mang la khong code duoc tren profile cloud (nen van giu local lam chinh).
-- Het han muc giua thang -> database ngu den thang sau. Phai dat canh bao khi con < 10.000 vCore-giay.
-- Phai nho them IP vao firewall moi khi doi mang (o truong / o nha khac IP).
+### Kết quả triển khai (18/09/2026)
 
-**Nguon tham khao**
-- [Try Azure SQL Database for Free - Microsoft Learn](https://learn.microsoft.com/en-us/azure/azure-sql/database/free-offer?view=azuresql)
+Đã hoàn tất bước 1–5. Kết quả kiểm chứng thật:
+
+| Kiểm tra | Kết quả |
+|---|---|
+| Kết nối tới database cloud | Được — cloud chạy SQL Server **2025** Express (máy cá nhân là 2022, không ảnh hưởng) |
+| Chạy `schema-cloud.sql` | Tạo đủ 6 bảng kèm ràng buộc `uq_showtime_seat` của ADR-001 |
+| Chạy `seed-data.sql` | 3 người dùng, 6 phim, 2 phòng, 120 ghế, 10 suất chiếu |
+| Chạy ứng dụng với profile `cloud` | **`ddl-auto=validate` PASS** — schema khớp hoàn toàn với entity |
+| Mở trang trên trình duyệt | Trang chủ và trang lỗi render đúng, đọc được dữ liệu từ cloud |
+| Collation | `SQL_Latin1_General_CP1_CI_AS` — **trùng với máy cá nhân** nên không lệch. Tiếng Việt lưu, so sánh và sắp xếp đều đúng vì mọi cột chữ đều dùng `NVARCHAR` |
+
+Thời gian khởi động: **10,5 giây** trên cloud so với **4,5 giây** ở local — đúng như dự đoán
+về độ trễ datacenter châu Âu.
+
+Một rủi ro đã được gỡ: trước đó lo `Showtime.basePrice` và `Ticket.price` khai báo
+`DECIMAL(10,2)` trong schema nhưng Hibernate hiểu là `numeric(38,2)`, sợ chế độ `validate` sẽ
+chặn không cho ứng dụng khởi động. **Đã thử thật: không chặn** — Hibernate 6 không kiểm tra
+precision/scale của kiểu số.
+
+Còn lại một việc duy nhất: **gửi thông tin kết nối cho 3 thành viên qua nhóm chat.**
+
+## 6. Hệ quả
+
+**Tích cực**
+
+- Cả nhóm nhìn chung một bộ dữ liệu; demo chạy được từ bất kỳ máy nào.
+- Không phải sửa code hay dependency: vẫn `mssql-jdbc`, vẫn `SQLServerDialect`.
+- Có thể demo thật cảnh "2 máy cùng đặt một ghế" — đúng ý ADR-001.
+
+**Tiêu cực / rủi ro**
+
+- Phụ thuộc mạng; mất mạng là không code được trên profile cloud, nên vẫn giữ local làm chính.
+- Không có cam kết uptime, có thể chậm hoặc gián đoạn bất kỳ lúc nào.
+- Độ trễ 250–300ms làm mọi thao tác chậm hơn rõ rệt so với local.
+- Mật khẩu database do nhà cung cấp sinh sẵn và 4 người dùng chung một tài khoản. Nếu lộ thì
+  vào trang quản trị bấm **Change** đổi mật khẩu, rồi báo cả nhóm sửa lại file secret trên máy.
+
+**Nguồn tham khảo**
+
+- [Try Azure SQL Database for Free — Microsoft Learn](https://learn.microsoft.com/en-us/azure/azure-sql/database/free-offer?view=azuresql)
 - [Azure SQL Database free offer FAQ](https://learn.microsoft.com/en-us/azure/azure-sql/database/free-offer-faq?view=azuresql)
-- [MonsterASP.NET - goi hosting mien phi](https://www.monsterasp.net/)
-- [MonsterASP - Bat remote access cho database](https://help.monsterasp.net/books/databases/page/remote-access-for-database)
-- [MonsterASP - Ket noi bang SQL Server Management Studio](https://help.monsterasp.net/books/databases/page/sql-server-management-studio-ssms)
-- [The Best Free Database Tiers in 2026 (15 Compared) - FreeTier.co](https://freetier.co/articles/best-free-database-free-tiers-2026)
-- [Top PostgreSQL Database Free Tiers in 2026 - Koyeb](https://www.koyeb.com/blog/top-postgresql-database-free-tiers-in-2026)
+- [MonsterASP.NET — gói hosting miễn phí](https://www.monsterasp.net/)
+- [MonsterASP — Bật remote access cho database](https://help.monsterasp.net/books/databases/page/remote-access-for-database)
+- [MonsterASP — Kết nối bằng SQL Server Management Studio](https://help.monsterasp.net/books/databases/page/sql-server-management-studio-ssms)
+- [The Best Free Database Tiers in 2026 (15 Compared) — FreeTier.co](https://freetier.co/articles/best-free-database-free-tiers-2026)
+- [Top PostgreSQL Database Free Tiers in 2026 — Koyeb](https://www.koyeb.com/blog/top-postgresql-database-free-tiers-in-2026)
