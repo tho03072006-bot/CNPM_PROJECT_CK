@@ -12,7 +12,7 @@
 -- tên phim sẽ thành chữ rác kiểu "BÃ£o Giá»¯a Trá»i Quang" và chỉ phát hiện ra
 -- khi đã nhập cả đống dữ liệu. Đã thử và xác nhận lỗi này là có thật.
 --
--- Trên database dùng chung ở cloud thì đổi -S, -d, -U, -P cho đúng (xem ADR-002).
+-- Trên database dùng chung ở cloud thì đổi -S, -d, -U, -P cho đúng (xem docs/DATABASE.md).
 --
 -- File này CHẠY LẠI ĐƯỢC NHIỀU LẦN: mỗi khối đều kiểm tra "nếu chưa có thì mới thêm",
 -- nên không sợ chạy nhầm hai lần rồi nhân đôi dữ liệu.
