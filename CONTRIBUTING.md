@@ -1,161 +1,188 @@
-# Quy uoc lam viec nhom - NHOM05 (Do an CNPM: He thong dat ve xem phim)
+# Quy ước làm việc nhóm — NHÓM 05 (Đồ án CNPM: Hệ thống đặt vé xem phim)
 
-Tai lieu nay ap dung cho ca 4 thanh vien (Tho, Tai, Thang, Thanh). Muc tieu: code cua 4 nguoi
-nhin vao giong nhu 1 nguoi viet, tranh xung dot khi merge, va de cham diem theo dung tinh chat
-mon Cong nghe phan mem (dat ten ro rang, cau truc mo-dun hoa, de bao tri).
+Tài liệu này áp dụng cho cả 4 thành viên (Thọ, Tài, Thắng, Thanh). Mục tiêu: code của 4 người
+nhìn vào giống như một người viết, tránh xung đột khi merge, và dễ chấm điểm theo đúng tính chất
+môn Công nghệ phần mềm (đặt tên rõ ràng, cấu trúc mô-đun hoá, dễ bảo trì).
 
 ---
 
-## 1. Quy uoc dat ten (Naming convention)
+## 1. Quy ước đặt tên
 
 ### 1.1 Java
 
-| Doi tuong | Quy tac | Vi du |
+| Đối tượng | Quy tắc | Ví dụ |
 |---|---|---|
-| Class / Interface / Enum | PascalCase, danh tu | `MovieService`, `TicketRepository`, `TicketStatus` |
-| Method | camelCase, dong tu + bo ngu, ro hanh dong | `findAvailableSeats()`, `holdSeat()`, `calculateTotalPrice()` |
-| Bien / tham so | camelCase, danh tu ro nghia, KHONG viet tat kho hieu | `showtimeId` (khong dung `stId`), `customerEmail` (khong dung `e`) |
-| Hang so (constant) | UPPER_SNAKE_CASE | `SEAT_HOLD_MINUTES`, `ROLE_ADMIN` |
-| Package | chu thuong, khong dau, so nhieu cho tang chua nhieu class cung loai | `entity`, `repository`, `service`, `controller`, `constants` |
-| Boolean | tien to `is`/`has`/`can` | `isActive`, `hasDiscount`, `canCancel()` |
+| Class / Interface / Enum | PascalCase, danh từ | `MovieService`, `TicketRepository`, `TicketStatus` |
+| Method | camelCase, động từ + bổ ngữ, rõ hành động | `findAvailableSeats()`, `holdSeat()`, `calculateTotalPrice()` |
+| Biến / tham số | camelCase, danh từ rõ nghĩa, KHÔNG viết tắt khó hiểu | `showtimeId` (không dùng `stId`), `customerEmail` (không dùng `e`) |
+| Hằng số | UPPER_SNAKE_CASE | `SEAT_HOLD_MINUTES`, `ROLE_ADMIN` |
+| Package | chữ thường, không dấu, số nhiều cho tầng chứa nhiều class cùng loại | `entity`, `repository`, `service`, `controller`, `constants` |
+| Boolean | tiền tố `is` / `has` / `can` | `isActive`, `hasDiscount`, `canCancel()` |
 
-Khong dung Lombok (dung dung convention nhom da quen o mon Lap trinh Web) — viet tay
-getter/setter/constructor.
+**Không dùng Lombok** — viết tay getter/setter/constructor, đúng cách nhóm đã quen ở môn
+Lập trình Web.
 
-### 1.2 Entity & Database (da ap dung trong `database/schema.sql`)
+**Viết tiếng Việt CÓ DẤU** ở mọi chỗ người đọc: chữ trên giao diện, thông báo lỗi, chú thích
+code, tài liệu. Riêng định danh trong code (tên class, biến, method) vẫn dùng tiếng Anh.
+File phải lưu UTF-8 — Maven đã cấu hình sẵn, chỉ cần IDE đừng lưu sang bảng mã khác.
 
-- Ten bang: so nhieu, snake_case — `movies`, `showtimes`, `tickets`.
-- Ten cot khoa ngoai: `<ten_bang_so_it>_id` — `movie_id`, `room_id`, `seat_id`.
-- Cot trang thai: dung enum String (`status NVARCHAR(20)`), gia tri VIET HOA — `HELD`, `PAID`.
-- Text tieng Viet: luon `NVARCHAR`, khong dung `VARCHAR` (tranh loi font khi luu dau).
+### 1.2 Entity & Database
 
-### 1.3 Thymeleaf / Frontend
+- Tên bảng: số nhiều, snake_case — `movies`, `showtimes`, `tickets`.
+- Tên cột khoá ngoại: `<tên_bảng_số_ít>_id` — `movie_id`, `room_id`, `seat_id`.
+- Cột trạng thái: dùng enum String (`status NVARCHAR(20)`), giá trị VIẾT HOA — `HELD`, `PAID`.
+- Text tiếng Việt: **luôn `NVARCHAR`, không dùng `VARCHAR`**. Dùng `VARCHAR` là tiếng Việt
+  biến thành dấu hỏi, và lỗi này chỉ lộ ra khi đã có dữ liệu thật.
 
-- Ten file template: kebab-case, trung voi chuc nang trang — `movie-list.html`, `seat-map.html`,
+### 1.3 Thymeleaf / Giao diện
+
+- Tên file template: kebab-case, trùng với chức năng trang — `movie-list.html`, `seat-map.html`,
   `payment-confirm.html`.
-- Class CSS: kebab-case, co tien to theo module de tranh dam vao nhau — `.seat`, `.seat-map`,
-  `.admin-table` (da co san trong `static/css/style.css`, moi module them class MOI thi noi
-  tiep vao cuoi file, khong sua lai class nguoi khac dang dung).
-- Bien Thymeleaf trong model: camelCase, trung ten voi field cua entity/DTO tuong ung.
+- Class CSS: kebab-case. **Bộ giao diện dùng chung đã có sẵn** trong `static/css/style.css` —
+  chạy ứng dụng rồi mở `http://localhost:8082/ui-kit` để xem tất cả thành phần đã có (nút, nhãn,
+  thẻ phim, vé, form, bảng, sơ đồ ghế, thông báo). **Cần cái nào thì chép class ở đó về dùng,
+  đừng tự viết CSS riêng cho module mình.**
+- Thêm class MỚI thì nối vào **cuối** `style.css`, không sửa class người khác đang dùng.
+- Chỉ dùng biến CSS trong `:root`, không gõ thẳng mã màu — nhờ vậy chế độ sáng/tối mới chạy được.
+- Biến Thymeleaf trong model: camelCase, trùng tên với field của entity/DTO tương ứng.
 
-### 1.4 Git — branch & commit
+### 1.4 Git — nhánh & commit
 
-- **Mo hinh nhanh cua nhom (da chot):** moi nguoi co 1 nhanh ca nhan mang ten minh, code va
-  commit tren do; xong viec thi gop vao `develop`; `main` chi chua code on dinh.
+**Mô hình nhánh của nhóm (đã chốt):** mỗi người có một nhánh cá nhân mang tên mình, code và
+commit trên đó; xong việc thì gộp vào `develop`; `main` chỉ chứa code ổn định.
 
-  | Nhanh | Ai dung | Dung de lam gi |
-  |---|---|---|
-  | `main` | ca nhom | Code on dinh, chi nhan merge tu `develop` |
-  | `develop` | ca nhom | Nhanh gop chung cua 4 module |
-  | `Minh_Thọ` | Tho | Module 4 - kien truc dung chung, testing, tai lieu |
-  | `Hữu_Tài` | Tai | Module 1 - phim / phong chieu / suat chieu |
-  | `Hữu_Thắng` | Thang | Module 2 - ghe & ve, seat-map, giu ghe |
-  | `Tuấn_Thanh` | Thanh | Module 3 - user/auth, thanh toan, email, dashboard |
+| Nhánh | Ai dùng | Dùng để làm gì |
+|---|---|---|
+| `main` | cả nhóm | Code ổn định, chỉ nhận merge từ `develop` |
+| `develop` | cả nhóm | Nhánh gộp chung của 4 module |
+| `Minh_Thọ` | Thọ | Module 4 — kiến trúc dùng chung, testing, tài liệu |
+| `Hữu_Tài` | Tài | Module 1 — phim / phòng chiếu / suất chiếu |
+| `Hữu_Thắng` | Thắng | Module 2 — ghế & vé, seat-map, giữ ghế |
+| `Tuấn_Thanh` | Thanh | Module 3 — user/auth, thanh toán, email, thống kê |
 
-  Truoc khi bat dau viec moi, nho keo `develop` ve nhanh cua minh cho khoi lech:
-  `git switch <nhanh-cua-ban>` roi `git merge origin/develop`.
+Trước khi bắt đầu việc mới, nhớ kéo `develop` về nhánh của mình cho khỏi lệch:
 
-- Neu mot tinh nang lam dai ngay (vi du sua lai ca luong dat ve) thi co the tach them nhanh phu
-  tu nhanh ca nhan, dat ten `feature/<module>-<mo-ta-ngan>` (vd `feature/module2-seat-map`).
-  Khong dat ten chung chung nhu `feature/fix` hay `test1`.
+```bash
+git switch <nhánh-của-bạn> && git merge origin/develop
+```
 
-- Commit message: `<loai>(<module>): <mo ta ngan, tieng Viet khong dau hoac co dau deu duoc>`
-  - `feat` = them tinh nang moi
-  - `fix` = sua loi
-  - `refactor` = sua cau truc code, khong doi hanh vi
-  - `docs` = tai lieu (README, CONTRIBUTING, comment)
-  - `test` = them/sua test
-  - `chore` = viec linh tinh (cau hinh, dependency, gitignore...)
-  - Vi du: `feat(module2): them API giu ghe theo suat chieu`,
-    `fix(module1): sua loi validate trung gio chieu`
-- MOI commit chi lam MOT viec — khong gom "sua 3 bug + them 2 tinh nang" vao 1 commit, se rat
-  kho review va khi can revert.
-- **Commit som, commit thuong xuyen.** Truoc khi doi nhanh luon chay `git status` xem con gi
-  chua commit — ngay 17/09 nhom da mat mot dot cong viec vi doi nhanh luc con file chua commit.
+Nếu một tính năng làm dài ngày (ví dụ sửa lại cả luồng đặt vé) thì có thể tách thêm nhánh phụ
+từ nhánh cá nhân, đặt tên `feature/<module>-<mô-tả-ngắn>` (ví dụ `feature/module2-seat-map`).
+Không đặt tên chung chung như `feature/fix` hay `test1`.
+
+**Commit message:** `<loại>(<module>): <mô tả ngắn>`
+
+| Loại | Dùng khi |
+|---|---|
+| `feat` | thêm tính năng mới |
+| `fix` | sửa lỗi |
+| `refactor` | sửa cấu trúc code, không đổi hành vi |
+| `docs` | tài liệu (README, CONTRIBUTING, chú thích) |
+| `test` | thêm/sửa test |
+| `chore` | việc lặt vặt (cấu hình, dependency, gitignore...) |
+
+Ví dụ: `feat(module2): thêm API giữ ghế theo suất chiếu`,
+`fix(module1): sửa lỗi validate trùng giờ chiếu`.
+
+**Mỗi commit chỉ làm MỘT việc** — đừng gom "sửa 3 bug + thêm 2 tính năng" vào một commit, sẽ
+rất khó review và không revert được khi cần.
+
+**Commit sớm, commit thường xuyên.** Trước khi đổi nhánh luôn chạy `git status` xem còn gì chưa
+commit — ngày 17/09 nhóm đã mất một đợt công việc vì đổi nhánh lúc còn file chưa commit.
 
 ---
 
-## 2. Cau truc thu muc (da dung san trong nen mong du an)
+## 2. Cấu trúc thư mục
 
 ```
 src/main/java/edu/hcmute/cnpm/cinema/
-  entity/        - cac lop @Entity anh xa bang database (KHONG chua logic nghiep vu)
-  repository/     - interface extends JpaRepository (chi khai bao truy van, khong xu ly logic)
-  service/        - logic nghiep vu (tinh tien, khoa ghe, gui email...) — MOI THANH VIEN TU TAO
-                     goi service rieng cho module minh trong thu muc nay, vi du: MovieService,
-                     SeatBookingService, PaymentService, AuthService
-  controller/     - @Controller Spring MVC, chi nhan request/tra view, KHONG chua logic nghiep vu
-  exception/      - exception nghiep vu + GlobalExceptionHandler dung chung (Tho quan ly)
-  constants/      - hang so dung chung
+  entity/       — các lớp @Entity ánh xạ bảng database (KHÔNG chứa logic nghiệp vụ)
+  repository/   — interface extends JpaRepository (chỉ khai báo truy vấn)
+  service/      — logic nghiệp vụ (tính tiền, giữ ghế, gửi email...)
+                   MỖI THÀNH VIÊN TỰ TẠO service riêng cho module mình:
+                   MovieService, SeatBookingService, PaymentService, AuthService
+  controller/   — @Controller Spring MVC, chỉ nhận request và trả view
+  exception/    — exception nghiệp vụ + GlobalExceptionHandler dùng chung (Thọ quản lý)
+  constants/    — hằng số dùng chung
 src/main/resources/
   templates/
-    layout/       - layout dung chung (Tho quan ly, khong tu y sua)
-    fragments/    - header/footer/alert dung chung (Tho quan ly)
-    error.html    - trang bao loi chung (Tho quan ly)
-    <module>/     - MOI MODULE tao 1 thu muc con rieng cho trang cua minh, vi du:
-                     templates/movie/, templates/booking/, templates/account/
-  static/css/style.css - CSS dung chung, them class moi vao cuoi file
+    layout/     — layout dùng chung (Thọ quản lý, không tự ý sửa)
+    fragments/  — header / footer / alert dùng chung (Thọ quản lý)
+    error.html  — trang báo lỗi chung (Thọ quản lý)
+    <module>/   — MỖI MODULE tạo một thư mục con riêng:
+                   templates/movie/, templates/booking/, templates/account/
+  static/css/style.css — design system dùng chung, thêm class mới vào cuối file
+  static/js/theme.js   — chuyển chế độ sáng/tối (Thọ quản lý)
 src/test/java/edu/hcmute/cnpm/cinema/
-  support/        - IntegrationTestBase + TestDataFactory dung chung cho test (Tho quan ly)
-  <module>/       - test cua tung module
-database/schema.sql    - script SQL tong hop (Tho gop lai tu de xuat cua tung nguoi)
+  support/      — IntegrationTestBase + TestDataFactory dùng chung (Thọ quản lý)
+  <module>/     — test của từng module
+database/       — script SQL (Thọ gộp lại từ đề xuất của từng người)
+docs/           — kế hoạch, phân công, ADR
 ```
 
-**Nguyen tac quan trong:** Controller goi Service, Service goi Repository — KHONG duoc de Controller
-goi thang Repository hay chua logic tinh toan/dieu kien nghiep vu (dung dung kien truc phan lop
-da hoc o Chuong 2 va da ap dung o mon Lap trinh Web).
+**Nguyên tắc quan trọng:** Controller gọi Service, Service gọi Repository. **Không được** để
+Controller gọi thẳng Repository hay chứa logic tính toán / điều kiện nghiệp vụ — đúng kiến trúc
+phân lớp đã học ở Chương 2 và đã áp dụng ở môn Lập trình Web.
 
 ---
 
-## 3. Quy trinh Pull Request
+## 3. Quy trình Pull Request
 
-1. Code tren nhanh ca nhan cua ban (xem bang o Muc 1.4). Truoc khi bat dau, keo `develop` ve
-   nhanh minh de khong lam tren ban cu: `git merge origin/develop`.
-2. Code xong, tu kiem tra lai: doc lai diff mot luot va chay `mvn test` cho chac.
-3. Push nhanh ca nhan, mo Pull Request **vao `develop`** (khong mo thang vao `main`), mo ta ro PR
-   lam gi, anh chup man hinh neu co giao dien moi.
-4. Can it nhat 1 thanh vien khac approve truoc khi merge — uu tien nguoi lam module lien quan gan nhat.
-5. Checklist toi thieu truoc khi duyet PR:
-   - [ ] Khong co logic nghiep vu trong Controller
-   - [ ] Co xu ly loi (try/catch hoac validation), khong de loi 500 tho
-   - [ ] Khong hardcode chuoi ket noi DB / mat khau / API key
-   - [ ] Dat ten bien/ham dung quy uoc o Muc 1
-   - [ ] Khong sua file cua module khac ma khong bao truoc trong nhom chat
-6. Nhanh ca nhan thi GIU LAI (dung suot ky do an). Chi xoa cac nhanh phu `feature/...` sau khi
-   da merge xong, de repo khoi roi.
-7. Cuoi tuan 3 / dau tuan 4: merge `develop` vao `main` sau khi ca 4 module da tich hop va chay duoc.
+1. Code trên nhánh cá nhân của bạn (xem bảng ở Mục 1.4). Trước khi bắt đầu, kéo `develop` về
+   nhánh mình để không làm trên bản cũ: `git merge origin/develop`.
+2. Code xong, tự kiểm tra lại: đọc lại diff một lượt và chạy `mvn test` cho chắc.
+3. Push nhánh cá nhân, mở Pull Request **vào `develop`** (không mở thẳng vào `main`), mô tả rõ
+   PR làm gì, kèm ảnh chụp màn hình nếu có giao diện mới.
+4. Cần ít nhất **một thành viên khác approve** trước khi merge — ưu tiên người làm module liên
+   quan gần nhất.
+5. Bảng kiểm tối thiểu trước khi duyệt PR:
+   - [ ] `mvn test` chạy xanh
+   - [ ] Không có logic nghiệp vụ trong Controller
+   - [ ] Có xử lý lỗi, không để lỗi 500 thô ra màn hình
+   - [ ] Không hardcode chuỗi kết nối database / mật khẩu / API key
+   - [ ] Đặt tên biến, hàm, class đúng quy ước ở Mục 1
+   - [ ] Giao diện dùng class có sẵn trong `style.css`, không tự viết CSS riêng
+   - [ ] Không sửa file thuộc module người khác mà chưa báo trước trong nhóm chat
+6. Nhánh cá nhân thì **giữ lại** (dùng suốt kỳ đồ án). Chỉ xoá các nhánh phụ `feature/...` sau
+   khi đã merge xong, để repo khỏi rối.
+7. Cuối tuần 3 / đầu tuần 4: merge `develop` vào `main` sau khi cả 4 module đã tích hợp và chạy được.
 
----
-
-## 4. Dinh nghia "Hoan thanh" (Definition of Done) cho 1 tinh nang
-
-Mot tinh nang duoc tinh la xong khi:
-- Chay dung nhu mo ta trong bang phan cong (xem tai lieu ke hoach du an)
-- Co it nhat 1 unit test hoac test thu cong ghi lai trong PR
-- Khong con `System.out.println` debug con sot lai
-- Giao dien dung layout chung, khong vo bo cuc tren man hinh nho
-- Da duoc it nhat 1 nguoi khac review
+CI trên GitHub Actions tự chạy toàn bộ test cho mỗi push và mỗi Pull Request. Đừng để CI báo đỏ
+rồi mới sửa — chạy `mvn test` trên máy trước khi push.
 
 ---
 
-## 5. Xu ly loi - dung chung, khong tu che
+## 4. Định nghĩa "Hoàn thành" cho một tính năng
 
-Ca nhom dung chung bo exception trong `edu.hcmute.cnpm.cinema.exception` va bo bat loi tap trung
-`GlobalExceptionHandler`. **Khong tu viet try/catch roi tu render trang loi rieng** cho module minh.
+Một tính năng được tính là xong khi:
 
-Cach dung (o tang **Service**, khong phai Controller):
+- Chạy đúng như mô tả trong Issue tương ứng (mọi mục trong phần "Xong là khi nào" đều tích)
+- Có ít nhất một unit test, hoặc test thủ công được ghi lại trong PR
+- Không còn `System.out.println` debug sót lại
+- Giao diện dùng đúng layout chung, không vỡ bố cục trên màn hình nhỏ, xem được ở **cả chế độ
+  sáng và tối**
+- Đã được ít nhất một người khác review
+
+---
+
+## 5. Xử lý lỗi — dùng chung, không tự chế
+
+Cả nhóm dùng chung bộ exception trong `edu.hcmute.cnpm.cinema.exception` và bộ bắt lỗi tập trung
+`GlobalExceptionHandler`. **Không tự viết try/catch rồi tự render trang lỗi riêng** cho module mình.
+
+Cách dùng — đặt ở tầng **Service**, không phải Controller:
 
 ```java
-// Khong tim thay du lieu -> tu dong thanh trang 404
+// Không tìm thấy dữ liệu -> tự động thành trang 404
 Movie movie = movieRepository.findById(movieId)
         .orElseThrow(() -> new ResourceNotFoundException("phim", movieId));
 
-// Nghiep vu khong cho phep -> tu dong thanh trang 400
+// Nghiệp vụ không cho phép -> tự động thành trang 400
 if (showtime.getStartTime().isBefore(LocalDateTime.now())) {
-    throw new InvalidBookingException("Suat chieu nay da bat dau, ban khong the dat ve nua.");
+    throw new InvalidBookingException("Suất chiếu này đã bắt đầu, bạn không thể đặt vé nữa.");
 }
 
-// Ghe bi nguoi khac giu mat (ADR-001) -> tu dong thanh trang 409
+// Ghế bị người khác giữ mất (ADR-001) -> tự động thành trang 409
 try {
     ticketRepository.saveAndFlush(ticket);
 } catch (DataIntegrityViolationException ex) {
@@ -163,39 +190,50 @@ try {
 }
 ```
 
-| Exception | Ma HTTP | Dung khi nao |
+| Exception | Mã HTTP | Dùng khi nào |
 |---|---|---|
-| `ResourceNotFoundException` | 404 | Khong tim thay phim / phong / suat chieu / ve theo id |
-| `InvalidBookingException` | 400 | Yeu cau sai nghiep vu (suat da chieu, ve het han giu, qua so ghe...) |
-| `SeatAlreadyTakenException` | 409 | Ghe da co nguoi khac giu - **bat buoc dung sau khi catch `DataIntegrityViolationException`** |
-| `BusinessException` | 400 | Cac loi nghiep vu khac chua co lop rieng |
+| `ResourceNotFoundException` | 404 | Không tìm thấy phim / phòng / suất chiếu / vé theo id |
+| `InvalidBookingException` | 400 | Yêu cầu sai nghiệp vụ (suất đã chiếu, vé hết hạn giữ, quá số ghế...) |
+| `SeatAlreadyTakenException` | 409 | Ghế đã có người khác giữ — **bắt buộc dùng sau khi catch `DataIntegrityViolationException`** |
+| `BusinessException` | 400 | Các lỗi nghiệp vụ khác chưa có lớp riêng |
 
-Message truyen vao exception se hien **thang ra man hinh cho nguoi dung doc**, nen viet cau
-hoan chinh, de hieu - dung ghi kieu "err code 3" hay ten class.
+Message truyền vào exception sẽ hiện **thẳng ra màn hình cho người dùng đọc**, nên viết câu hoàn
+chỉnh, dễ hiểu — đừng ghi kiểu "err code 3" hay tên class.
 
-Neu request la AJAX (`X-Requested-With: XMLHttpRequest`) thi handler tra ve JSON
-`{"success": false, "message": "..."}` thay vi trang HTML - tien cho man hinh chon ghe.
+Nếu request là AJAX (header `X-Requested-With: XMLHttpRequest`) thì handler tự trả JSON
+`{"success": false, "message": "..."}` thay vì trang HTML — tiện cho màn hình chọn ghế.
 
-Muon bao thanh cong / bao loi nhe tren trang (khong phai exception) thi dung 2 hang so
-`Constants.MODEL_SUCCESS_MESSAGE` / `Constants.MODEL_ERROR_MESSAGE` - fragment `fragments/alert.html`
-da nhung san trong layout se tu hien thi.
+Muốn báo thành công / báo lỗi nhẹ trên trang (không phải exception) thì dùng hai hằng số
+`Constants.MODEL_SUCCESS_MESSAGE` / `Constants.MODEL_ERROR_MESSAGE` — fragment
+`fragments/alert.html` đã nhúng sẵn trong layout sẽ tự hiển thị.
 
-## 6. Quy uoc viet test
+---
 
-- File test dat trong `src/test/java/edu/hcmute/cnpm/cinema/<module>/`, ten ket thuc bang
-  `Test` (test don le) hoac `IntegrationTest` (test co dung database).
-- **Moi test co dung database phai `extends IntegrationTestBase`** (o package `support`).
-  Lop cha nay tu bat profile `test`, tu chan test chay nham vao database that, va tu xoa sach
-  du lieu truoc moi test case.
-- Tao du lieu mau bang `TestDataFactory` (cung o package `support`) thay vi tu `new` entity
-  trong tung file test. Can kieu du lieu mau moi thi **them method moi** vao day, khong sua
-  method nguoi khac dang dung.
-- Ten method test: `should<KetQuaMongDoi>_when<TinhHuong>()`, kem `@DisplayName` mo ta bang
-  tieng Viet de doc bao cao cho de.
-- Truoc khi chay test lan dau: `sqlcmd -S localhost,1433 -U sa -C -i database\create-test-database.sql`.
-  Chay test: `mvn test`.
+## 6. Quy ước viết test
 
-## 7. Lien he / thac mac
+- File test đặt trong `src/test/java/edu/hcmute/cnpm/cinema/<module>/`, tên kết thúc bằng
+  `Test` (test đơn lẻ) hoặc `IntegrationTest` (test có dùng database).
+- **Mọi test có dùng database phải `extends IntegrationTestBase`** (ở package `support`).
+  Lớp cha này tự bật profile `test`, tự chặn test chạy nhầm vào database thật, và tự xoá sạch
+  dữ liệu trước mỗi test case.
+- Tạo dữ liệu mẫu bằng `TestDataFactory` (cùng ở package `support`) thay vì tự `new` entity
+  trong từng file test. Cần kiểu dữ liệu mẫu mới thì **thêm method mới** vào đó, không sửa
+  method người khác đang dùng.
+- Tên method test: `should<KếtQuảMongĐợi>_when<TìnhHuống>()`, kèm `@DisplayName` mô tả bằng
+  tiếng Việt cho dễ đọc báo cáo.
+- Trước khi chạy test lần đầu:
+  ```bash
+  sqlcmd -S localhost,1433 -U sa -C -f 65001 -i database/create-test-database.sql
+  ```
+  Sau đó chạy `mvn test`.
 
-Neu khong chac quy uoc ap dung the nao cho truong hop cu the, hoi truoc trong nhom chat thay vi
-tu quyet dinh roi phai sua lai sau — do an chi co 4 tuan, sua di sua lai rat ton thoi gian.
+---
+
+## 7. Liên hệ / thắc mắc
+
+Nếu không chắc quy ước áp dụng thế nào cho trường hợp cụ thể, **hỏi trước trong nhóm chat** thay
+vì tự quyết định rồi phải sửa lại sau — đồ án chỉ có 4 tuần, sửa đi sửa lại rất tốn thời gian.
+
+Đặc biệt phải hỏi trước khi: sửa file thuộc module người khác, sửa entity, đổi phiên bản trong
+`pom.xml`, hoặc sửa các file dùng chung mà Thọ đang quản lý (layout, fragments, `style.css`,
+`Constants.java`, package `exception`, package `support` của test).

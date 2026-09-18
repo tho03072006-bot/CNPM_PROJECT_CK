@@ -1,11 +1,15 @@
-# Bảng phân công chi tiết - Nhóm 05
+# Bảng phân công chi tiết — Nhóm 05
 
-> **Bản nháp do Thọ soạn — 3 bạn đọc và phản hồi trước khi chốt.**
-> Mỗi dòng trong bảng sẽ trở thành một Issue trên GitHub, nên chỗ nào thấy mô tả chưa đúng
-> hoặc ước lượng lệch thì báo lại trước, sửa trên giấy dễ hơn sửa sau khi đã tạo Issue.
+Mỗi dòng trong bảng dưới đây đã được tạo thành một **Issue trên GitHub**. Vào
+[tab Issues](https://github.com/tho03072006-bot/CNPM_PROJECT_CK_NHOM5/issues) lọc theo nhãn
+`module-1` / `module-2` / `module-3` / `module-4` để thấy việc của mình, trong đó có mô tả đầy
+đủ và tiêu chí "xong là khi nào".
+
+**Làm mấy việc gắn nhãn `uu-tien-cao` trước** — chúng đang chặn việc của người khác.
 
 Ước lượng tính bằng giờ làm thật, không tính thời gian ngồi nghĩ. Cột **Cần có trước** ghi
-mã công việc phải xong trước thì mới làm được việc này.
+mã công việc phải xong trước thì mới làm được việc này. Thấy mô tả chưa đúng hoặc ước lượng
+lệch thì báo Thọ, sửa sớm đỡ tốn công.
 
 ---
 
@@ -65,10 +69,36 @@ việc mà 3 bạn kia **phải chờ**, nên làm sớm:
 | M4.4 | Design system + hai chế độ sáng/tối + trang `/ui-kit` | Xong |
 | M4.5 | Bộ exception nghiệp vụ + `GlobalExceptionHandler` | Xong |
 | M4.6 | Dữ liệu mẫu dùng chung `seed-data.sql` | Xong |
-| M4.7 | CI tự động chạy test trên mỗi Pull Request | Xong, chờ push để chạy thử |
-| M4.8 | Database dùng chung trên cloud | Chờ tạo tài khoản Azure |
+| M4.7 | CI tự động chạy test trên mỗi Pull Request | Xong, đã chạy xanh trên PR #1 |
+| M4.8 | Database dùng chung trên cloud (MonsterASP.NET) | Xong, đã nạp schema + dữ liệu mẫu |
 | M4.9 | Test luồng đặt vé end-to-end | Chờ M1, M2, M3 |
 | M4.10 | Tài liệu kiểm thử + báo cáo tổng hợp | Tuần 4 |
+
+---
+
+## Trước khi bắt đầu code — làm đủ 4 bước này
+
+1. **Đọc `README.md`**, mục *Môi trường phát triển*. Cài đúng JDK 21, Maven 3.9, SQL Server 2022
+   trở lên. Chạy 3 lệnh kiểm tra ở cuối mục đó, xanh hết mới bắt đầu.
+2. **Đọc `CONTRIBUTING.md`**, đặc biệt **Mục 5 (xử lý lỗi)** và **Mục 6 (viết test)** — hai mục
+   này quyết định code của bạn có merge được hay không.
+3. **Chạy ứng dụng rồi mở `http://localhost:8082/ui-kit`** xem sẵn bộ giao diện dùng chung.
+   Cần nút, bảng, form, sơ đồ ghế thì chép class ở đó về, đừng tự viết CSS riêng.
+4. **Xin Thọ thông tin kết nối database dùng chung** trong nhóm chat.
+
+### Về database dùng chung trên cloud
+
+Thông tin kết nối (server, tên database, user, mật khẩu) **cố ý KHÔNG nằm trong repo** — repo
+này để public, đưa mật khẩu lên là ai cũng đọc được. Thọ gửi riêng trong nhóm chat, mỗi người
+tự điền vào file `application-secrets-cloud.properties` trên máy mình (file này đã nằm trong
+`.gitignore`).
+
+Nhớ hai điều:
+
+- **Cloud chỉ dùng để tích hợp và demo.** Code hằng ngày vẫn chạy SQL Server trên máy mình cho
+  nhanh — datacenter cloud đặt ở châu Âu nên chậm hơn đáng kể.
+- **Không tự sửa schema trên cloud.** Profile `cloud` đặt `ddl-auto=validate` nên Hibernate
+  không được tự đổi bảng. Cần thêm/sửa bảng thì báo Thọ.
 
 ---
 

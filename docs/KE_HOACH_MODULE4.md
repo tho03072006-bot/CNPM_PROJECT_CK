@@ -1,160 +1,160 @@
-# Ke hoach Module 4 - Kien truc dung chung + Testing + Quan ly GitHub/PM
+# Kế hoạch Module 4 — Kiến trúc dùng chung + Testing + Quản lý GitHub/PM
 
-- **Nguoi phu trach:** Tho (leader)
-- **Cap nhat lan cuoi:** 18/09/2026
+- **Người phụ trách:** Thọ (leader)
+- **Cập nhật lần cuối:** 18/09/2026
 
-Tai lieu nay chia nho cong viec cua Module 4 thanh cac buoc lam duoc trong 1-2 gio moi buoc,
-de biet hom nay lam gi, buoc nao phai cho nguoi khac, va buoc nao la nen mong cho 3 module con lai.
+Tài liệu này chia nhỏ công việc của Module 4 thành các bước làm được trong 1–2 giờ mỗi bước,
+để biết hôm nay làm gì, bước nào phải chờ người khác, và bước nào là nền móng cho 3 module còn lại.
 
-Ky hieu: `[x]` da xong - `[ ]` chua lam - `[~]` dang lam / cho dieu kien ben ngoai.
+Ký hiệu: `[x]` đã xong · `[ ]` chưa làm · `[~]` đang làm / chờ điều kiện bên ngoài.
 
 ---
 
-## GIAI DOAN 0 - Ra soat moi truong (XONG 17/09)
+## GIAI ĐOẠN 0 — Rà soát môi trường (XONG 17/09)
 
-- [x] **0.1** Doc README.md, CONTRIBUTING.md, database/schema.sql, toan bo entity + repository hien co.
-- [x] **0.2** Kiem tra toolchain tren may leader: Java, Maven, git, GitHub CLI, Docker.
-- [x] **0.3** Kiem tra SQL Server: instance nao dang chay, database `cinema_booking` da co chua.
-- [x] **0.4** Ghi lai cac van de phat hien duoc (xem muc "Van de da phat hien" o cuoi file).
+- [x] **0.1** Đọc README.md, CONTRIBUTING.md, database/schema.sql, toàn bộ entity + repository hiện có.
+- [x] **0.2** Kiểm tra công cụ trên máy leader: Java, Maven, git, GitHub CLI, Docker.
+- [x] **0.3** Kiểm tra SQL Server: instance nào đang chạy, database `cinema_booking` đã có chưa.
+- [x] **0.4** Ghi lại các vấn đề phát hiện được (xem mục "Vấn đề đã phát hiện" ở cuối file).
 
-## GIAI DOAN 1 - Nen mong Testing (XONG 17/09)
+## GIAI ĐOẠN 1 — Nền móng Testing (XONG 17/09)
 
-- [x] **1.1** Tao database rieng cho test: `database/create-test-database.sql` -> `cinema_booking_test`.
-      Ly do: test xoa sach du lieu truoc moi test case, khong duoc dung chung voi database dang dev.
+- [x] **1.1** Tạo database riêng cho test: `database/create-test-database.sql` → `cinema_booking_test`.
+      Lý do: test xoá sạch dữ liệu trước mỗi test case, không được dùng chung với database đang dev.
 - [x] **1.2** Profile `test`: `src/test/resources/application-test.properties`
-      (tro vao database test, `ddl-auto=update`, lay user/password tu file secret chung).
-- [x] **1.3** `IntegrationTestBase` - lop cha cho moi test tich hop cua ca 4 module:
-      bat profile test, **chan test chay nham vao database that**, xoa sach du lieu truoc moi test.
-- [x] **1.4** `TestDataFactory` - xuong tao du lieu mau dung chung (user / movie / room / seat / showtime / ticket).
-- [x] **1.5** `SeatBookingConcurrencyIntegrationTest` - test ADR-001, 4 test case:
-      - rang buoc UNIQUE (showtime_id, seat_id) co that trong database;
-      - dat trung ghe tuan tu -> bi tu choi;
-      - **2 request cung luc -> dung 1 request giu duoc ghe**;
-      - **10 request cung luc -> van dung 1 request giu duoc ghe**.
-- [x] **1.6** Chay `mvn test` -> pass.
+      (trỏ vào database test, `ddl-auto=update`, lấy user/password từ file secret chung).
+- [x] **1.3** `IntegrationTestBase` — lớp cha cho mọi test tích hợp của cả 4 module:
+      bật profile test, **chặn test chạy nhầm vào database thật**, xoá sạch dữ liệu trước mỗi test.
+- [x] **1.4** `TestDataFactory` — xưởng tạo dữ liệu mẫu dùng chung (user / movie / room / seat / showtime / ticket).
+- [x] **1.5** `SeatBookingConcurrencyIntegrationTest` — test ADR-001, 4 test case:
+      - ràng buộc UNIQUE (showtime_id, seat_id) có thật trong database;
+      - đặt trùng ghế tuần tự → bị từ chối;
+      - **2 request cùng lúc → đúng 1 request giữ được ghế**;
+      - **10 request cùng lúc → vẫn đúng 1 request giữ được ghế**.
+- [x] **1.6** Chạy `mvn test` → pass.
 
-## GIAI DOAN 2 - Database dung chung tren cloud (DANG LAM)
+## GIAI ĐOẠN 2 — Database dùng chung trên cloud (XONG 18/09)
 
-- [x] **2.1** Khao sat cac lua chon cloud mien phi (so sanh dung luong free: Azure SQL 32 GB vs
-      CockroachDB 10 GiB vs Aiven 1 GB vs Neon 0.5 GB vs Supabase 500 MB), viet
-      `docs/ADR-002-database-dung-chung-tren-cloud.md`.
-      **Chot lan 1: Azure SQL Database goi free. Chot lan 2 (18/09): doi sang MonsterASP.NET**
-      vi Azure tu choi cho mo tai khoan free - xem muc 2b cua ADR-002.
-- [x] **2.2** Chuan bi `database/schema-cloud.sql` (ban schema chay duoc tren database cloud,
-      khong co lenh CREATE DATABASE / USE vi nha cung cap da tao san database).
-- [x] **2.3** Chuan bi profile `cloud`: `src/main/resources/application-cloud.properties`
-      + `application-secrets-cloud.properties.example`.
-- [x] **2.4** *(Tho lam tay)* Tao tai khoan nha cung cap cloud. Azure tu choi ("not eligible for an
-      Azure free account") -> da dang ky MonsterASP.NET goi Free, duoc 5 database MSSQL.
-- [x] **2.5** Da tao database MSSQL tren MonsterASP (datacenter EU, collation
-      `SQL_Latin1_General_CP1_CI_AS` - trung voi may ca nhan nen khong lech), da bat
-      **Remote access**. **Con lai: gui thong tin ket noi cho 3 thanh vien qua nhom chat.**
-- [x] **2.6** Da chay `schema-cloud.sql` va `seed-data.sql` len database that tren MonsterASP
-      (6 bang, 3 nguoi dung, 6 phim, 2 phong, 120 ghe, 10 suat chieu). Chay ung dung voi profile
-      `cloud` -> **`ddl-auto=validate` PASS**, trang chu va trang loi deu render duoc tu du lieu cloud.
-      Cloud chay SQL Server **2025** Express, may ca nhan chay **2022** - khong anh huong.
-      Thoi gian khoi dong: 10.5 giay (local la 4.5 giay), cham hon do datacenter o chau Au.
-- [x] **2.7** Viet `database/seed-data.sql`: 6 phim, 2 phong, 120 ghe, 10 suat chieu -> du lieu mau chung
-      de 4 nguoi test cung mot bo du lieu. Da chay thu 2 lan, khong nhan doi du lieu.
-- [x] **2.8** Bo sung huong dan chay profile `cloud` vao README.
+- [x] **2.1** Khảo sát các lựa chọn cloud miễn phí, viết `docs/ADR-002-database-dung-chung-tren-cloud.md`.
+      **Chốt lần 1: Azure SQL Database gói free. Chốt lần 2 (18/09): đổi sang MonsterASP.NET**
+      vì Azure từ chối cho mở tài khoản free — xem mục 2c của ADR-002.
+- [x] **2.2** Chuẩn bị `database/schema-cloud.sql` (bản schema chạy được trên database cloud,
+      không có lệnh CREATE DATABASE / USE vì nhà cung cấp đã tạo sẵn database).
+- [x] **2.3** Chuẩn bị profile `cloud`: `src/main/resources/application-cloud.properties`
+      + `application-secrets-cloud.properties.example`. Chuỗi kết nối viết theo kiểu không phụ
+      thuộc nhà cung cấp, đổi nhà cung cấp chỉ sửa file secret chứ không sửa code.
+- [x] **2.4** Tạo tài khoản nhà cung cấp cloud. Azure từ chối ("not eligible for an Azure free
+      account") → đã đăng ký MonsterASP.NET gói Free, được 5 database MSSQL.
+- [x] **2.5** Đã tạo database MSSQL trên MonsterASP (datacenter EU, collation
+      `SQL_Latin1_General_CP1_CI_AS` — trùng với máy cá nhân nên không lệch), đã bật **Remote access**.
+- [x] **2.6** Đã chạy `schema-cloud.sql` và `seed-data.sql` lên database thật
+      (6 bảng, 3 người dùng, 6 phim, 2 phòng, 120 ghế, 10 suất chiếu). Chạy ứng dụng với profile
+      `cloud` → **`ddl-auto=validate` PASS**, trang chủ và trang lỗi đều render được từ dữ liệu cloud.
+      Cloud chạy SQL Server **2025** Express, máy cá nhân chạy **2022** — không ảnh hưởng.
+      Thời gian khởi động: 10,5 giây (local là 4,5 giây), chậm hơn do datacenter ở châu Âu.
+- [x] **2.7** Viết `database/seed-data.sql`: 6 phim, 2 phòng, 120 ghế, 10 suất chiếu → dữ liệu
+      mẫu chung để 4 người test cùng một bộ dữ liệu. Đã chạy thử 2 lần, không nhân đôi dữ liệu.
+- [x] **2.8** Bổ sung hướng dẫn chạy profile `cloud` vào README.
+- [ ] **2.9** **Gửi thông tin kết nối cho 3 thành viên qua nhóm chat.** Thông tin này cố ý không
+      nằm trong repo (repo để public).
 
-## GIAI DOAN 3 - Kien truc dung chung cho 3 module con lai (XONG PHAN CHINH 17/09)
+## GIAI ĐOẠN 3 — Kiến trúc dùng chung cho 3 module còn lại (XONG PHẦN CHÍNH 17/09)
 
 - [x] **3.1** Package `exception`: `BusinessException` (cha), `SeatAlreadyTakenException`,
       `ResourceNotFoundException`, `InvalidBookingException`.
 - [x] **3.2** `GlobalExceptionHandler` (`@ControllerAdvice`) + trang `error.html` theo layout chung.
-      Tra HTML cho request thuong, tra JSON cho request AJAX (phuc vu man hinh chon ghe cua Module 2).
-      Co san luoi an toan: bat `DataIntegrityViolationException` neu Service quen doi sang
-      `SeatAlreadyTakenException`. -> het canh loi 500 tho (yeu cau trong checklist PR).
-- [ ] **3.3** **Bao Thang hop dong (contract) cua Module 2**: khi INSERT ve bi dinh UNIQUE
-      (showtime_id, seat_id) thi Service phai bat `DataIntegrityViolationException` va nem
-      `SeatAlreadyTakenException`. Can nhan tin trong nhom truoc khi ban ay viet `SeatBookingService`.
-- [x] **3.4** Fragment thong bao dung chung `fragments/alert.html`, da nhung san vao `layout/base.html`
-      nen moi trang tu dong co cho hien thong bao.
-- [x] **3.5** Bo sung hang so dung chung vao `constants/Constants.java`
+      Trả HTML cho request thường, trả JSON cho request AJAX (phục vụ màn hình chọn ghế của Module 2).
+      Có sẵn lưới an toàn: bắt `DataIntegrityViolationException` nếu Service quên đổi sang
+      `SeatAlreadyTakenException` → hết cảnh lỗi 500 thô (yêu cầu trong bảng kiểm duyệt PR).
+- [ ] **3.3** **Báo Thắng hợp đồng của Module 2**: khi INSERT vé bị dính UNIQUE
+      (showtime_id, seat_id) thì Service phải bắt `DataIntegrityViolationException` và ném
+      `SeatAlreadyTakenException`. Nội dung này đã ghi rõ trong Issue #14, nhưng vẫn nên nhắn
+      trực tiếp trước khi bạn ấy viết `SeatBookingService`.
+- [x] **3.4** Fragment thông báo dùng chung `fragments/alert.html`, đã nhúng sẵn vào `layout/base.html`
+      nên mọi trang tự động có chỗ hiện thông báo.
+- [x] **3.5** Bổ sung hằng số dùng chung vào `constants/Constants.java`
       (`VIEW_ERROR`, `MODEL_SUCCESS_MESSAGE`, `MODEL_ERROR_MESSAGE`, `MODEL_ERROR_CODE`, `MODEL_ERROR_PATH`).
-- [x] **3.6** Them Muc 5 (xu ly loi) va Muc 6 (quy uoc viet test) vao CONTRIBUTING.md.
-- [x] **3.7** `GlobalExceptionHandlerIntegrationTest` - 4 test case kiem chung phan tren chay that.
-- [~] **3.8** Giao dien dung chung (design system): lam theo lo trinh rieng 7 ngay o
-      `docs/LO_TRINH_GIAO_DIEN.md`. Da xong Ngay 1 (he mau theo logo truong + 2 che do sang/toi
-      co nut bam), Ngay 2 (bo component + trang `/ui-kit`) va Ngay 7 (ra soat tuong phan mau:
-      20/20 dat chuan WCAG AA o ca 2 che do). Ngay 3-6 phai cho code cua 3 module kia.
+- [x] **3.6** Thêm Mục 5 (xử lý lỗi) và Mục 6 (quy ước viết test) vào CONTRIBUTING.md.
+- [x] **3.7** `GlobalExceptionHandlerIntegrationTest` — 4 test case kiểm chứng phần trên chạy thật.
+- [~] **3.8** Giao diện dùng chung (design system): làm theo lộ trình riêng 7 ngày ở
+      `docs/LO_TRINH_GIAO_DIEN.md`. Đã xong Ngày 1 (hệ màu theo logo trường + 2 chế độ sáng/tối
+      có nút bấm), Ngày 2 (bộ component + trang `/ui-kit`) và Ngày 7 (rà soát tương phản màu:
+      20/20 đạt chuẩn WCAG AA ở cả 2 chế độ). Ngày 3–6 phải chờ code của 3 module kia.
 
-## GIAI DOAN 4 - CI tren GitHub Actions (XONG 18/09)
+## GIAI ĐOẠN 4 — CI trên GitHub Actions (XONG 18/09)
 
-- [x] **4.1** Workflow `.github/workflows/ci.yml`: chay `mvn -B test` tren moi push va moi PR vao `develop`.
-- [x] **4.2** Dung service container `mcr.microsoft.com/mssql/server` lam database test cho CI
-      (repo dang de PUBLIC nen GitHub Actions mien phi khong gioi han phut).
-- [x] **4.3** Gan badge trang thai build vao README.
-- [ ] **4.4** Bat branch protection cho `develop` va `main`: bat buoc CI pass + 1 approve moi duoc merge.
+- [x] **4.1** Workflow `.github/workflows/ci.yml`: chạy `mvn -B test` trên mọi push và mọi PR vào `develop`.
+- [x] **4.2** Dùng service container `mcr.microsoft.com/mssql/server` làm database test cho CI
+      (repo để PUBLIC nên GitHub Actions miễn phí không giới hạn phút).
+- [x] **4.3** Gắn huy hiệu trạng thái build vào README.
+- [ ] **4.4** Bật branch protection cho `develop` và `main`: bắt buộc CI pass + 1 approve mới được merge.
 
-## GIAI DOAN 5 - Quan ly GitHub / PM
+## GIAI ĐOẠN 5 — Quản lý GitHub / PM
 
-- [~] **5.0** Da push nhanh `Minh_Thọ` va merge vao `develop` qua Pull Request #1 (CI xanh).
-      **CON LAI:** `main` va 3 nhanh ca nhan cua Tai/Thang/Thanh van dang o "Initial commit" ->
-      3 ban clone ve chua co gi de code. Chay:
-      `git push origin develop:main develop:Hữu_Tài develop:Hữu_Thắng develop:Tuấn_Thanh`
-- [ ] **5.1** Moi 3 thanh vien lam collaborator cua repo (hien tai repo moi co mot minh Tho).
-- [x] **5.2** Chot quy uoc ten nhanh: **moi nguoi code tren nhanh ca nhan mang ten minh**,
-      gop vao `develop` qua Pull Request, `main` giu code on dinh. Nhanh phu `feature/...`
-      chi dung khi tinh nang lam dai ngay. Da cap nhat lai Muc 1.4 + Muc 3 cua CONTRIBUTING.md
-      va muc "Quy uoc GitHub" cua README cho khop.
-- [x] **5.3** Da tao 9 label: `module-1..4`, `uu-tien-cao`, `test`, `tai-lieu`, `giao-dien`, `cho-viec-khac`.
-- [x] **5.4** Da tao 4 milestone theo timeline 4 tuan (han 24/09, 01/10, 08/10, 15/10).
-- [x] **5.5** Viet `docs/PHAN_CONG.md` - 29 dau viec cua 4 module, moi viec co ma, phu thuoc,
-      uoc luong, thuoc tuan nao.
-- [x] **5.6** Da tao 33 Issue (#2 den #34) tu bang phan cong, gan du label va milestone.
-      **Chua gan duoc nguoi phu trach** vi 3 ban chua la collaborator - xem buoc 5.1.
-- [ ] **5.7** Tao GitHub Project board kieu Kanban: `Backlog | Dang lam | Review | Xong`, keo het Issue vao.
-      Can chay `gh auth refresh -s project,read:project` truoc (token hien thieu quyen nay).
-- [x] **5.8** Them `.github/pull_request_template.md` theo dung checklist Muc 3 cua CONTRIBUTING.md.
-- [x] **5.9** Them `.github/ISSUE_TEMPLATE/` (mau bao loi + mau dau viec).
-- [x] **5.10** Them `CODEOWNERS`. Con thieu ten tai khoan GitHub cua 3 ban - dien not sau buoc 5.1.
+- [x] **5.0** Đã push `develop` sang `main` và cả 3 nhánh cá nhân của Tài, Thắng, Thanh.
+      Cả 6 nhánh hiện ở cùng một commit, 3 bạn clone về là có đủ `pom.xml`, entity, schema, test.
+- [~] **5.1** Mời 3 thành viên làm collaborator — **Thọ đã gửi lời mời 18/09**, chờ các bạn chấp nhận.
+      Sau đó: gán người phụ trách cho từng Issue, và điền tên tài khoản GitHub vào 3 dòng đang
+      để trống trong `.github/CODEOWNERS`.
+- [x] **5.2** Chốt quy ước tên nhánh: **mỗi người code trên nhánh cá nhân mang tên mình**,
+      gộp vào `develop` qua Pull Request, `main` giữ code ổn định. Nhánh phụ `feature/...`
+      chỉ dùng khi tính năng làm dài ngày.
+- [x] **5.3** Đã tạo 9 nhãn: `module-1..4`, `uu-tien-cao`, `test`, `tai-lieu`, `giao-dien`, `cho-viec-khac`.
+- [x] **5.4** Đã tạo 4 milestone theo timeline 4 tuần (hạn 24/09, 01/10, 08/10, 15/10).
+- [x] **5.5** Viết `docs/PHAN_CONG.md` — 29 đầu việc của 4 module, mỗi việc có mã, phụ thuộc,
+      ước lượng, thuộc tuần nào.
+- [x] **5.6** Đã tạo 33 Issue (#2 đến #34) từ bảng phân công, gán đủ nhãn và milestone.
+      **Chưa gán được người phụ trách** vì 3 bạn chưa chấp nhận lời mời — xem bước 5.1.
+- [ ] **5.7** Tạo GitHub Project board kiểu Kanban: `Backlog | Đang làm | Review | Xong`, kéo hết Issue vào.
+      Cần chạy `gh auth refresh -s project,read:project` trước (token hiện thiếu quyền này).
+- [x] **5.8** Thêm `.github/pull_request_template.md` theo đúng bảng kiểm Mục 3 của CONTRIBUTING.md.
+- [x] **5.9** Thêm `.github/ISSUE_TEMPLATE/` (mẫu báo lỗi + mẫu đầu việc).
+- [x] **5.10** Thêm `CODEOWNERS`. Còn thiếu tên tài khoản GitHub của 3 bạn — điền nốt sau bước 5.1.
 
-## GIAI DOAN 6 - Test day du (PHU THUOC module 1, 2, 3 code xong)
+## GIAI ĐOẠN 6 — Test đầy đủ (PHỤ THUỘC module 1, 2, 3 code xong)
 
-- [ ] **6.1** Test tich hop luong dat ve end-to-end bang `MockMvc`:
-      xem danh sach phim -> chon suat chieu -> xem seat-map -> giu ghe -> thanh toan -> ve chuyen sang `PAID`.
-- [ ] **6.2** Test het han giu ghe: ve `HELD` qua `SEAT_HOLD_MINUTES` phut -> chuyen `EXPIRED`,
-      ghe do phai duoc giai phong cho nguoi khac dat.
-- [ ] **6.3** Test race-condition o **tang Service** (khi Thang co `SeatBookingService`):
-      kiem tra Service nem dung `SeatAlreadyTakenException` chu khong de loi 500 loi ra ngoai.
-- [ ] **6.4** Unit test cho cac ham tinh toan: tinh tien theo loai ghe (VIP/COUPLE), kiem tra trung gio chieu.
-- [ ] **6.5** Test phan quyen: khach hang khong vao duoc trang admin.
-- [ ] **6.6** Tong hop `docs/KE_HOACH_KIEM_THU.md`: bang test case, ket qua, do bao phu -> dua vao bao cao.
+- [ ] **6.1** Test tích hợp luồng đặt vé end-to-end bằng `MockMvc`:
+      xem danh sách phim → chọn suất chiếu → xem seat-map → giữ ghế → thanh toán → vé chuyển sang `PAID`.
+- [ ] **6.2** Test hết hạn giữ ghế: vé `HELD` quá `SEAT_HOLD_MINUTES` phút → chuyển `EXPIRED`,
+      ghế đó phải được giải phóng cho người khác đặt.
+- [ ] **6.3** Test race-condition ở **tầng Service** (khi Thắng có `SeatBookingService`):
+      kiểm tra Service ném đúng `SeatAlreadyTakenException` chứ không để lỗi 500 lọt ra ngoài.
+- [ ] **6.4** Unit test cho các hàm tính toán: tính tiền theo loại ghế (VIP/COUPLE), kiểm tra trùng giờ chiếu.
+- [ ] **6.5** Test phân quyền: khách hàng không vào được trang admin.
+- [ ] **6.6** Tổng hợp `docs/KE_HOACH_KIEM_THU.md`: bảng test case, kết quả, độ bao phủ → đưa vào báo cáo.
 
-## GIAI DOAN 7 - Tich hop & ban giao
+## GIAI ĐOẠN 7 — Tích hợp & bàn giao
 
-- [ ] **7.1** Merge lan luot 4 module vao `develop`, chay lai toan bo test sau moi lan merge.
-- [ ] **7.2** Chay thu toan he thong tren database cloud (demo that).
-- [ ] **7.3** Merge `develop` -> `main`, gan tag phien ban.
-- [ ] **7.4** Hoan thien README (anh chup man hinh, huong dan chay, so do kien truc).
+- [ ] **7.1** Merge lần lượt 4 module vào `develop`, chạy lại toàn bộ test sau mỗi lần merge.
+- [ ] **7.2** Chạy thử toàn hệ thống trên database cloud (tập demo).
+- [ ] **7.3** Merge `develop` → `main`, gắn tag phiên bản.
+- [ ] **7.4** Hoàn thiện README (ảnh chụp màn hình, sơ đồ kiến trúc).
 
 ---
 
-## Thu tu uu tien (lam gi truoc)
+## Thứ tự ưu tiên (làm gì trước)
 
-1. **Buoc 5.0** - push nen mong len GitHub. Chua co buoc nay thi ca nhom khong code duoc.
-2. **Giai doan 3.3** - bao hop dong exception cho Thang truoc khi ban ay viet `SeatBookingService`.
-3. **Giai doan 5.5 + 5.6 + 5.7** (phan cong + Issue + board) - de thay thay nhom co quan ly cong viec.
-4. **Giai doan 2.4 -> 2.7** (database cloud) - can lam truoc khi 4 nguoi bat dau nhap du lieu that.
-5. **Giai doan 4** (CI) - lam duoc luc nao cung duoc, nhung co som thi bat loi merge som.
-6. **Giai doan 6** - cho code cua 3 module.
+1. **Bước 2.9 + 5.1** — gửi thông tin database và hoàn tất mời collaborator. Chưa xong hai
+   việc này thì 3 bạn vẫn chưa làm việc đầy đủ được.
+2. **Bước 3.3** — nhắn Thắng hợp đồng exception trước khi bạn ấy viết `SeatBookingService`.
+3. **Bước 5.7** — dựng Project board để thầy thấy nhóm có quản lý công việc.
+4. **Bước 4.4** — bật branch protection, tránh có người lỡ tay push thẳng vào `develop`.
+5. **Giai đoạn 6** — chờ code của 3 module.
 
-## Van de da phat hien (can xu ly)
+## Vấn đề đã phát hiện
 
-| # | Van de | Anh huong | Huong xu ly |
+| # | Vấn đề | Ảnh hưởng | Hướng xử lý |
 |---|---|---|---|
-| V1 | `JAVA_HOME` tren may leader dang tro vao **Java 8** (`C:\Java8`), trong khi du an can **Java 21** | `mvn` chay bang Java 8 se khong build duoc Spring Boot 3.5 | Doi `JAVA_HOME` sang JDK 21 (may da cai san `C:\Program Files\Eclipse Adoptium\jdk-21.0.12.101-hotspot`). Can dan ca 3 thanh vien kiem tra bang `mvn -v` |
-| V2 | Database `cinema_booking` chua ton tai, `schema.sql` chua tung duoc chay | Khong ai chay duoc ung dung | Da chay `schema.sql` tren may leader. Can dan 3 nguoi con lai lam theo README |
-| V3 | Instance SQL Server: `localhost,1433` thuc te la **`MTho\SQLEXPRESS`** (instance mac dinh `MSSQLSERVER` dang tat) | Bao loi ket noi kho hieu neu khoi dong nham instance | Ghi ro trong README: dung `localhost,1433`, khong dung `.\SQLEXPRESS` |
-| V4 | Repo moi co **1 collaborator** (tho03072006-bot) | 3 nguoi kia khong push / khong duoc gan Issue | Buoc 5.1 |
-| V5 | Token GitHub CLI thieu quyen `project` | Khong tao duoc Project board bang lenh | Chay `gh auth refresh -s project,read:project` roi lam buoc 5.7 |
-| V6 | ~~Ten nhanh tren remote dat theo ten nguoi, lech voi CONTRIBUTING.md~~ **DA XU LY 17/09** | - | Da chot: giu nhanh ca nhan, sua lai CONTRIBUTING.md + README cho khop (buoc 5.2) |
-| V7 | Khong co Docker tren may | Khong dung duoc Testcontainers | Da chon huong khac: test chay tren SQL Server that (local) + service container tren GitHub Actions |
-| V8 | Chua co Maven wrapper (`mvnw`) | 4 may co the dung 4 phien ban Maven khac nhau | Can bo sung `mvn wrapper:wrapper` |
-| V9 | **Commit nen mong `a3d087e` chua tung duoc push.** Ca 6 nhanh tren remote (main, develop, 4 nhanh ca nhan) deu dang o `3764755 Initial commit` - chi co README + .gitignore | 3 thanh vien clone ve khong co pom.xml, khong co entity, khong co gi de code | Buoc 5.0 - **lam ngay** |
-| V10 | `mvn spring-boot:run` bao `Could not find or load main class`. Nguyen nhan: duong dan du an co dau tieng Viet (`D:\Cong nghe phan mem\...`) ma JVM tren may dang co `sun.jnu.encoding=Cp1252` nen giai ma sai classpath khi fork tien trinh con | Khong chay duoc ung dung bang lenh Maven (rieng `mvn test` van chay duoc vi surefire truyen classpath kieu khac) | 2 cach: (a) doi thu muc du an sang duong dan khong dau, vi du `D:\CNPM\Project_CK_NHOM05`; hoac (b) bat "Beta: Use Unicode UTF-8 for worldwide language support" trong Windows Region settings. Nen chon (a) vi khong dung cham cai dat he thong |
-| V11 | 17/09 da xay ra 1 lan mat file: doi nhanh sang `Minh_Thọ` (dang o Initial commit) lam bay het file chua commit | Mat cong lam lai | **Bai hoc: commit som, commit thuong xuyen.** Truoc khi doi nhanh phai `git status` xem con gi chua commit |
-| V12 | Entity va `schema.sql` lech nhau ve kieu so: `Showtime.basePrice` / `Ticket.price` khong khai bao `precision`/`scale` nen Hibernate hieu la `numeric(38,2)`, trong khi `schema.sql` ghi `DECIMAL(10,2)`. Luc chay app o may leader, Hibernate da tu `alter table` doi 2 cot nay | **Da kiem chung 18/09: KHONG chan duoc ung dung.** Tao database sach tu `schema-cloud.sql` roi chay app o che do `ddl-auto=validate` -> khoi dong binh thuong, Hibernate 6 khong kiem tra precision/scale cua kieu so | Khong gap. Van nen them `precision = 10, scale = 2` vao `@Column` cho sach, nhung **khong gap va khong chan cloud**. `Ticket` la file cua Thang, `Showtime` cua Tai -> hoi 2 ban roi sua sau |
-| V13 | Ten tac gia cua commit nen mong `a3d087e` khong phai ten that cua Tho (dang la mot ten tam dat luc khoi tao), va email cung khac email dang dung | Ho so git nop cho truong nen dung ten that va nhat quan | Noi dung tai lieu da don o commit `c2da0fe`. **Con ten tac gia cua `a3d087e`: phai viet lai lich su git moi doi duoc - chua lam, cho Tho dong y** |
+| V1 | `JAVA_HOME` trên máy leader trỏ vào **Java 8** (`C:\Java8`) trong khi dự án cần **Java 21** | `mvn` chạy bằng Java 8 không build được Spring Boot 3.5 | Đổi `JAVA_HOME` sang JDK 21. Đã ghi vào README để 3 bạn tự kiểm tra bằng `mvn -v` |
+| V2 | ~~Database `cinema_booking` chưa tồn tại, `schema.sql` chưa từng được chạy~~ **ĐÃ XỬ LÝ** | — | Đã chạy trên máy leader; README có hướng dẫn cho 3 người còn lại |
+| V3 | `localhost,1433` thực tế là instance **`MTho\SQLEXPRESS`** (instance mặc định `MSSQLSERVER` đang tắt) | Báo lỗi kết nối khó hiểu nếu khởi động nhầm instance | Đã ghi rõ trong README: dùng `localhost,1433`, không dùng `.\SQLEXPRESS` |
+| V4 | ~~Repo chỉ có 1 collaborator~~ **ĐANG XỬ LÝ** | 3 bạn không push được, không gán Issue cho ai được | Thọ đã gửi lời mời 18/09, chờ chấp nhận — bước 5.1 |
+| V5 | Token GitHub CLI thiếu quyền `project` | Không tạo được Project board bằng lệnh | Chạy `gh auth refresh -s project,read:project` rồi làm bước 5.7 |
+| V6 | ~~Tên nhánh trên remote đặt theo tên người, lệch với CONTRIBUTING.md~~ **ĐÃ XỬ LÝ 17/09** | — | Đã chốt giữ nhánh cá nhân, sửa lại CONTRIBUTING.md + README cho khớp |
+| V7 | Không có Docker trên máy | Không dùng được Testcontainers | Đã chọn hướng khác: test chạy trên SQL Server thật (local) + service container trên GitHub Actions |
+| V8 | Chưa có Maven wrapper (`mvnw`) | 4 máy có thể dùng 4 phiên bản Maven khác nhau | Tạm thời chốt phiên bản bằng bảng trong README. Cần bổ sung `mvn wrapper:wrapper` |
+| V9 | ~~Commit nền móng chưa từng được push, cả 6 nhánh remote đều ở "Initial commit"~~ **ĐÃ XỬ LÝ 18/09** | — | Đã push `develop` sang `main` và 3 nhánh cá nhân; cả 6 nhánh cùng một commit |
+| V10 | `mvn spring-boot:run` báo `Could not find or load main class`. Nguyên nhân: đường dẫn dự án có dấu tiếng Việt mà JVM đang chạy `sun.jnu.encoding=Cp1252` nên giải mã sai classpath khi fork tiến trình con | Không chạy được ứng dụng bằng lệnh Maven. Bẫy ở chỗ `mvn test` vẫn chạy bình thường nên rất dễ tưởng là lỗi code | Hai cách: (a) đổi thư mục dự án sang đường dẫn không dấu, ví dụ `D:\CNPM\Project_CK_NHOM05`; hoặc (b) bật "Beta: Use Unicode UTF-8" trong Windows Region settings. **Nên chọn (a)** vì không đụng chạm cài đặt hệ thống. Cách chạy tạm: `mvn -DskipTests package` rồi `java -jar "target\<tên>.jar"` bằng đường dẫn tương đối |
+| V11 | 17/09 mất một đợt file: đổi nhánh sang `Minh_Thọ` (đang ở Initial commit) làm bay hết file chưa commit | Mất công làm lại | **Bài học: commit sớm, commit thường xuyên.** Trước khi đổi nhánh phải `git status` xem còn gì chưa commit. Đã ghi vào CONTRIBUTING.md Mục 1.4 |
+| V12 | Entity và `schema.sql` lệch nhau về kiểu số: `Showtime.basePrice` / `Ticket.price` không khai báo `precision`/`scale` nên Hibernate hiểu là `numeric(38,2)`, trong khi `schema.sql` ghi `DECIMAL(10,2)` | **Đã kiểm chứng 18/09: KHÔNG chặn được ứng dụng.** Chạy app ở chế độ `ddl-auto=validate` trên database sạch → khởi động bình thường, Hibernate 6 không kiểm tra precision/scale của kiểu số | Không gấp. Vẫn nên thêm `precision = 10, scale = 2` vào `@Column` cho sạch, nhưng **không chặn cloud**. `Ticket` là file của Thắng, `Showtime` của Tài → hỏi 2 bạn rồi sửa sau |
+| V13 | Tên tác giả của commit nền móng `a3d087e` không phải tên thật của Thọ (là một tên tạm đặt lúc khởi tạo), và email cũng khác email đang dùng | Hồ sơ git nộp cho trường nên dùng tên thật và nhất quán | Nội dung tài liệu đã dọn ở commit `c2da0fe`. **Còn tên tác giả của `a3d087e`: phải viết lại lịch sử git mới đổi được — chưa làm, chờ Thọ đồng ý.** Lưu ý: giờ đã push rồi nên viết lại lịch sử sẽ cần `--force-with-lease` và phải báo cả nhóm |
