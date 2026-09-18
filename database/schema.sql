@@ -79,7 +79,7 @@ CREATE TABLE tickets (
     price           DECIMAL(10,2)   NOT NULL,
     held_at         DATETIME2       NOT NULL DEFAULT SYSUTCDATETIME(),
     paid_at         DATETIME2       NULL,
-    -- Chống đặt trùng ghế cho cùng một suất chiếu (ADR-001) - KHÔNG được xoá ràng buộc này
+    -- Chống đặt trùng ghế cho cùng một suất chiếu - KHÔNG được xoá ràng buộc này
     CONSTRAINT uq_showtime_seat UNIQUE (showtime_id, seat_id)
 );
 

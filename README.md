@@ -170,8 +170,8 @@ container SQL Server riêng. Đừng để CI báo đỏ rồi mới sửa — c
 ## Database dùng chung của nhóm (cloud)
 
 Ngoài database trên máy cá nhân, nhóm dùng thêm một database MSSQL chung trên
-**MonsterASP.NET** (gói Free) để tích hợp và demo. Lý do chọn nhà cung cấp này:
-[`docs/ADR-002-database-dung-chung-tren-cloud.md`](docs/ADR-002-database-dung-chung-tren-cloud.md).
+**MonsterASP.NET** (gói Free) để tích hợp và demo. Chi tiết đầy đủ về cả ba database:
+[`docs/DATABASE.md`](docs/DATABASE.md).
 
 **Mô hình 2 tầng — nhớ cho kỹ:**
 
@@ -219,8 +219,6 @@ Ba quy tắc không được phá:
 - Mọi animation phải tắt được khi người dùng bật chế độ giảm chuyển động của hệ điều hành.
 - Thêm class mới thì **nối vào cuối** `style.css`, không sửa class người khác đang dùng.
 
-Lộ trình và bảng màu đầy đủ: [`docs/LO_TRINH_GIAO_DIEN.md`](docs/LO_TRINH_GIAO_DIEN.md).
-
 ## Xử lý lỗi — dùng chung, không tự chế
 
 Cả nhóm dùng chung bộ exception trong `edu.hcmute.cnpm.cinema.exception`. **Không tự viết
@@ -256,6 +254,4 @@ Cách dùng cụ thể: Mục 5 của [`CONTRIBUTING.md`](CONTRIBUTING.md).
 |---|---|
 | [`CONTRIBUTING.md`](CONTRIBUTING.md) | Quy ước đặt tên, cấu trúc, xử lý lỗi, viết test, quy trình Pull Request |
 | [`docs/PHAN_CONG.md`](docs/PHAN_CONG.md) | Bảng phân công 29 đầu việc + timeline 4 tuần |
-| [`docs/ADR-002-database-dung-chung-tren-cloud.md`](docs/ADR-002-database-dung-chung-tren-cloud.md) | Vì sao chọn nhà cung cấp cloud này, các phương án đã cân nhắc |
-| [`docs/KE_HOACH_MODULE4.md`](docs/KE_HOACH_MODULE4.md) | Kế hoạch riêng của Module 4 + danh sách vấn đề đã phát hiện |
-| [`docs/LO_TRINH_GIAO_DIEN.md`](docs/LO_TRINH_GIAO_DIEN.md) | Lộ trình làm giao diện, bảng màu, kết quả rà soát tương phản |
+| [`docs/DATABASE.md`](docs/DATABASE.md) | Ba database của dự án, cách dùng từng cái, các lỗi hay gặp |
