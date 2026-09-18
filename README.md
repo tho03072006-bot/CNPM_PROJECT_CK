@@ -105,11 +105,31 @@ xem `src/test/java/edu/hcmute/cnpm/cinema/support/` va Muc 6 cua `CONTRIBUTING.m
 
 ## Database dung chung cua nhom (cloud)
 
-Ngoai database tren may ca nhan, nhom dung them 1 database chung tren cloud de tich hop va demo.
-Chi tiet + ly do chon: `docs/ADR-002-database-dung-chung-tren-cloud.md`.
+Ngoai database tren may ca nhan, nhom dung them 1 database MSSQL chung tren **MonsterASP.NET**
+(goi Free) de tich hop va demo. Ly do chon nha cung cap nay: `docs/ADR-002-database-dung-chung-tren-cloud.md`.
 
-Chay ung dung tren database chung: `mvn spring-boot:run -Dspring-boot.run.profiles=cloud`
-(can co file `application-secrets-cloud.properties` - xem file `.example`).
+**Mo hinh 2 tang - nho cho ky:**
+
+- **Code hang ngay** thi dung SQL Server tren may minh (nhanh, khong can mang).
+- **Cloud** chi dung luc tich hop va demo. Datacenter dat o chau Au nen moi truy van cham
+  hon local khoang 250-300ms, khoi dong ung dung mat ~10 giay thay vi ~4 giay.
+
+**Cai dat 1 lan tren may ban:**
+
+1. Xin Tho thong tin ket noi trong nhom chat (server, ten database, user, mat khau).
+   Thong tin nay **khong nam trong repo**, dung hoi tai sao tim khong thay.
+2. `cp application-secrets-cloud.properties.example application-secrets-cloud.properties`
+3. Dien 4 dong `cloud.db.*`. **Giu nguyen dau `#` o dong `cloud.db.options`** - do la cau hinh
+   rieng cua Azure, bo dau `#` ra la loi TLS `PKIX path building failed`.
+4. Chay: `mvn spring-boot:run -Dspring-boot.run.profiles=cloud`
+
+**Luu y ve schema tren cloud:** profile `cloud` dat `spring.jpa.hibernate.ddl-auto=validate`,
+nghia la Hibernate **khong duoc tu sua** schema chung. Muon them/sua bang thi sua
+`database/schema-cloud.sql`, chay tay len cloud, roi bao ca nhom - tranh canh 4 nguoi cung
+sua lam schema chung bien dang.
+
+**Truoc buoi demo phai chay thu truoc it nhat 1 ngay.** Goi Free ghi ro "no guarantees",
+co the cham hoac gian doan. Phuong an du phong: chay local voi `database/seed-data.sql`.
 
 ## Quy uoc GitHub
 
