@@ -1,17 +1,17 @@
 -- ================================================
--- Cinema Booking - NHOM05
--- Tao database RIENG danh cho test tich hop.
+-- Cinema Booking - NHÓM 05
+-- Tạo database RIÊNG dành cho test tích hợp.
 --
--- Vi sao can database rieng:
---   Test tich hop se XOA SACH du lieu truoc moi test case (xem IntegrationTestBase).
---   Neu chay thang tren "cinema_booking" thi se bay het du lieu dang dev cua ban.
+-- Vì sao cần database riêng:
+--   Test tích hợp sẽ XOÁ SẠCH dữ liệu trước mỗi test case (xem IntegrationTestBase).
+--   Nếu chạy thẳng trên "cinema_booking" thì sẽ bay hết dữ liệu đang dev của bạn.
 --
--- Cach chay (1 lan duy nhat tren may moi nguoi):
---   sqlcmd -S localhost,1433 -U sa -C -i database\create-test-database.sql
--- Hoac mo file nay trong SSMS roi bam Execute.
+-- Cách chạy (một lần duy nhất trên máy mỗi người):
+--   sqlcmd -S localhost,1433 -U sa -C -f 65001 -i database\create-test-database.sql
+-- Hoặc mở file này trong SSMS rồi bấm Execute.
 --
--- Bang/cot trong database nay do Hibernate tu sinh ra tu cac @Entity
--- (profile "test" dat spring.jpa.hibernate.ddl-auto=update), khong can chay schema.sql.
+-- Bảng và cột trong database này do Hibernate tự sinh ra từ các @Entity
+-- (profile "test" đặt spring.jpa.hibernate.ddl-auto=update), không cần chạy schema.sql.
 -- ================================================
 IF DB_ID('cinema_booking_test') IS NULL
     CREATE DATABASE cinema_booking_test;

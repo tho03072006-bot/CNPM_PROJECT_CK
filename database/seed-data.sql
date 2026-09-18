@@ -2,13 +2,17 @@
 -- Cinema Booking - NHÓM 05 - Dữ liệu mẫu dùng chung
 --
 -- Mục đích: cả 4 người test trên CÙNG một bộ dữ liệu. Tài thêm suất chiếu,
--- Thắng thử giữ ghế, Thanh thử thanh toán — tất cả nhìn thấy cùng phim,
+-- Thắng thử giữ ghế, Thanh thử thanh toán - tất cả nhìn thấy cùng phim,
 -- cùng phòng, cùng số ghế, nên nói chuyện với nhau mới khớp.
 --
 -- Cách chạy (sau khi đã chạy schema.sql):
---   sqlcmd -S localhost,1433 -U sa -C -d cinema_booking -i database\seed-data.sql
+--   sqlcmd -S localhost,1433 -U sa -C -f 65001 -d cinema_booking -i database\seed-data.sql
 --
--- Trên database dùng chung ở cloud thì đổi -S và -d cho đúng (xem ADR-002).
+-- *** BẮT BUỘC có -f 65001 *** Thiếu tham số này thì sqlcmd đọc file sai bảng mã,
+-- tên phim sẽ thành chữ rác kiểu "BÃ£o Giá»¯a Trá»i Quang" và chỉ phát hiện ra
+-- khi đã nhập cả đống dữ liệu. Đã thử và xác nhận lỗi này là có thật.
+--
+-- Trên database dùng chung ở cloud thì đổi -S, -d, -U, -P cho đúng (xem ADR-002).
 --
 -- File này CHẠY LẠI ĐƯỢC NHIỀU LẦN: mỗi khối đều kiểm tra "nếu chưa có thì mới thêm",
 -- nên không sợ chạy nhầm hai lần rồi nhân đôi dữ liệu.
@@ -16,7 +20,6 @@
 -- LƯU Ý: đây là dữ liệu GIẢ để chạy thử. Mật khẩu trong này chưa hash,
 -- phải thay bằng BCrypt khi Module 3 làm xong phần đăng nhập.
 -- ================================================================
-
 SET NOCOUNT ON;
 
 -- ---------------------------------------------------------------
