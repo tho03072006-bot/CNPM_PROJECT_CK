@@ -150,7 +150,7 @@ Test tích hợp chạy trên **database riêng** `cinema_booking_test`, không 
 Tạo database test, chỉ cần làm một lần:
 
 ```bash
-sqlcmd -S localhost,1433 -U sa -C -i database/create-test-database.sql
+sqlcmd -S localhost,1433 -U sa -C -f 65001 -i database/create-test-database.sql
 ```
 
 Bảng và cột bên trong do Hibernate tự sinh từ các `@Entity`, không cần chạy `schema.sql`.
