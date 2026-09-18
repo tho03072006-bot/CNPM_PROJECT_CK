@@ -5,8 +5,14 @@
 # thuộc quyền họ. Mục đích không phải để làm khó nhau, mà để tránh cảnh hai
 # người cùng sửa một file dùng chung rồi đè mất công của nhau.
 #
-# CHƯA HOÀN CHỈNH: mới có tài khoản GitHub của Thọ. Ba bạn còn lại gửi tên
-# tài khoản GitHub của mình để điền nốt các dòng đang để trống bên dưới.
+# Tài khoản GitHub của nhóm:
+#   @tho03072006-bot  = Thọ   (Module 4)
+#   @24133051-lab     = Tài   (Module 1)
+#   @tranthang0912    = Thắng (Module 2)
+#   @yoownta          = Thanh (Module 3)
+#
+# LƯU Ý: CODEOWNERS chỉ có tác dụng với người ĐÃ là collaborator của repo.
+# Bạn nào chưa bấm chấp nhận lời mời thì GitHub sẽ bỏ qua dòng của bạn đó.
 # =====================================================================
 
 # Mặc định: Thọ xem qua mọi thứ với vai trò leader
@@ -26,14 +32,14 @@
 /pom.xml                                 @tho03072006-bot
 /CONTRIBUTING.md                         @tho03072006-bot
 
-# ---- Phần riêng của từng module ----
-# Điền tên tài khoản GitHub vào rồi bỏ dấu # ở đầu dòng.
+# ---- Module 1 - Phim / Phòng chiếu / Suất chiếu (Tài) ----
+/src/main/resources/templates/movie/     @24133051-lab
+/src/test/java/edu/hcmute/cnpm/cinema/movie/      @24133051-lab
 
-# Module 1 - Phim / Phòng chiếu / Suất chiếu (Tài)
-# /src/main/resources/templates/movie/   @tai-github-username
+# ---- Module 2 - Ghế & Vé (Thắng) ----
+/src/main/resources/templates/booking/   @tranthang0912
+/src/test/java/edu/hcmute/cnpm/cinema/booking/    @tranthang0912
 
-# Module 2 - Ghế & Vé (Thắng)
-# /src/main/resources/templates/booking/ @thang-github-username
-
-# Module 3 - Người dùng / Thanh toán (Thanh)
-# /src/main/resources/templates/account/ @thanh-github-username
+# ---- Module 3 - Người dùng / Thanh toán (Thanh) ----
+/src/main/resources/templates/account/   @yoownta
+/src/test/java/edu/hcmute/cnpm/cinema/account/    @yoownta
