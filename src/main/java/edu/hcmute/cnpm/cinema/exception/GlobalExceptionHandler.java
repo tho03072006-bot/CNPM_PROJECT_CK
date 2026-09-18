@@ -17,22 +17,22 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 
 /**
- * Bat loi TAP TRUNG cho toan bo ung dung.
+ * Bắt lỗi TẬP TRUNG cho toàn bộ ứng dụng.
  *
- * Nho lop nay, 3 module con lai KHONG phai tu try/catch roi tu render trang loi:
- * cu nem {@link BusinessException} (hoac lop con cua no) tu tang Service la duoc,
- * o day se lo phan doi sang ma HTTP va hien thi cho nguoi dung.
+ * Nhờ lớp này, 3 module còn lại KHÔNG phải tự try/catch rồi tự render trang lỗi:
+ * cứ ném {@link BusinessException} (hoặc lớp con của nó) từ tầng Service là được,
+ * ở đây sẽ lo phần đổi sang mã HTTP và hiển thị cho người dùng.
  *
- * Tra ve cai gi:
- *   - Request thuong (nguoi dung bam link, submit form) -> trang error.html theo layout chung.
- *   - Request AJAX / API (header X-Requested-With: XMLHttpRequest, hoac Accept: application/json)
- *     -> JSON dang {"success": false, "message": "..."} de JavaScript hien thong bao tai cho.
- *     Phan nay danh cho man hinh chon ghe cua Module 2 (bam giu ghe bang AJAX).
+ * Trả về cái gì:
+ *   - Request thường (người dùng bấm link, submit form) -> trang error.html theo layout chung.
+ *   - Request AJAX / API (header X-Requested-With: XMLHttpRequest, hoặc Accept: application/json)
+ *     -> JSON dạng {"success": false, "message": "..."} để JavaScript hiện thông báo tại chỗ.
+ *     Phần này dành cho màn hình chọn ghế của Module 2 (bấm giữ ghế bằng AJAX).
  *
- * CO Y KHONG bat {@code Exception.class}: de loi ngoai du kien roi ve co che xu ly loi san
- * cua Spring Boot (van hien thi error.html), tranh nuot mat loi 404 cua file tinh.
+ * CỐ Ý KHÔNG bắt {@code Exception.class}: để lỗi ngoài dự kiến rơi về cơ chế xử lý lỗi sẵn
+ * của Spring Boot (vẫn hiển thị error.html), tránh nuốt mất lỗi 404 của file tĩnh.
  *
- * Phu trach: Tho (Module 4 - Kien truc dung chung).
+ * Phụ trách: Thọ (Module 4 - Kiến trúc dùng chung).
  */
 @ControllerAdvice
 public class GlobalExceptionHandler {
@@ -40,52 +40,52 @@ public class GlobalExceptionHandler {
     private static final Logger log = LoggerFactory.getLogger(GlobalExceptionHandler.class);
 
     private static final String DATA_CONFLICT_MESSAGE =
-            "Du lieu bi trung hoac khong hop le nen khong luu duoc. Vui long tai lai trang va thu lai.";
+            "Dữ liệu bị trùng hoặc không hợp lệ nên không lưu được. Vui lòng tải lại trang và thử lại.";
 
-    /** Ghe da co nguoi khac giu -> 409 Conflict (ADR-001). */
+    /** Ghế đã có người khác giữ -> 409 Conflict (ADR-1). */
     @ExceptionHandler(SeatAlreadyTakenException.class)
     public Object handleSeatAlreadyTaken(SeatAlreadyTakenException ex, HttpServletRequest request) {
-        log.warn("Giu ghe that bai vi da co nguoi giu truoc: showtimeId={}, seatId={}",
+        log.warn("Giữ ghế thất bại vì đã có người giữ trước: showtimeId={}, seatId={}",
                 ex.getShowtimeId(), ex.getSeatId());
         return buildErrorResponse(request, HttpStatus.CONFLICT, ex.getMessage());
     }
 
-    /** Khong tim thay du lieu -> 404 Not Found. */
+    /** Không tìm thấy dữ liệu -> 404 Not Found. */
     @ExceptionHandler(ResourceNotFoundException.class)
     public Object handleResourceNotFound(ResourceNotFoundException ex, HttpServletRequest request) {
-        log.warn("Khong tim thay du lieu cho duong dan {}: {}", request.getRequestURI(), ex.getMessage());
+        log.warn("Không tìm thấy dữ liệu cho đường dẫn {}: {}", request.getRequestURI(), ex.getMessage());
         return buildErrorResponse(request, HttpStatus.NOT_FOUND, ex.getMessage());
     }
 
-    /** Yeu cau dat ve khong hop le -> 400 Bad Request. */
+    /** Yêu cầu đặt vé không hợp lệ -> 400 Bad Request. */
     @ExceptionHandler(InvalidBookingException.class)
     public Object handleInvalidBooking(InvalidBookingException ex, HttpServletRequest request) {
-        log.warn("Yeu cau dat ve khong hop le tai {}: {}", request.getRequestURI(), ex.getMessage());
+        log.warn("Yêu cầu đặt vé không hợp lệ tại {}: {}", request.getRequestURI(), ex.getMessage());
         return buildErrorResponse(request, HttpStatus.BAD_REQUEST, ex.getMessage());
     }
 
-    /** Cac loi nghiep vu con lai -> 400 Bad Request. */
+    /** Các lỗi nghiệp vụ còn lại -> 400 Bad Request. */
     @ExceptionHandler(BusinessException.class)
     public Object handleBusinessException(BusinessException ex, HttpServletRequest request) {
-        log.warn("Loi nghiep vu tai {}: {}", request.getRequestURI(), ex.getMessage());
+        log.warn("Lỗi nghiệp vụ tại {}: {}", request.getRequestURI(), ex.getMessage());
         return buildErrorResponse(request, HttpStatus.BAD_REQUEST, ex.getMessage());
     }
 
     /**
-     * Luoi an toan cho ADR-001: neu Service quen doi {@link DataIntegrityViolationException}
-     * thanh {@link SeatAlreadyTakenException} thi nguoi dung van thay thong bao tu te
-     * chu khong thay loi 500. Van ghi log ERROR de con biet duong ma sua lai Service.
+     * Lưới an toàn cho ADR-1: nếu Service quên đổi {@link DataIntegrityViolationException}
+     * thành {@link SeatAlreadyTakenException} thì người dùng vẫn thấy thông báo tử tế
+     * chứ không thấy lỗi 500. Vẫn ghi log ERROR để còn biết đường mà sửa lại Service.
      */
     @ExceptionHandler(DataIntegrityViolationException.class)
     public Object handleDataIntegrityViolation(DataIntegrityViolationException ex,
                                                HttpServletRequest request) {
-        log.error("Vi pham rang buoc du lieu tai {} - Service nen bat va doi thanh BusinessException",
+        log.error("Vi phạm ràng buộc dữ liệu tại {} - Service nên bắt và đổi thành BusinessException",
                 request.getRequestURI(), ex);
         return buildErrorResponse(request, HttpStatus.CONFLICT, DATA_CONFLICT_MESSAGE);
     }
 
     /**
-     * Dung 1 thong bao loi -> tra ve trang HTML hoac JSON tuy theo ai goi.
+     * Dựng 1 thông báo lỗi -> trả về trang HTML hoặc JSON tuỳ theo ai gọi.
      */
     private Object buildErrorResponse(HttpServletRequest request, HttpStatus status, String userMessage) {
         if (prefersJsonResponse(request)) {
@@ -103,7 +103,7 @@ public class GlobalExceptionHandler {
         return modelAndView;
     }
 
-    /** Request nay do JavaScript goi (AJAX/API) hay do trinh duyet mo trang? */
+    /** Request này do JavaScript gọi (AJAX/API) hay do trình duyệt mở trang? */
     private boolean prefersJsonResponse(HttpServletRequest request) {
         if ("XMLHttpRequest".equalsIgnoreCase(request.getHeader("X-Requested-With"))) {
             return true;
