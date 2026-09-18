@@ -46,14 +46,17 @@ Ky hieu: `[x]` da xong - `[ ]` chua lam - `[~]` dang lam / cho dieu kien ben ngo
       + `application-secrets-cloud.properties.example`.
 - [x] **2.4** *(Tho lam tay)* Tao tai khoan nha cung cap cloud. Azure tu choi ("not eligible for an
       Azure free account") -> da dang ky MonsterASP.NET goi Free, duoc 5 database MSSQL.
-- [ ] **2.5** *(Tho lam tay)* Tao database MSSQL tren MonsterASP, bat **Remote access**, lay
-      thong tin ket noi gui cho 3 thanh vien.
-- [~] **2.6** Chay `schema-cloud.sql` len cloud, kiem tra `ddl-auto=validate` khong bao loi lech schema.
-      **Da dien tap truoc tren may 18/09**: tao database sach tu `schema-cloud.sql`, chay app voi
-      profile `cloud` -> validate PASS, seed-data.sql chay duoc. Chi con doi database that tren MonsterASP.
+- [x] **2.5** Da tao database MSSQL tren MonsterASP (datacenter EU, collation
+      `SQL_Latin1_General_CP1_CI_AS` - trung voi may ca nhan nen khong lech), da bat
+      **Remote access**. **Con lai: gui thong tin ket noi cho 3 thanh vien qua nhom chat.**
+- [x] **2.6** Da chay `schema-cloud.sql` va `seed-data.sql` len database that tren MonsterASP
+      (6 bang, 3 nguoi dung, 6 phim, 2 phong, 120 ghe, 10 suat chieu). Chay ung dung voi profile
+      `cloud` -> **`ddl-auto=validate` PASS**, trang chu va trang loi deu render duoc tu du lieu cloud.
+      Cloud chay SQL Server **2025** Express, may ca nhan chay **2022** - khong anh huong.
+      Thoi gian khoi dong: 10.5 giay (local la 4.5 giay), cham hon do datacenter o chau Au.
 - [x] **2.7** Viet `database/seed-data.sql`: 6 phim, 2 phong, 120 ghe, 10 suat chieu -> du lieu mau chung
       de 4 nguoi test cung mot bo du lieu. Da chay thu 2 lan, khong nhan doi du lieu.
-- [ ] **2.8** Bo sung huong dan chay profile `cloud` vao README.
+- [x] **2.8** Bo sung huong dan chay profile `cloud` vao README.
 
 ## GIAI DOAN 3 - Kien truc dung chung cho 3 module con lai (XONG PHAN CHINH 17/09)
 
