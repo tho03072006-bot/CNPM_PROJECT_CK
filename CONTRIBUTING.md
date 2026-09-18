@@ -182,7 +182,7 @@ if (showtime.getStartTime().isBefore(LocalDateTime.now())) {
     throw new InvalidBookingException("Suất chiếu này đã bắt đầu, bạn không thể đặt vé nữa.");
 }
 
-// Ghế bị người khác giữ mất (ADR-001) -> tự động thành trang 409
+// Ghế bị người khác giữ mất -> tự động thành trang 409
 try {
     ticketRepository.saveAndFlush(ticket);
 } catch (DataIntegrityViolationException ex) {

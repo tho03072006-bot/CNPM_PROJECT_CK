@@ -13,7 +13,7 @@
 --
 -- LƯU Ý: khi đã chạy file này thì trên profile "cloud" Hibernate chạy ở chế độ
 -- ddl-auto=validate - tức là Hibernate KHÔNG được tự sửa schema chung. Muốn thêm/sửa
--- bảng thì sửa file này + database/schema.sql rồi báo cả nhóm (xem ADR-002).
+-- bảng thì sửa file này + database/schema.sql rồi báo cả nhóm (xem docs/DATABASE.md).
 -- ================================================================
 
 IF OBJECT_ID('dbo.users', 'U') IS NULL
@@ -83,7 +83,7 @@ CREATE TABLE tickets (
     price           DECIMAL(10,2)   NOT NULL,
     held_at         DATETIME2       NOT NULL DEFAULT SYSUTCDATETIME(),
     paid_at         DATETIME2       NULL,
-    -- Chong dat trung ghe cho cung 1 suat chieu (ADR-001) - KHONG duoc xoa rang buoc nay
+    -- Chống đặt trùng ghế cho cùng một suất chiếu - KHÔNG được xoá ràng buộc này
     CONSTRAINT uq_showtime_seat UNIQUE (showtime_id, seat_id)
 );
 GO
