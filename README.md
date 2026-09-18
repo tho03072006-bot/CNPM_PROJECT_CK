@@ -1,146 +1,261 @@
-# CNPM_PROJECT_CK_NHOM5 - He thong dat ve xem phim
+# CNPM_PROJECT_CK_NHOM5 — Hệ thống đặt vé xem phim
 
-[![Kiem thu](https://github.com/tho03072006-bot/CNPM_PROJECT_CK_NHOM5/actions/workflows/ci.yml/badge.svg?branch=develop)](https://github.com/tho03072006-bot/CNPM_PROJECT_CK_NHOM5/actions/workflows/ci.yml)
+[![Kiểm thử](https://github.com/tho03072006-bot/CNPM_PROJECT_CK_NHOM5/actions/workflows/ci.yml/badge.svg?branch=develop)](https://github.com/tho03072006-bot/CNPM_PROJECT_CK_NHOM5/actions/workflows/ci.yml)
 
-Do an cuoi ky mon Cong nghe phan mem (CNPM) - Nhom 05.
+Đồ án cuối kỳ môn Công nghệ phần mềm (CNPM) — Nhóm 05.
 
-## Thanh vien & phan cong
+Người dùng chọn phim, chọn suất chiếu, chọn ghế trên sơ đồ trực quan rồi thanh toán. Ghế được
+giữ riêng trong 5 phút để không ai đặt trùng.
 
-| Thanh vien | Vai tro | Module phu trach |
+---
+
+## Thành viên & phân công
+
+| Thành viên | Vai trò | Module phụ trách |
 |---|---|---|
-| **Tho** | Leader | Module 4: Kien truc dung chung, Testing, Quan ly GitHub/PM |
-| **Tai** | Thanh vien | Module 1: Quan ly Phim / Phong chieu / Suat chieu (Admin CRUD) |
-| **Thang** | Thanh vien | Module 2: Ghe & Ve - dat ve, seat-map, giu ghe (core booking) |
-| **Thanh** | Thanh vien | Module 3: User/Auth, thanh toan, email, dashboard |
+| **Thọ** | Leader | Module 4: Kiến trúc dùng chung, Testing, Quản lý GitHub/PM |
+| **Tài** | Thành viên | Module 1: Quản lý Phim / Phòng chiếu / Suất chiếu (Admin CRUD) |
+| **Thắng** | Thành viên | Module 2: Ghế & Vé — đặt vé, seat-map, giữ ghế (lõi đặt vé) |
+| **Thanh** | Thành viên | Module 3: User/Auth, thanh toán, email, thống kê |
 
-Chi tiet cong viec tung nguoi: xem tai lieu ke hoach du an hoac file `docs/PHAN_CONG.md` (se bo sung).
+Công việc chi tiết của từng người: [`docs/PHAN_CONG.md`](docs/PHAN_CONG.md) — 29 đầu việc kèm
+mã việc, phụ thuộc, ước lượng giờ và tuần thực hiện.
 
-## Cong nghe su dung
+**Việc cụ thể của bạn nằm ở [tab Issues](https://github.com/tho03072006-bot/CNPM_PROJECT_CK_NHOM5/issues)**,
+lọc theo nhãn `module-1` / `module-2` / `module-3` / `module-4`. Làm mấy việc gắn nhãn
+`uu-tien-cao` trước, vì chúng đang chặn việc của người khác.
+
+## Công nghệ sử dụng
 
 - Java 21, Spring Boot 3.5.16
 - Thymeleaf + thymeleaf-layout-dialect 4.0.1
-- Spring Data JPA / Hibernate 6.x
+- Spring Data JPA / Hibernate 6
 - SQL Server (mssql-jdbc 13.6.0.jre11)
-- Spring Mail (gui email xac nhan ve)
+- Spring Mail (gửi email xác nhận vé)
 - Maven
 
-## Moi truong phat trien - 4 nguoi cai giong nhau
+Không dùng Lombok — viết tay getter/setter/constructor. Không dùng thư viện CSS ngoài
+(Bootstrap, Tailwind...) — giao diện tự viết, xem mục [Giao diện dùng chung](#giao-diện-dùng-chung).
 
-Ca nhom dung DUNG cac phien ban duoi day. Lech phien ban la nguon goc cua kieu loi
-"may tao chay duoc ma may may khong chay duoc", rat ton thoi gian do.
+## Môi trường phát triển — cả 4 người cài giống nhau
 
-| Thanh phan | Phien ban chot | Ghi chu |
+Lệch phiên bản là nguồn gốc của kiểu lỗi *"máy tao chạy được mà máy mày không chạy được"*,
+rất tốn thời gian dò. Dùng **đúng** các phiên bản dưới đây:
+
+| Thành phần | Phiên bản chốt | Ghi chú |
 |---|---|---|
-| JDK | **21** (Temurin 21.0.12) | `mvn -v` phai bao Java version 21.x. Bao 1.8 hay 17 la sai |
-| Maven | 3.9.x | Ban da thu tren 3.9.16 |
-| Spring Boot | 3.5.16 | Khoa trong `pom.xml`, khong tu y nang |
-| Hibernate ORM | 6.6.53.Final | Di kem Spring Boot, khong khai bao rieng |
-| Tomcat nhung | 10.1.55 | Di kem Spring Boot |
-| thymeleaf-layout-dialect | 4.0.1 | Khoa trong `pom.xml` |
-| mssql-jdbc | 13.6.0.jre11 | Khoa trong `pom.xml` |
-| SQL Server | 2022 Express tro len | Ban da thu: Microsoft SQL Server 2022 (16.0.1000.6) Express |
-| Cong ung dung | 8082 | Doi trong `application.properties` neu may ban da dung cong nay |
+| JDK | **21** (Temurin 21.0.12) | `mvn -v` phải báo `Java version: 21.x`. Báo 1.8 hay 17 là sai |
+| Maven | 3.9.x | Bản đã thử: 3.9.16 |
+| Spring Boot | 3.5.16 | Khoá trong `pom.xml`, không tự ý nâng |
+| Hibernate ORM | 6.6.53.Final | Đi kèm Spring Boot, không khai báo riêng |
+| Tomcat nhúng | 10.1.55 | Đi kèm Spring Boot |
+| thymeleaf-layout-dialect | 4.0.1 | Khoá trong `pom.xml` |
+| mssql-jdbc | 13.6.0.jre11 | Khoá trong `pom.xml` |
+| SQL Server | 2022 Express trở lên | Bản đã thử: SQL Server 2022 (16.0.1000.6) Express |
+| Cổng ứng dụng | 8082 | Đổi trong `application.properties` nếu máy bạn đã dùng cổng này |
 
-**Khong ai duoc tu nang phien ban trong `pom.xml`.** Can nang thi bao ca nhom truoc,
-vi nang mot cai keo theo ca chuoi phu thuoc va co the lam do test cua nguoi khac.
+**Không ai được tự nâng phiên bản trong `pom.xml`.** Cần nâng thì báo cả nhóm trước, vì nâng
+một cái kéo theo cả chuỗi phụ thuộc và có thể làm đổ test của người khác.
 
-**Truoc khi bat dau code, kiem tra nhanh 3 dong nay:**
+### Kiểm tra máy trước khi bắt đầu
 
+Chạy 3 lệnh này, xanh hết mới bắt đầu code:
+
+```bash
+mvn -v
 ```
-mvn -v                 -> Apache Maven 3.9.x, Java version: 21.x
-sqlcmd -S localhost,1433 -U sa -C -Q "SELECT @@VERSION"   -> ket noi duoc SQL Server
-mvn test               -> BUILD SUCCESS
+
+```bash
+sqlcmd -S localhost,1433 -U sa -C -Q "SELECT @@VERSION"
 ```
 
-Ba dong deu xanh thi moi truong cua ban giong ca nhom, bat dau lam duoc.
+```bash
+mvn test
+```
 
-## Cau truc thu muc
+Kết quả mong đợi: `Apache Maven 3.9.x` + `Java version: 21.x` · kết nối được SQL Server ·
+`BUILD SUCCESS`.
+
+### Ba cái bẫy hay gặp khi cài
+
+**JAVA_HOME trỏ nhầm.** `mvn -v` báo Java 1.8 hay 17 thì đổi biến môi trường `JAVA_HOME` sang
+thư mục JDK 21 rồi **mở lại terminal**. Spring Boot 3.5 không build được bằng Java 8/11.
+
+**Bản Express vẫn dùng `localhost,1433`**, không cần gõ `\SQLEXPRESS`. Kiểm tra instance nào
+đang chạy: `sqlcmd -S localhost,1433 -U sa -C -Q "SELECT @@SERVERNAME"`.
+
+**Đặt thư mục dự án ở đường dẫn KHÔNG CÓ DẤU tiếng Việt** — ví dụ `D:\CNPM\Project_CK_NHOM05`.
+Nếu đường dẫn có dấu, `mvn spring-boot:run` sẽ báo `Could not find or load main class`, vì JVM
+trên Windows tiếng Việt dùng bảng mã Cp1252 nên đọc sai đường dẫn khi tạo tiến trình con.
+Bẫy ở chỗ **`mvn test` vẫn chạy bình thường**, rất dễ tưởng là lỗi code.
+
+## Cấu trúc thư mục
 
 ```
 src/main/java/edu/hcmute/cnpm/cinema/
-  entity/        - cac lop entity (Movie, Room, Seat, Showtime, Ticket, User...)
-  repository/    - Spring Data JPA repository
-  controller/    - Spring MVC controller
-  constants/     - hang so dung chung
+  entity/       — các lớp @Entity ánh xạ bảng database (KHÔNG chứa logic nghiệp vụ)
+  repository/   — interface extends JpaRepository
+  service/      — logic nghiệp vụ, mỗi người tự tạo service cho module của mình
+  controller/   — @Controller Spring MVC, chỉ nhận request và trả view
+  exception/    — exception nghiệp vụ + GlobalExceptionHandler dùng chung (Thọ quản lý)
+  constants/    — hằng số dùng chung
 src/main/resources/
-  templates/     - giao dien Thymeleaf (layout, fragments, cac trang)
-  static/        - css, js, anh
-  application.properties
+  templates/
+    layout/     — layout chung (Thọ quản lý)
+    fragments/  — header / footer / alert dùng chung (Thọ quản lý)
+    error.html  — trang báo lỗi chung (Thọ quản lý)
+    <module>/   — mỗi module một thư mục con cho trang của mình
+  static/css/style.css — design system dùng chung
+  static/js/theme.js   — chuyển chế độ sáng/tối
+src/test/java/edu/hcmute/cnpm/cinema/
+  support/      — IntegrationTestBase + TestDataFactory dùng chung (Thọ quản lý)
+  <module>/     — test của từng module
 database/
-  schema.sql     - script tao database SQL Server
+  schema.sql              — tạo database trên máy cá nhân
+  schema-cloud.sql        — tạo bảng trên database dùng chung
+  create-test-database.sql— tạo database riêng cho test
+  seed-data.sql           — dữ liệu mẫu dùng chung
+docs/                     — kế hoạch, phân công, ADR
 ```
 
-## Cach chay du an (local)
+**Nguyên tắc quan trọng:** Controller gọi Service, Service gọi Repository. Controller **không
+được** gọi thẳng Repository hay chứa logic tính toán/điều kiện nghiệp vụ. Chi tiết trong
+[`CONTRIBUTING.md`](CONTRIBUTING.md) Mục 2.
 
-1. Cai SQL Server, tao database theo `database/schema.sql`.
-2. Copy `application-secrets.properties.example` thanh `application-secrets.properties`
-   (file nay da co trong `.gitignore`, KHONG commit len GitHub) va dien thong tin that:
-   - `spring.datasource.url` / `username` / `password`
-   - `spring.mail.username` / `spring.mail.password` (Gmail App Password)
-3. Chay: `mvn spring-boot:run` (mac dinh port 8082).
+## Cách chạy dự án (máy cá nhân)
 
-**Luu y khi cai dat:**
+1. Cài SQL Server, tạo database bằng `database/schema.sql`.
+2. Nạp dữ liệu mẫu để cả nhóm test trên cùng một bộ dữ liệu:
+   ```bash
+   sqlcmd -S localhost,1433 -U sa -C -f 65001 -d cinema_booking -i database/seed-data.sql
+   ```
+3. Copy file cấu hình bí mật rồi điền thông tin thật:
+   ```bash
+   cp application-secrets.properties.example application-secrets.properties
+   ```
+   Cần điền `spring.datasource.url` / `username` / `password`, và
+   `spring.mail.username` / `spring.mail.password` (Gmail App Password) khi làm đến phần gửi mail.
+   File này **đã nằm trong `.gitignore`, tuyệt đối không commit**.
+4. Chạy:
+   ```bash
+   mvn spring-boot:run
+   ```
+   Mở `http://localhost:8082`.
 
-- `mvn -v` phai bao **Java version: 21.x**. Neu bao 1.8 hay 17 thi doi bien moi truong `JAVA_HOME`
-  sang thu muc JDK 21 roi mo lai terminal - Spring Boot 3.5 khong build duoc bang Java 8/11.
-- Neu ban cai SQL Server ban Express, `localhost,1433` van dung - khong can go `\SQLEXPRESS`.
-  Kiem tra nhanh instance dang chay: `sqlcmd -S localhost,1433 -U sa -C -Q "SELECT @@SERVERNAME"`.
-- **Dat thu muc du an o duong dan KHONG CO DAU tieng Viet** (vi du `D:\CNPM\Project_CK_NHOM05`).
-  Neu duong dan co dau, `mvn spring-boot:run` se bao `Could not find or load main class` vi JVM
-  tren Windows tieng Viet dung bang ma Cp1252, khong doc duoc duong dan co dau khi tao tien
-  trinh con. (`mvn test` thi van chay binh thuong nen loi nay rat de bi hieu nham.)
+## Cách chạy test
 
-## Cach chay test
+Test tích hợp chạy trên **database riêng** `cinema_booking_test`, không dùng chung với
+`cinema_booking` — vì test **xoá sạch dữ liệu trước mỗi test case**.
 
-Test tich hop chay tren **database rieng** `cinema_booking_test`, khong dung chung voi
-`cinema_booking` (vi test xoa sach du lieu truoc moi test case).
+Tạo database test, chỉ cần làm một lần:
 
-1. Tao database test - chi can lam 1 lan:
-   `sqlcmd -S localhost,1433 -U sa -C -i database\create-test-database.sql`
-   (bang/cot se do Hibernate tu sinh ra tu cac `@Entity`, khong can chay `schema.sql`)
-2. Chay toan bo test: `mvn test`
+```bash
+sqlcmd -S localhost,1433 -U sa -C -f 65001 -i database/create-test-database.sql
+```
 
-Moi test tich hop moi deu **ke thua `IntegrationTestBase`** va dung `TestDataFactory` de tao du lieu mau -
-xem `src/test/java/edu/hcmute/cnpm/cinema/support/` va Muc 6 cua `CONTRIBUTING.md`.
+Bảng và cột bên trong do Hibernate tự sinh từ các `@Entity`, không cần chạy `schema.sql`.
+Sau đó chạy:
 
-## Database dung chung cua nhom (cloud)
+```bash
+mvn test
+```
 
-Ngoai database tren may ca nhan, nhom dung them 1 database MSSQL chung tren **MonsterASP.NET**
-(goi Free) de tich hop va demo. Ly do chon nha cung cap nay: `docs/ADR-002-database-dung-chung-tren-cloud.md`.
+Mọi test đụng database **phải kế thừa `IntegrationTestBase`** và tạo dữ liệu mẫu bằng
+`TestDataFactory` — xem `src/test/java/edu/hcmute/cnpm/cinema/support/` và Mục 6 của
+[`CONTRIBUTING.md`](CONTRIBUTING.md).
 
-**Mo hinh 2 tang - nho cho ky:**
+CI trên GitHub Actions tự chạy toàn bộ test mỗi khi có push hoặc mở Pull Request, dùng
+container SQL Server riêng. Đừng để CI báo đỏ rồi mới sửa — chạy `mvn test` trên máy trước.
 
-- **Code hang ngay** thi dung SQL Server tren may minh (nhanh, khong can mang).
-- **Cloud** chi dung luc tich hop va demo. Datacenter dat o chau Au nen moi truy van cham
-  hon local khoang 250-300ms, khoi dong ung dung mat ~10 giay thay vi ~4 giay.
+## Database dùng chung của nhóm (cloud)
 
-**Cai dat 1 lan tren may ban:**
+Ngoài database trên máy cá nhân, nhóm dùng thêm một database MSSQL chung trên
+**MonsterASP.NET** (gói Free) để tích hợp và demo. Lý do chọn nhà cung cấp này:
+[`docs/ADR-002-database-dung-chung-tren-cloud.md`](docs/ADR-002-database-dung-chung-tren-cloud.md).
 
-1. Xin Tho thong tin ket noi trong nhom chat (server, ten database, user, mat khau).
-   Thong tin nay **khong nam trong repo**, dung hoi tai sao tim khong thay.
-2. `cp application-secrets-cloud.properties.example application-secrets-cloud.properties`
-3. Dien 4 dong `cloud.db.*`. **Giu nguyen dau `#` o dong `cloud.db.options`** - do la cau hinh
-   rieng cua Azure, bo dau `#` ra la loi TLS `PKIX path building failed`.
-4. Chay: `mvn spring-boot:run -Dspring-boot.run.profiles=cloud`
+**Mô hình 2 tầng — nhớ cho kỹ:**
 
-**Luu y ve schema tren cloud:** profile `cloud` dat `spring.jpa.hibernate.ddl-auto=validate`,
-nghia la Hibernate **khong duoc tu sua** schema chung. Muon them/sua bang thi sua
-`database/schema-cloud.sql`, chay tay len cloud, roi bao ca nhom - tranh canh 4 nguoi cung
-sua lam schema chung bien dang.
+- **Code hằng ngày** dùng SQL Server trên máy mình: nhanh, không cần mạng.
+- **Cloud** chỉ dùng lúc tích hợp và demo. Datacenter đặt ở châu Âu nên mỗi truy vấn chậm hơn
+  local khoảng 250–300ms, khởi động ứng dụng mất ~10 giây thay vì ~4 giây.
 
-**Truoc buoi demo phai chay thu truoc it nhat 1 ngay.** Goi Free ghi ro "no guarantees",
-co the cham hoac gian doan. Phuong an du phong: chay local voi `database/seed-data.sql`.
+**Cài đặt một lần trên máy bạn:**
 
-## Quy uoc GitHub
+1. Xin Thọ thông tin kết nối trong nhóm chat (server, tên database, user, mật khẩu).
+   Thông tin này **cố ý không nằm trong repo**, đừng mất công tìm.
+2. ```bash
+   cp application-secrets-cloud.properties.example application-secrets-cloud.properties
+   ```
+3. Điền 4 dòng `cloud.db.*`. **Giữ nguyên dấu `#` ở dòng `cloud.db.options`** — đó là cấu hình
+   riêng của Azure, bỏ dấu `#` ra là dính lỗi TLS `PKIX path building failed`.
+4. ```bash
+   mvn spring-boot:run -Dspring-boot.run.profiles=cloud
+   ```
 
-- Nhanh `main`: code on dinh, chi merge tu `develop` qua Pull Request.
-- Nhanh `develop`: nhanh gop chung cua 4 module.
-- Moi thanh vien code tren nhanh ca nhan mang ten minh (`Minh_Thọ`, `Hữu_Tài`, `Hữu_Thắng`,
-  `Tuấn_Thanh`), xong viec thi mo Pull Request vao `develop`.
-- Tinh nang lam dai ngay thi tach them nhanh phu `feature/<module>-<mo-ta-ngan>`
-  (vd: `feature/module1-movie-crud`) tu nhanh ca nhan.
-- Commit theo dang: `feat: ...`, `fix: ...`, `docs: ...`, `test: ...`, `chore: ...`.
-- Moi Pull Request can it nhat 1 thanh vien khac review truoc khi merge vao `develop`.
+**Lưu ý về schema trên cloud:** profile `cloud` đặt `spring.jpa.hibernate.ddl-auto=validate`,
+nghĩa là Hibernate **không được tự sửa** schema chung. Muốn thêm/sửa bảng thì sửa
+`database/schema-cloud.sql`, chạy tay lên cloud, rồi báo cả nhóm — tránh cảnh 4 người cùng sửa
+làm schema chung biến dạng.
 
-Chi tiet day du ke hoach du an (yeu cau, kien truc, ADR, timeline 4 tuan, phan cong chi tiet,
-ke hoach kiem thu, rui ro...) duoc luu trong tai lieu ke hoach cua nhom.
+**Trước buổi demo phải chạy thử trước ít nhất một ngày.** Gói Free ghi rõ *"no guarantees"*,
+không có cam kết thời gian hoạt động. Nên **demo từ máy cá nhân** cho chắc, cloud chỉ mở ra để
+chứng minh nhóm có database dùng chung thật. Phương án dự phòng luôn sẵn: `schema-cloud.sql` +
+`seed-data.sql` dựng lại toàn bộ database trong 30 giây ở bất kỳ đâu.
+
+## Giao diện dùng chung
+
+Giao diện lấy tông màu từ **logo trường**: xanh dương + trắng, thêm vàng hổ phách cho ra chất
+rạp chiếu phim. Có **hai chế độ sáng và tối**, người dùng bấm nút ở góc phải header để đổi và
+hệ thống nhớ lựa chọn đó.
+
+Chạy ứng dụng rồi mở **`http://localhost:8082/ui-kit`** để xem sẵn toàn bộ thành phần giao diện:
+nút, nhãn trạng thái, thẻ phim, vé, form, bảng dữ liệu, sơ đồ ghế, thông báo. **Cần cái nào thì
+chép class ở đó về dùng, đừng tự viết CSS riêng cho module mình** — để giao diện 4 người làm ra
+nhìn như một người làm.
+
+Ba quy tắc không được phá:
+
+- Chỉ dùng biến CSS trong `:root`, không gõ thẳng mã màu vào từng class.
+- Mọi animation phải tắt được khi người dùng bật chế độ giảm chuyển động của hệ điều hành.
+- Thêm class mới thì **nối vào cuối** `style.css`, không sửa class người khác đang dùng.
+
+Lộ trình và bảng màu đầy đủ: [`docs/LO_TRINH_GIAO_DIEN.md`](docs/LO_TRINH_GIAO_DIEN.md).
+
+## Xử lý lỗi — dùng chung, không tự chế
+
+Cả nhóm dùng chung bộ exception trong `edu.hcmute.cnpm.cinema.exception`. **Không tự viết
+try/catch rồi tự render trang lỗi riêng.** Tầng Service cứ ném exception, đã có
+`GlobalExceptionHandler` lo phần đổi sang mã HTTP và hiển thị:
+
+| Exception | Mã HTTP | Dùng khi nào |
+|---|---|---|
+| `ResourceNotFoundException` | 404 | Không tìm thấy phim / phòng / suất chiếu / vé theo id |
+| `InvalidBookingException` | 400 | Yêu cầu sai nghiệp vụ (suất đã chiếu, vé hết hạn giữ...) |
+| `SeatAlreadyTakenException` | 409 | Ghế đã có người khác giữ — **bắt buộc dùng** sau khi catch `DataIntegrityViolationException` |
+| `BusinessException` | 400 | Các lỗi nghiệp vụ khác |
+
+Cách dùng cụ thể: Mục 5 của [`CONTRIBUTING.md`](CONTRIBUTING.md).
+
+## Quy ước GitHub
+
+- Nhánh `main`: code ổn định, chỉ nhận merge từ `develop` qua Pull Request.
+- Nhánh `develop`: nhánh gộp chung của 4 module.
+- Mỗi thành viên code trên nhánh cá nhân mang tên mình (`Minh_Thọ`, `Hữu_Tài`, `Hữu_Thắng`,
+  `Tuấn_Thanh`), xong việc thì mở Pull Request vào `develop`.
+- Tính năng làm dài ngày thì tách thêm nhánh phụ `feature/<module>-<mô-tả-ngắn>`
+  (ví dụ `feature/module1-movie-crud`) từ nhánh cá nhân.
+- Commit theo dạng `<loại>(<module>): <mô tả ngắn>` với loại là `feat` / `fix` / `refactor` /
+  `docs` / `test` / `chore`. **Mỗi commit chỉ làm một việc.**
+- Mỗi Pull Request cần ít nhất một thành viên khác duyệt trước khi merge vào `develop`.
+- **Commit sớm, commit thường xuyên.** Trước khi đổi nhánh luôn chạy `git status` xem còn gì
+  chưa commit.
+
+## Tài liệu
+
+| Tài liệu | Nội dung |
+|---|---|
+| [`CONTRIBUTING.md`](CONTRIBUTING.md) | Quy ước đặt tên, cấu trúc, xử lý lỗi, viết test, quy trình Pull Request |
+| [`docs/PHAN_CONG.md`](docs/PHAN_CONG.md) | Bảng phân công 29 đầu việc + timeline 4 tuần |
+| [`docs/ADR-002-database-dung-chung-tren-cloud.md`](docs/ADR-002-database-dung-chung-tren-cloud.md) | Vì sao chọn nhà cung cấp cloud này, các phương án đã cân nhắc |
+| [`docs/KE_HOACH_MODULE4.md`](docs/KE_HOACH_MODULE4.md) | Kế hoạch riêng của Module 4 + danh sách vấn đề đã phát hiện |
+| [`docs/LO_TRINH_GIAO_DIEN.md`](docs/LO_TRINH_GIAO_DIEN.md) | Lộ trình làm giao diện, bảng màu, kết quả rà soát tương phản |

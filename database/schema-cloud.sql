@@ -1,20 +1,19 @@
--- ================================================================
--- Cinema Booking - NHOM05 - Schema cho Azure SQL Database (cloud)
+﻿-- ================================================================
+-- Cinema Booking - NHÓM 05 - Schema cho database dùng chung trên cloud
 --
--- Khac gi so voi database/schema.sql (ban chay o may ca nhan):
---   - Azure SQL Database KHONG cho chay "CREATE DATABASE ..." chung script voi bang,
---     va KHONG ho tro cau lenh "USE <database>".
---     => Ban phai TAO DATABASE TRUOC tren Azure Portal, roi ket noi thang vao database do
---        va chay file nay.
---   - Cac lenh deu co kiem tra "neu chua ton tai" -> chay lai nhieu lan khong bi loi.
+-- Khác gì so với database/schema.sql (bản chạy ở máy cá nhân):
+--   - Nhà cung cấp cloud đã tạo sẵn database cho mình, nên file này KHÔNG có
+--     lệnh "CREATE DATABASE" và cũng không có lệnh "USE <database>".
+--     => Kết nối thẳng vào database được cấp rồi chạy file này.
+--   - Các lệnh đều có kiểm tra "nếu chưa tồn tại" -> chạy lại nhiều lần không bị lỗi.
 --
--- Cach chay:
---   sqlcmd -S <ten-server>.database.windows.net -d cinema_booking -U <user> -P <password> -N -i database\schema-azure.sql
---   (hoac mo bang SSMS / Azure Data Studio, chon dung database cinema_booking roi Execute)
+-- Cách chạy (thay <...> bằng thông tin Thọ gửi trong nhóm chat):
+--   sqlcmd -S <server> -d <ten-database> -U <login> -P <password> -C -f 65001 -i database\schema-cloud.sql
+--   (hoặc mở bằng SSMS, chọn đúng database rồi Execute)
 --
--- LUU Y: khi da chay file nay thi tren profile "cloud" Hibernate chay o che do
--- ddl-auto=validate - tuc la Hibernate KHONG duoc tu sua schema chung. Muon them/sua bang
--- thi sua file nay + database/schema.sql roi bao ca nhom (xem ADR-002).
+-- LƯU Ý: khi đã chạy file này thì trên profile "cloud" Hibernate chạy ở chế độ
+-- ddl-auto=validate - tức là Hibernate KHÔNG được tự sửa schema chung. Muốn thêm/sửa
+-- bảng thì sửa file này + database/schema.sql rồi báo cả nhóm (xem ADR-002).
 -- ================================================================
 
 IF OBJECT_ID('dbo.users', 'U') IS NULL
@@ -89,9 +88,8 @@ CREATE TABLE tickets (
 );
 GO
 
--- Tai khoan admin mac dinh (mat khau can duoc hash bang BCrypt truoc khi dung that,
--- day chi la du lieu mau de test nhanh - doi truoc khi demo)
+-- Tai khoan admin mac dinh
 IF NOT EXISTS (SELECT 1 FROM users WHERE email = 'admin@nhom05.local')
     INSERT INTO users (full_name, email, password_hash, role)
-    VALUES (N'Quan tri vien', 'admin@nhom05.local', '123456', 'ADMIN');
+    VALUES (N'Quản trị viên', 'admin@nhom05.local', '123456', 'ADMIN');
 GO
