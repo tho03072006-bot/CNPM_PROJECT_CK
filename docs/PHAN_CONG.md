@@ -58,8 +58,7 @@ lệch thì báo Thọ, sửa sớm đỡ tốn công.
 
 ## Module 4 — Kiến trúc dùng chung, kiểm thử, quản lý (Thọ)
 
-Chi tiết đầy đủ ở `docs/KE_HOACH_MODULE4.md` và `docs/LO_TRINH_GIAO_DIEN.md`. Tóm tắt các
-việc mà 3 bạn kia **phải chờ**, nên làm sớm:
+Tóm tắt các việc mà 3 bạn kia **phải chờ**, nên Thọ làm sớm:
 
 | Mã | Công việc | Trạng thái |
 |---|---|---|
