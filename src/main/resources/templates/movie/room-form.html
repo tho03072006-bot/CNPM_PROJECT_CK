@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout" layout:decorate="~{layout/base}">
+<head><title th:text="${roomId == null} ? 'Thêm phòng' : 'Sửa phòng'">Form phòng</title></head>
+<body><div layout:fragment="content">
+    <h1 th:text="${roomId == null} ? 'Thêm phòng' : 'Sửa phòng'">Phòng chiếu</h1>
+    <form class="card" th:object="${roomForm}"
+          th:action="${roomId == null} ? @{/admin/rooms} : @{/admin/rooms/{id}(id=${roomId})}"
+          method="post">
+        <div class="form-field"><label for="name">Tên phòng</label>
+            <input class="form-control" id="name" type="text" th:field="*{name}" required maxlength="50">
+            <span class="form-error" th:if="${#fields.hasErrors('name')}" th:errors="*{name}"></span></div>
+        <div class="form-field"><label for="totalRows">Số hàng ghế (A–Z)</label>
+            <input class="form-control" id="totalRows" type="number" th:field="*{totalRows}" min="1" max="26" required>
+            <span class="form-error" th:if="${#fields.hasErrors('totalRows')}" th:errors="*{totalRows}"></span></div>
+        <div class="form-field"><label for="totalColumns">Số cột ghế</label>
+            <input class="form-control" id="totalColumns" type="number" th:field="*{totalColumns}" min="1" max="50" required>
+            <span class="form-error" th:if="${#fields.hasErrors('totalColumns')}" th:errors="*{totalColumns}"></span></div>
+        <p class="form-hint">Ghế được sinh tự động; hai hàng cuối là ghế VIP. Chỉ đổi kích thước khi phòng chưa có suất chiếu.</p>
+        <button class="btn" type="submit">Lưu phòng</button>
+        <a class="btn btn-ghost" th:href="@{/admin/rooms}">Huỷ</a>
+    </form>
+</div></body></html>

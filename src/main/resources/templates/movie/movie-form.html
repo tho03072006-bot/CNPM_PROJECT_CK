@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout" layout:decorate="~{layout/base}">
+<head><title th:text="${movieId == null} ? 'Thêm phim' : 'Sửa phim'">Form phim</title></head>
+<body><div layout:fragment="content">
+    <h1 th:text="${movieId == null} ? 'Thêm phim' : 'Sửa phim'">Phim</h1>
+    <form class="card" th:object="${movieForm}"
+          th:action="${movieId == null} ? @{/admin/movies} : @{/admin/movies/{id}(id=${movieId})}"
+          method="post">
+        <div class="form-field"><label for="title">Tên phim</label>
+            <input class="form-control" id="title" type="text" th:field="*{title}" required maxlength="200">
+            <span class="form-error" th:if="${#fields.hasErrors('title')}" th:errors="*{title}"></span></div>
+        <div class="form-field"><label for="genre">Thể loại</label>
+            <input class="form-control" id="genre" type="text" th:field="*{genre}" maxlength="100">
+            <span class="form-error" th:if="${#fields.hasErrors('genre')}" th:errors="*{genre}"></span></div>
+        <div class="form-field"><label for="durationMin">Thời lượng (phút)</label>
+            <input class="form-control" id="durationMin" type="number" th:field="*{durationMin}" min="1" required>
+            <span class="form-error" th:if="${#fields.hasErrors('durationMin')}" th:errors="*{durationMin}"></span></div>
+        <div class="form-field"><label for="description">Mô tả</label>
+            <textarea class="form-control" id="description" th:field="*{description}" rows="5"></textarea></div>
+        <div class="form-field"><label for="posterUrl">Đường dẫn poster</label>
+            <input class="form-control" id="posterUrl" type="url" th:field="*{posterUrl}" maxlength="500">
+            <span class="form-error" th:if="${#fields.hasErrors('posterUrl')}" th:errors="*{posterUrl}"></span></div>
+        <div class="form-field"><label for="ageRating">Nhãn độ tuổi</label>
+            <input class="form-control" id="ageRating" type="text" th:field="*{ageRating}" maxlength="10" placeholder="P, C13, C16, C18">
+            <span class="form-error" th:if="${#fields.hasErrors('ageRating')}" th:errors="*{ageRating}"></span></div>
+        <button class="btn" type="submit">Lưu phim</button>
+        <a class="btn btn-ghost" th:href="@{/admin/movies}">Huỷ</a>
+    </form>
+</div></body></html>

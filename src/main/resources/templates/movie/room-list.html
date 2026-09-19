@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout" layout:decorate="~{layout/base}">
+<head><title>Quản lý phòng chiếu</title></head>
+<body><div layout:fragment="content">
+    <h1>Quản lý phòng chiếu</h1>
+    <p><a class="btn" th:href="@{/admin/rooms/new}">Thêm phòng</a>
+       <a class="btn btn-ghost" th:href="@{/admin/movies}">Phim</a>
+       <a class="btn btn-ghost" th:href="@{/admin/showtimes}">Suất chiếu</a></p>
+    <p class="card" th:if="${#lists.isEmpty(rooms)}">Chưa có phòng chiếu nào.</p>
+    <div class="table-wrap" th:unless="${#lists.isEmpty(rooms)}">
+        <table class="admin-table"><thead><tr><th>Phòng</th><th>Sơ đồ ghế</th><th>Thao tác</th></tr></thead>
+            <tbody><tr th:each="room : ${rooms}">
+                <td th:text="${room.name}">Phòng</td>
+                <td th:text="|${room.totalRows} hàng × ${room.totalColumns} cột|">Sơ đồ</td>
+                <td><a class="btn btn-ghost btn-sm" th:href="@{/admin/rooms/{id}/edit(id=${room.id})}">Sửa</a>
+                    <form th:action="@{/admin/rooms/{id}/delete(id=${room.id})}" method="post" style="display: inline">
+                        <button class="btn btn-ghost btn-sm" type="submit">Xoá</button>
+                    </form></td>
+            </tr></tbody></table>
+    </div>
+</div></body></html>
