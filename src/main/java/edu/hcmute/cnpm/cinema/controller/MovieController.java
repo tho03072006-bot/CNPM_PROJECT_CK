@@ -1,7 +1,6 @@
 package edu.hcmute.cnpm.cinema.controller;
 
 import edu.hcmute.cnpm.cinema.entity.Movie;
-import edu.hcmute.cnpm.cinema.exception.ResourceNotFoundException;
 import edu.hcmute.cnpm.cinema.service.MovieService;
 import edu.hcmute.cnpm.cinema.service.ShowtimeService;
 import org.springframework.stereotype.Controller;
@@ -36,10 +35,7 @@ public class MovieController {
 
     @GetMapping("/{id}")
     public String detail(@PathVariable Long id, Model model) {
-        Movie movie = movieService.findById(id);
-        if (!Boolean.TRUE.equals(movie.getActive())) {
-            throw new ResourceNotFoundException("phim", id);
-        }
+        Movie movie = movieService.findActiveById(id);
         Map<LocalDate, List<Showtime>> showtimesByDate = showtimeService.findUpcomingByMovie(id)
                 .stream().collect(Collectors.groupingBy(
                         showtime -> showtime.getStartTime().toLocalDate(), LinkedHashMap::new,

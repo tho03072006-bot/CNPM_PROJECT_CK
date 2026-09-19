@@ -6,6 +6,7 @@ import edu.hcmute.cnpm.cinema.entity.Role;
 import edu.hcmute.cnpm.cinema.entity.Room;
 import edu.hcmute.cnpm.cinema.entity.User;
 import edu.hcmute.cnpm.cinema.support.IntegrationTestBase;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
@@ -29,7 +30,8 @@ class MoviePagesIntegrationTest extends IntegrationTestBase {
     @Autowired private MockMvc mockMvc;
 
     @Test
-    void shouldShowOnlyActiveMoviesWhenOpeningPublicList() throws Exception {
+    @DisplayName("Trang phim công khai chỉ hiện phim đang chiếu")
+    void shouldShowOnlyActiveMovies_whenOpeningPublicList() throws Exception {
         testDataFactory.createMovie("Phim đang chiếu");
         Movie inactive = testDataFactory.createMovie("Phim đã ngừng");
         inactive.setActive(false);
@@ -42,13 +44,26 @@ class MoviePagesIntegrationTest extends IntegrationTestBase {
     }
 
     @Test
-    void shouldReturn404WhenMovieDoesNotExist() throws Exception {
+    @DisplayName("Mã phim không tồn tại trả trang 404")
+    void shouldReturn404_whenMovieDoesNotExist() throws Exception {
         mockMvc.perform(MockMvcRequestBuilders.get("/movies/99999"))
                 .andExpect(status().isNotFound());
     }
 
     @Test
-    void shouldDenyCustomerWhenOpeningAdminPages() throws Exception {
+    @DisplayName("Phim đã ngừng chiếu không mở được trang chi tiết")
+    void shouldReturn404_whenMovieIsInactive() throws Exception {
+        Movie inactive = testDataFactory.createMovie("Phim đã ngừng");
+        inactive.setActive(false);
+        movieRepository.save(inactive);
+
+        mockMvc.perform(MockMvcRequestBuilders.get("/movies/{id}", inactive.getId()))
+                .andExpect(status().isNotFound());
+    }
+
+    @Test
+    @DisplayName("Khách hàng không được mở trang quản trị")
+    void shouldDenyCustomer_whenOpeningAdminPages() throws Exception {
         User customer = new User();
         customer.setRole(Role.CUSTOMER);
         mockMvc.perform(MockMvcRequestBuilders.get("/admin/movies")
@@ -57,7 +72,8 @@ class MoviePagesIntegrationTest extends IntegrationTestBase {
     }
 
     @Test
-    void shouldRenderAdminPagesWhenSessionIsAdmin() throws Exception {
+    @DisplayName("Quản trị viên mở được các trang quản lý")
+    void shouldRenderAdminPages_whenSessionIsAdmin() throws Exception {
         User admin = new User();
         admin.setRole(Role.ADMIN);
         mockMvc.perform(MockMvcRequestBuilders.get("/admin/movies")
@@ -72,7 +88,8 @@ class MoviePagesIntegrationTest extends IntegrationTestBase {
     }
 
     @Test
-    void shouldShowFieldErrorWhenMovieTitleIsBlank() throws Exception {
+    @DisplayName("Form báo lỗi tại ô tên phim và thời lượng không hợp lệ")
+    void shouldShowFieldError_whenMovieTitleIsBlank() throws Exception {
         User admin = new User();
         admin.setRole(Role.ADMIN);
         mockMvc.perform(MockMvcRequestBuilders.post("/admin/movies")
@@ -83,7 +100,8 @@ class MoviePagesIntegrationTest extends IntegrationTestBase {
     }
 
     @Test
-    void shouldRenderUpcomingShowtimeOnMovieAndAdminPages() throws Exception {
+    @DisplayName("Trang chi tiết và trang quản trị hiển thị suất chiếu sắp tới")
+    void shouldRenderUpcomingShowtime_whenOpeningMovieAndAdminPages() throws Exception {
         Movie movie = testDataFactory.createMovie("Phim cuối tuần");
         Room room = testDataFactory.createRoom("Phòng số một", 5, 8);
         testDataFactory.createShowtime(movie, room, LocalDateTime.now().plusDays(2));
@@ -108,7 +126,8 @@ class MoviePagesIntegrationTest extends IntegrationTestBase {
     }
 
     @Test
-    void shouldCreateMovieRoomAndShowtimeThroughAdminForms() throws Exception {
+    @DisplayName("Form quản trị tạo được phim, phòng và suất chiếu")
+    void shouldCreateMovieRoomAndShowtime_whenSubmittingAdminForms() throws Exception {
         User admin = new User();
         admin.setRole(Role.ADMIN);
         mockMvc.perform(MockMvcRequestBuilders.post("/admin/movies")
@@ -147,7 +166,8 @@ class MoviePagesIntegrationTest extends IntegrationTestBase {
     }
 
     @Test
-    void shouldUpdateAndDeactivateMovieThroughAdminForms() throws Exception {
+    @DisplayName("Form quản trị sửa và ngừng chiếu phim")
+    void shouldUpdateAndDeactivateMovie_whenSubmittingAdminForms() throws Exception {
         User admin = new User();
         admin.setRole(Role.ADMIN);
         Movie movie = testDataFactory.createMovie("Tên cũ");

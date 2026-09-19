@@ -6,6 +6,7 @@ import edu.hcmute.cnpm.cinema.exception.BusinessException;
 import edu.hcmute.cnpm.cinema.exception.ResourceNotFoundException;
 import edu.hcmute.cnpm.cinema.service.MovieService;
 import edu.hcmute.cnpm.cinema.support.IntegrationTestBase;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -18,7 +19,8 @@ class MovieServiceIntegrationTest extends IntegrationTestBase {
     @Autowired private MovieService movieService;
 
     @Test
-    void shouldReturnOnlyActiveMoviesWhenListingPublicMovies() {
+    @DisplayName("Danh sách công khai chỉ trả về phim đang chiếu")
+    void shouldReturnOnlyActiveMovies_whenListingPublicMovies() {
         Movie active = testDataFactory.createMovie("Phim đang chiếu");
         Movie inactive = testDataFactory.createMovie("Phim đã ngừng");
         inactive.setActive(false);
@@ -28,13 +30,15 @@ class MovieServiceIntegrationTest extends IntegrationTestBase {
     }
 
     @Test
-    void shouldThrowNotFoundWhenMovieIdDoesNotExist() {
+    @DisplayName("Không tìm thấy phim thì báo lỗi 404")
+    void shouldThrowNotFound_whenMovieIdDoesNotExist() {
         assertThatThrownBy(() -> movieService.findById(99999L))
                 .isInstanceOf(ResourceNotFoundException.class);
     }
 
     @Test
-    void shouldKeepMovieRowWhenDeactivating() {
+    @DisplayName("Ngừng chiếu giữ lại dữ liệu phim")
+    void shouldKeepMovieRow_whenDeactivating() {
         Movie movie = testDataFactory.createMovie("Phim ngừng chiếu");
         movieService.deactivateMovie(movie.getId());
 
@@ -42,7 +46,8 @@ class MovieServiceIntegrationTest extends IntegrationTestBase {
     }
 
     @Test
-    void shouldRejectEmptyTitleAndZeroDurationWhenCreating() {
+    @DisplayName("Từ chối phim thiếu tên hoặc có thời lượng bằng không")
+    void shouldRejectEmptyTitleAndZeroDuration_whenCreating() {
         Movie movie = new Movie();
         movie.setTitle("  ");
         movie.setDurationMin(0);
@@ -52,7 +57,8 @@ class MovieServiceIntegrationTest extends IntegrationTestBase {
     }
 
     @Test
-    void shouldPreserveVietnameseTitleWhenCreating() {
+    @DisplayName("Lưu tên phim tiếng Việt có dấu")
+    void shouldPreserveVietnameseTitle_whenCreating() {
         Movie movie = new Movie();
         movie.setTitle("Bão Giữa Trời Quang");
         movie.setDurationMin(95);
@@ -62,7 +68,8 @@ class MovieServiceIntegrationTest extends IntegrationTestBase {
     }
 
     @Test
-    void shouldRejectDurationChangeWhenMovieAlreadyHasShowtimes() {
+    @DisplayName("Không đổi thời lượng khi phim đã có suất chiếu")
+    void shouldRejectDurationChange_whenMovieAlreadyHasShowtimes() {
         Movie movie = testDataFactory.createMovie("Phim đã lên lịch");
         Room room = testDataFactory.createRoom("Phòng A", 5, 8);
         testDataFactory.createShowtime(movie, room, LocalDateTime.now().plusDays(2));

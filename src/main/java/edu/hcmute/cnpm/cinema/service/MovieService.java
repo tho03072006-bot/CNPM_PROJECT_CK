@@ -36,6 +36,15 @@ public class MovieService {
                 .orElseThrow(() -> new ResourceNotFoundException("phim", movieId));
     }
 
+    @Transactional(readOnly = true)
+    public Movie findActiveById(Long movieId) {
+        Movie movie = findById(movieId);
+        if (!Boolean.TRUE.equals(movie.getActive())) {
+            throw new ResourceNotFoundException("phim", movieId);
+        }
+        return movie;
+    }
+
     @Transactional
     public Movie createMovie(Movie input) {
         validate(input);
