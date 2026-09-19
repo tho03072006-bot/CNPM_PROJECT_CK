@@ -5,6 +5,7 @@ import edu.hcmute.cnpm.cinema.entity.Seat;
 import edu.hcmute.cnpm.cinema.exception.BusinessException;
 import edu.hcmute.cnpm.cinema.service.RoomService;
 import edu.hcmute.cnpm.cinema.support.IntegrationTestBase;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -15,7 +16,8 @@ class RoomServiceIntegrationTest extends IntegrationTestBase {
     @Autowired private RoomService roomService;
 
     @Test
-    void shouldGenerateEightySeatsWithLastTwoRowsVipWhenCreatingRoom() {
+    @DisplayName("Phòng 8 hàng 10 cột sinh 80 ghế, hai hàng cuối là ghế VIP")
+    void shouldGenerateEightySeatsWithLastTwoRowsVip_whenCreatingRoom() {
         Room room = roomService.createRoom("Phòng mới", 8, 10);
 
         assertThat(seatRepository.findByRoomId(room.getId())).hasSize(80)
@@ -24,20 +26,23 @@ class RoomServiceIntegrationTest extends IntegrationTestBase {
     }
 
     @Test
-    void shouldNotDuplicateSeatsWhenGeneratingAgain() {
+    @DisplayName("Sinh ghế lần nữa không tạo ghế trùng")
+    void shouldNotDuplicateSeats_whenGeneratingAgain() {
         Room room = roomService.createRoom("Phòng mới", 8, 10);
         roomService.generateSeats(room.getId());
         assertThat(seatRepository.findByRoomId(room.getId())).hasSize(80);
     }
 
     @Test
-    void shouldRejectInvalidDimensionsWhenCreatingRoom() {
+    @DisplayName("Từ chối phòng có số hàng không hợp lệ")
+    void shouldRejectInvalidDimensions_whenCreatingRoom() {
         assertThatThrownBy(() -> roomService.createRoom("Phòng lỗi", 0, 10))
                 .isInstanceOf(BusinessException.class);
     }
 
     @Test
-    void shouldAllowResizingRoomWithoutShowtimes() {
+    @DisplayName("Cho đổi sơ đồ ghế khi phòng chưa có suất chiếu")
+    void shouldAllowResizingRoom_whenWithoutShowtimes() {
         Room room = roomService.createRoom("Phòng mới", 8, 10);
         roomService.updateRoom(room.getId(), "Phòng mới", 4, 5);
         assertThat(seatRepository.findByRoomId(room.getId())).hasSize(20);

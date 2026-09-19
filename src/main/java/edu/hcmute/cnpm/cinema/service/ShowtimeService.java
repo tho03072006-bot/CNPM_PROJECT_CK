@@ -15,11 +15,13 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 
 @Service
 public class ShowtimeService {
     private static final int CLEANING_MINUTES = 15;
+    private static final DateTimeFormatter TIME_FORMAT = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm");
 
     private final ShowtimeRepository showtimeRepository;
     private final MovieRepository movieRepository;
@@ -94,8 +96,9 @@ public class ShowtimeService {
         for (Showtime existing : showtimeRepository
                 .findByRoomIdAndStartTimeLessThanAndEndTimeGreaterThan(roomId, endTime, startTime)) {
             if (showtime == null || !existing.getId().equals(showtime.getId())) {
-                throw new InvalidBookingException("Giờ chiếu trùng với suất #" + existing.getId()
-                        + " (" + existing.getStartTime() + " đến " + existing.getEndTime() + ").");
+                throw new InvalidBookingException("Giờ chiếu trùng với suất chiếu số " + existing.getId()
+                        + " (" + existing.getStartTime().format(TIME_FORMAT) + " đến "
+                        + existing.getEndTime().format(TIME_FORMAT) + ").");
             }
         }
         Showtime target = showtime == null ? new Showtime() : showtime;
