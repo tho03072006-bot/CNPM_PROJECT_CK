@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout" layout:decorate="~{layout/base}">
+<head><title th:text="${movie.title}">Chi tiết phim</title></head>
+<body><div layout:fragment="content">
+    <p><a class="btn btn-ghost btn-sm" th:href="@{/movies}">← Danh sách phim</a></p>
+    <section class="card">
+        <h1 th:text="${movie.title}">Tên phim</h1>
+        <p class="movie-meta" th:text="|${movie.genre ?: 'Chưa phân loại'} · ${movie.durationMin} phút · ${movie.ageRating ?: 'Chưa phân loại độ tuổi'}|">Thông tin phim</p>
+        <p th:text="${movie.description ?: 'Chưa có mô tả cho phim này.'}">Mô tả phim</p>
+    </section>
+    <h2 class="section-title">Suất chiếu sắp tới</h2>
+    <p class="card" th:if="${showtimesByDate.isEmpty()}">Phim này chưa có suất chiếu sắp tới.</p>
+    <section th:each="entry : ${showtimesByDate}">
+        <h3 th:text="${#temporals.format(entry.key, 'dd/MM/yyyy')}">Ngày chiếu</h3>
+        <div class="card-grid">
+            <article class="card" th:each="showtime : ${entry.value}">
+                <h4 th:text="${#temporals.format(showtime.startTime, 'HH:mm')}">Giờ chiếu</h4>
+                <p th:text="${showtime.room.name}">Phòng chiếu</p>
+                <p th:text="|Giá từ ${#numbers.formatDecimal(showtime.basePrice, 0, 'POINT', 0, 'COMMA')} đ|">Giá vé</p>
+                <a class="btn btn-sm" th:href="@{/booking/showtime/{id}(id=${showtime.id})}">Chọn ghế</a>
+            </article>
+        </div>
+    </section>
+</div></body></html>

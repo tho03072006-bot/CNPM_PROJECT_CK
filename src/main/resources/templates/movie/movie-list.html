@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout" layout:decorate="~{layout/base}">
+<head><title>Phim đang chiếu</title></head>
+<body><div layout:fragment="content">
+    <h1>Phim đang chiếu</h1>
+    <p class="text-muted">Chọn phim để xem các suất chiếu sắp tới.</p>
+    <p class="card" th:if="${#lists.isEmpty(movies)}">Hiện chưa có phim nào đang chiếu. Vui lòng quay lại sau.</p>
+    <div class="card-grid" th:unless="${#lists.isEmpty(movies)}">
+        <article class="movie-card" th:each="movie : ${movies}">
+            <div class="movie-poster">
+                <img th:if="${movie.posterUrl != null and !#strings.isEmpty(movie.posterUrl)}"
+                     th:src="${movie.posterUrl}" th:alt="|Poster phim ${movie.title}|">
+                <span class="badge badge-accent" th:if="${movie.ageRating != null}"
+                      th:text="${movie.ageRating}">C13</span>
+            </div>
+            <div class="movie-body">
+                <h2 class="movie-title" th:text="${movie.title}">Tên phim</h2>
+                <p class="movie-meta" th:text="|${movie.genre ?: 'Chưa phân loại'} · ${movie.durationMin} phút|">Thể loại</p>
+                <p><a class="btn btn-sm" th:href="@{/movies/{id}(id=${movie.id})}">Xem suất chiếu</a></p>
+            </div>
+        </article>
+    </div>
+</div></body></html>

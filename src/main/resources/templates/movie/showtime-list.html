@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout" layout:decorate="~{layout/base}">
+<head><title>Quản lý suất chiếu</title></head>
+<body><div layout:fragment="content">
+    <h1>Quản lý suất chiếu</h1>
+    <p><a class="btn" th:href="@{/admin/showtimes/new}">Thêm suất chiếu</a>
+       <a class="btn btn-ghost" th:href="@{/admin/movies}">Phim</a>
+       <a class="btn btn-ghost" th:href="@{/admin/rooms}">Phòng chiếu</a></p>
+    <p class="card" th:if="${#lists.isEmpty(showtimes)}">Chưa có suất chiếu nào.</p>
+    <div class="table-wrap" th:unless="${#lists.isEmpty(showtimes)}">
+        <table class="admin-table"><thead><tr>
+            <th>Mã</th><th>Phim</th><th>Phòng</th><th>Bắt đầu</th><th>Kết thúc (đã tính dọn phòng)</th><th>Giá cơ bản</th><th>Thao tác</th>
+        </tr></thead><tbody><tr th:each="showtime : ${showtimes}">
+            <td th:text="${showtime.id}">1</td>
+            <td th:text="${showtime.movie.title}">Phim</td>
+            <td th:text="${showtime.room.name}">Phòng</td>
+            <td th:text="${#temporals.format(showtime.startTime, 'dd/MM/yyyy HH:mm')}">Bắt đầu</td>
+            <td th:text="${#temporals.format(showtime.endTime, 'dd/MM/yyyy HH:mm')}">Kết thúc</td>
+            <td th:text="|${#numbers.formatDecimal(showtime.basePrice, 0, 'POINT', 0, 'COMMA')} đ|">Giá</td>
+            <td><a class="btn btn-ghost btn-sm" th:href="@{/admin/showtimes/{id}/edit(id=${showtime.id})}">Sửa</a>
+                <form th:action="@{/admin/showtimes/{id}/delete(id=${showtime.id})}" method="post" style="display: inline">
+                    <button class="btn btn-ghost btn-sm" type="submit">Xoá</button>
+                </form></td>
+        </tr></tbody></table>
+    </div>
+</div></body></html>

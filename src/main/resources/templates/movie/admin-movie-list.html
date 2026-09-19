@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout" layout:decorate="~{layout/base}">
+<head><title>Quản lý phim</title></head>
+<body><div layout:fragment="content">
+    <h1>Quản lý phim</h1>
+    <p><a class="btn" th:href="@{/admin/movies/new}">Thêm phim</a>
+       <a class="btn btn-ghost" th:href="@{/admin/rooms}">Phòng chiếu</a>
+       <a class="btn btn-ghost" th:href="@{/admin/showtimes}">Suất chiếu</a></p>
+    <p class="card" th:if="${#lists.isEmpty(movies)}">Chưa có phim nào.</p>
+    <div class="table-wrap" th:unless="${#lists.isEmpty(movies)}">
+        <table class="admin-table"><thead><tr>
+            <th>Phim</th><th>Thể loại</th><th>Thời lượng</th><th>Trạng thái</th><th>Thao tác</th>
+        </tr></thead><tbody><tr th:each="movie : ${movies}">
+            <td th:text="${movie.title}">Phim</td>
+            <td th:text="${movie.genre ?: '—'}">Thể loại</td>
+            <td th:text="|${movie.durationMin} phút|">120 phút</td>
+            <td><span th:class="${movie.active} ? 'badge badge-brand' : 'badge badge-danger'"
+                      th:text="${movie.active} ? 'Đang chiếu' : 'Đã ngừng'">Trạng thái</span></td>
+            <td><a class="btn btn-ghost btn-sm" th:href="@{/admin/movies/{id}/edit(id=${movie.id})}">Sửa</a>
+                <form th:if="${movie.active}" th:action="@{/admin/movies/{id}/deactivate(id=${movie.id})}"
+                      method="post" style="display: inline">
+                    <button class="btn btn-ghost btn-sm" type="submit">Ngừng chiếu</button>
+                </form></td>
+        </tr></tbody></table>
+    </div>
+</div></body></html>
