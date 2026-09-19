@@ -3,25 +3,45 @@
       xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout" layout:decorate="~{layout/base}">
 <head><title>Quản lý phim</title></head>
 <body><div layout:fragment="content">
-    <h1>Quản lý phim</h1>
-    <p><a class="btn" th:href="@{/admin/movies/new}">Thêm phim</a>
-       <a class="btn btn-ghost" th:href="@{/admin/rooms}">Phòng chiếu</a>
-       <a class="btn btn-ghost" th:href="@{/admin/showtimes}">Suất chiếu</a></p>
-    <p class="card" th:if="${#lists.isEmpty(movies)}">Chưa có phim nào.</p>
+    <div class="module1-admin-head">
+        <div>
+            <span class="module1-kicker">BẢNG ĐIỀU KHIỂN · MODULE 1</span>
+            <h1>Quản lý phim</h1>
+            <p class="text-muted">Cập nhật phim đang chiếu và nội dung hiển thị với khán giả.</p>
+        </div>
+        <a class="btn" th:href="@{/admin/movies/new}">+ Thêm phim</a>
+    </div>
+    <nav class="module1-admin-nav" aria-label="Quản lý lịch chiếu">
+        <a th:href="@{/admin/movies}" aria-current="page">Phim</a>
+        <a th:href="@{/admin/rooms}">Phòng chiếu</a>
+        <a th:href="@{/admin/showtimes}">Suất chiếu</a>
+    </nav>
+    <div class="module1-admin-summary">
+        <span class="module1-summary-number" th:text="${#lists.size(movies)}">6</span>
+        <div><strong>Phim trong hệ thống</strong><span>Bao gồm phim đang chiếu và đã ngừng chiếu.</span></div>
+    </div>
+    <div class="module1-empty" th:if="${#lists.isEmpty(movies)}">
+        <h2>Chưa có phim nào</h2><p>Thêm bộ phim đầu tiên để bắt đầu lên lịch chiếu.</p>
+    </div>
     <div class="table-wrap" th:unless="${#lists.isEmpty(movies)}">
-        <table class="admin-table"><thead><tr>
-            <th>Phim</th><th>Thể loại</th><th>Thời lượng</th><th>Trạng thái</th><th>Thao tác</th>
+        <table class="admin-table module1-table"><thead><tr>
+            <th>Phim</th><th>Thời lượng</th><th>Trạng thái</th><th>Thao tác</th>
         </tr></thead><tbody><tr th:each="movie : ${movies}">
-            <td th:text="${movie.title}">Phim</td>
-            <td th:text="${movie.genre ?: '—'}">Thể loại</td>
+            <td><div class="module1-table-title">
+                <span class="module1-table-mark" aria-hidden="true"
+                      th:text="${#strings.substring(movie.title, 0, 1)}">B</span>
+                <span><strong th:text="${movie.title}">Tên phim</strong>
+                      <small th:text="${movie.genre ?: 'Chưa phân loại'}">Thể loại</small></span>
+            </div></td>
             <td th:text="|${movie.durationMin} phút|">120 phút</td>
             <td><span th:class="${movie.active} ? 'badge badge-brand' : 'badge badge-danger'"
                       th:text="${movie.active} ? 'Đang chiếu' : 'Đã ngừng'">Trạng thái</span></td>
-            <td><a class="btn btn-ghost btn-sm" th:href="@{/admin/movies/{id}/edit(id=${movie.id})}">Sửa</a>
-                <form th:if="${movie.active}" th:action="@{/admin/movies/{id}/deactivate(id=${movie.id})}"
-                      method="post" style="display: inline">
+            <td><div class="module1-row-actions">
+                <a class="btn btn-ghost btn-sm" th:href="@{/admin/movies/{id}/edit(id=${movie.id})}">Sửa</a>
+                <form th:if="${movie.active}" th:action="@{/admin/movies/{id}/deactivate(id=${movie.id})}" method="post">
                     <button class="btn btn-ghost btn-sm" type="submit">Ngừng chiếu</button>
-                </form></td>
+                </form>
+            </div></td>
         </tr></tbody></table>
     </div>
 </div></body></html>

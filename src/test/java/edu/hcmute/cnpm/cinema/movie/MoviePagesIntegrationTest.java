@@ -97,6 +97,14 @@ class MoviePagesIntegrationTest extends IntegrationTestBase {
                         .sessionAttr(Constants.SESSION_USER, admin))
                 .andExpect(status().isOk())
                 .andExpect(content().string(containsString("Phim cuối tuần")));
+        mockMvc.perform(MockMvcRequestBuilders.get("/admin/movies")
+                        .sessionAttr(Constants.SESSION_USER, admin))
+                .andExpect(status().isOk())
+                .andExpect(content().string(containsString("Phim cuối tuần")));
+        mockMvc.perform(MockMvcRequestBuilders.get("/admin/rooms")
+                        .sessionAttr(Constants.SESSION_USER, admin))
+                .andExpect(status().isOk())
+                .andExpect(content().string(containsString("Phòng số một")));
     }
 
     @Test

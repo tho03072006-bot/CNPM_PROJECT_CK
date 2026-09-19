@@ -3,21 +3,54 @@
       xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout" layout:decorate="~{layout/base}">
 <head><title>Phim đang chiếu</title></head>
 <body><div layout:fragment="content">
-    <h1>Phim đang chiếu</h1>
-    <p class="text-muted">Chọn phim để xem các suất chiếu sắp tới.</p>
-    <p class="card" th:if="${#lists.isEmpty(movies)}">Hiện chưa có phim nào đang chiếu. Vui lòng quay lại sau.</p>
-    <div class="card-grid" th:unless="${#lists.isEmpty(movies)}">
-        <article class="movie-card" th:each="movie : ${movies}">
-            <div class="movie-poster">
+    <section class="module1-hero" aria-labelledby="movie-page-title">
+        <div>
+            <span class="module1-eyebrow">NHÓM 05 CINEMA · LỊCH CHIẾU</span>
+            <h1 id="movie-page-title">Một bộ phim hay bắt đầu từ đây.</h1>
+            <p>Khám phá phim đang chiếu, xem lịch chiếu và chọn buổi xem phù hợp với bạn.</p>
+        </div>
+        <div class="module1-hero-count" aria-label="Số phim đang chiếu">
+            <strong th:text="${#lists.size(movies)}">5</strong>
+            <span>phim đang chiếu</span>
+        </div>
+    </section>
+
+    <div class="module1-section-head">
+        <div>
+            <span class="module1-kicker">TRÊN MÀN ẢNH</span>
+            <h2>Chọn phim của bạn</h2>
+        </div>
+        <p class="text-muted" th:unless="${#lists.isEmpty(movies)}"
+           th:text="|${#lists.size(movies)} lựa chọn đang chờ bạn|">5 lựa chọn đang chờ bạn</p>
+    </div>
+
+    <div class="module1-empty" th:if="${#lists.isEmpty(movies)}">
+        <span class="module1-empty-icon" aria-hidden="true">✦</span>
+        <h3>Chưa có phim đang chiếu</h3>
+        <p>Lịch phim mới sẽ sớm được cập nhật. Hãy quay lại sau nhé.</p>
+    </div>
+
+    <div class="card-grid module1-catalog-grid" th:unless="${#lists.isEmpty(movies)}">
+        <article class="movie-card module1-movie-card" th:each="movie, iter : ${movies}">
+            <div class="movie-poster module1-poster" th:classappend="|module1-poster-tone-${iter.index % 5}|">
                 <img th:if="${movie.posterUrl != null and !#strings.isEmpty(movie.posterUrl)}"
                      th:src="${movie.posterUrl}" th:alt="|Poster phim ${movie.title}|">
+                <div class="module1-poster-art" th:unless="${movie.posterUrl != null and !#strings.isEmpty(movie.posterUrl)}">
+                    <span class="module1-poster-index" th:text="${#numbers.formatInteger(iter.count, 2)}">01</span>
+                    <span class="module1-poster-letter" aria-hidden="true"
+                          th:text="${#strings.substring(movie.title, 0, 1)}">B</span>
+                    <span class="module1-poster-caption">CINEMA · NHÓM 05</span>
+                </div>
                 <span class="badge badge-accent" th:if="${movie.ageRating != null}"
                       th:text="${movie.ageRating}">C13</span>
             </div>
-            <div class="movie-body">
-                <h2 class="movie-title" th:text="${movie.title}">Tên phim</h2>
-                <p class="movie-meta" th:text="|${movie.genre ?: 'Chưa phân loại'} · ${movie.durationMin} phút|">Thể loại</p>
-                <p><a class="btn btn-sm" th:href="@{/movies/{id}(id=${movie.id})}">Xem suất chiếu</a></p>
+            <div class="movie-body module1-movie-body">
+                <p class="module1-card-overline" th:text="${movie.genre ?: 'Phim điện ảnh'}">Thể loại</p>
+                <h3 class="movie-title" th:text="${movie.title}">Tên phim</h3>
+                <p class="movie-meta" th:text="|${movie.durationMin} phút · ${movie.ageRating ?: 'Chưa phân loại'}|">Thời lượng</p>
+                <p class="module1-card-description" th:text="${movie.description ?: 'Xem thông tin phim và các suất chiếu sắp tới.'}">Mô tả phim</p>
+                <a class="module1-card-link" th:href="@{/movies/{id}(id=${movie.id})}"
+                   th:aria-label="|Xem lịch chiếu phim ${movie.title}|">Xem lịch chiếu <span aria-hidden="true">→</span></a>
             </div>
         </article>
     </div>
