@@ -1,6 +1,7 @@
 package edu.hcmute.cnpm.cinema.entity;
 
 import jakarta.persistence.*;
+import org.hibernate.annotations.Nationalized;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -12,6 +13,7 @@ public class Room {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Nationalized
     @Column(nullable = false, length = 50)
     private String name;
 
