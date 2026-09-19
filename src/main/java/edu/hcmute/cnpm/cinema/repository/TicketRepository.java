@@ -9,4 +9,6 @@ import java.util.List;
 public interface TicketRepository extends JpaRepository<Ticket, Long> {
     // Dung de ve seat-map: lay cac ghe da bi giu/dat cho 1 suat chieu
     List<Ticket> findByShowtimeIdAndStatusIn(Long showtimeId, List<TicketStatus> statuses);
+
+    boolean existsByShowtimeId(Long showtimeId);
 }
