@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout" layout:decorate="~{layout/base}">
+<head><title>Bảng giá vé</title></head>
+<body><div layout:fragment="content">
+
+    <section class="module1-section-head" aria-labelledby="pricing-title">
+        <div>
+            <span class="module1-kicker">UTE CINEMA · BẢNG GIÁ</span>
+            <h1 id="pricing-title">Giá vé</h1>
+            <p class="text-muted">Giá vé thay đổi theo ngày trong tuần và theo loại phòng.
+                Thứ Tư là ngày có giá ưu đãi.</p>
+        </div>
+    </section>
+
+    <section class="pricing-block" aria-labelledby="price-table-title">
+        <h2 id="price-table-title" class="pricing-block-title">Giá vé ghế thường</h2>
+
+        <div class="pricing-table-wrap">
+            <table class="admin-table pricing-table">
+                <caption class="pricing-caption">
+                    Giá cho một ghế thường. Ghế VIP và ghế đôi tính thêm theo bảng phía dưới.
+                </caption>
+                <thead><tr>
+                    <th scope="col">Loại phòng</th>
+                    <th scope="col">Áp dụng cho</th>
+                    <th scope="col">Giá vé</th>
+                    <th scope="col">Đang áp dụng trong lịch chiếu</th>
+                </tr></thead>
+                <tbody>
+                <tr th:each="row : ${priceRows}"
+                    th:classappend="${row.highlighted} ? ' is-deal' : ''">
+                    <th scope="row" th:text="${row.roomType}">Phòng thường</th>
+                    <td>
+                        <span th:text="${row.dayGroup}">Thứ Hai, Thứ Ba, Thứ Năm</span>
+                        <span class="badge badge-accent pricing-deal-tag" th:if="${row.highlighted}">Ưu đãi</span>
+                    </td>
+                    <td class="pricing-amount"
+                        th:text="|${#numbers.formatDecimal(row.price, 0, 'POINT', 0, 'COMMA')} đ|">115.000 đ</td>
+                    <td>
+                        <span class="badge badge-ok pricing-check"
+                              th:if="${row.presentInSchedule and row.matchingSchedule}">Khớp</span>
+                        <span class="badge badge-danger pricing-check"
+                              th:if="${row.presentInSchedule and !row.matchingSchedule}"
+                              th:text="|Lệch: lịch đang để ${row.pricesInScheduleText} đ|">Lệch</span>
+                        <span class="pricing-check is-none" th:unless="${row.presentInSchedule}">
+                            Chưa có suất chiếu nào rơi vào nhóm ngày này</span>
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <p class="pricing-note">
+            Cột cuối đối chiếu giá công bố với giá thật sự đang gắn vào từng suất chiếu trong
+            <a th:href="@{/lich-chieu}">lịch chiếu</a>
+            (<span th:text="|${upcomingShowtimeCount} suất sắp tới|">0 suất sắp tới</span>).
+            Hai bên lệch nhau là biết ngay, khỏi phải dò từng suất.
+        </p>
+    </section>
+
+    <section class="pricing-block" aria-labelledby="surcharge-title">
+        <h2 id="surcharge-title" class="pricing-block-title">Phụ thu theo loại ghế</h2>
+
+        <div class="pricing-table-wrap">
+            <table class="admin-table pricing-table">
+                <caption class="pricing-caption">
+                    Cột ví dụ tính trên giá gốc
+                    <strong th:text="|${#numbers.formatDecimal(exampleBasePrice, 0, 'POINT', 0, 'COMMA')} đ|">115.000 đ</strong>.
+                </caption>
+                <thead><tr>
+                    <th scope="col">Loại ghế</th>
+                    <th scope="col">Giải thích</th>
+                    <th scope="col">Hệ số</th>
+                    <th scope="col">Thành tiền</th>
+                </tr></thead>
+                <tbody>
+                <tr th:each="seat : ${seatSurcharges}">
+                    <th scope="row" th:text="${seat.seatTypeLabel}">Ghế VIP</th>
+                    <td class="pricing-desc" th:text="${seat.description}">Giải thích</td>
+                    <td th:text="|x ${seat.multiplier}|">x 1.5</td>
+                    <td class="pricing-amount"
+                        th:text="|${#numbers.formatDecimal(seat.examplePrice, 0, 'POINT', 0, 'COMMA')} đ|">172.500 đ</td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+    </section>
+
+    <section class="pricing-block" aria-labelledby="pricing-faq-title">
+        <h2 id="pricing-faq-title" class="pricing-block-title">Vài điều nên biết</h2>
+        <ul class="pricing-faq">
+            <li><strong>Vì sao Thứ Tư rẻ hơn?</strong> Đây là ngày ưu đãi trong tuần, áp dụng cho
+                phòng thường. Phòng Premium và Gold Class giữ nguyên giá mọi ngày.</li>
+            <li><strong>Giá hiện trên trang đặt vé là giá nào?</strong> Là giá ghế thường của suất
+                chiếu đó. Chọn ghế VIP hay ghế đôi thì số tiền cuối cùng tính lại theo hệ số ở bảng trên.</li>
+            <li><strong>Ghế đôi là gì?</strong> Hàng cuối của phòng thường, một ghế ngồi được hai
+                người nên tính bằng hai vé.</li>
+        </ul>
+        <div class="pricing-actions">
+            <a class="btn btn-accent" th:href="@{/lich-chieu}">Xem lịch chiếu</a>
+            <a class="btn btn-ghost" th:href="@{/movies}">Danh sách phim</a>
+        </div>
+    </section>
+
+</div></body></html>

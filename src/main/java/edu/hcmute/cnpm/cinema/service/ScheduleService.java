@@ -129,8 +129,11 @@ public class ScheduleService {
      * Rạp đặt tên phòng theo kiểu "Cinema 7 - PREMIUM", "Cinema 8 - GOLD CLASS",
      * còn phòng thường thì chỉ có số. Dữ liệu mẫu trong {@code seed-data.sql}
      * cũng đặt tên theo đúng quy ước này.
+     *
+     * Để {@code public static} vì trang bảng giá vé cũng phải phân loại phòng y
+     * hệt cách này - hai nơi làm khác nhau là bảng giá hiện sai.
      */
-    private String resolveRoomType(String roomName) {
+    public static String resolveRoomType(String roomName) {
         String name = roomName == null ? "" : roomName.toUpperCase(Locale.ROOT);
         if (name.contains("GOLD CLASS")) {
             return ROOM_TYPE_GOLD;
