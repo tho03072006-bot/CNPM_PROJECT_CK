@@ -55,7 +55,7 @@ mvn spring-boot:run -Dspring-boot.run.profiles=cloud
 
 ---
 
-## Bốn thứ dễ sai
+## Năm thứ dễ sai
 
 **Lệnh `sqlcmd` đọc file phải luôn có `-f 65001`.** Thiếu là tiếng Việt thành chữ rác kiểu
 `BÃ£o Giá»¯a Trá»i Quang`, và thường tới lúc demo mới phát hiện.
@@ -70,6 +70,36 @@ của Azure, bỏ dấu `#` ra là dính lỗi TLS `PKIX path building failed`.
 **Không tự sửa schema trên cloud.** Profile `cloud` đặt `ddl-auto=validate` nên Hibernate
 không được tự đổi bảng. Cần thêm/sửa bảng thì sửa `database/schema-cloud.sql`, chạy tay lên
 cloud, rồi báo cả nhóm — tránh cảnh 4 người cùng sửa làm schema chung biến dạng.
+
+**Đổi kiểu cột trong `@Entity` thì database test trên máy KHÔNG tự đổi theo.** `ddl-auto=update`
+chỉ biết thêm bảng và thêm cột mới — nó không bao giờ đổi kiểu của một cột đã tồn tại. Nên khi
+ai đó thêm `@Nationalized` (hoặc đổi `length`, đổi kiểu dữ liệu) vào một trường, `cinema_booking_test`
+trên máy bạn vẫn giữ cột `varchar` cũ, và `mvn test` đổ hàng loạt lỗi:
+
+```
+Could not extract column [3] from JDBC ResultSet
+[The conversion from varchar to NCHAR is unsupported.]
+```
+
+**CI không bắt được lỗi này** vì mỗi lần chạy nó tạo một database rỗng hoàn toàn, Hibernate sinh
+cột mới đúng kiểu ngay từ đầu. Chỉ máy cá nhân — nơi database test đã tồn tại từ trước — mới dính.
+
+Ngày 20/09/2026 nhóm đã dính đúng lỗi này sau khi Module 1 thêm `@Nationalized` vào `Movie` và
+`Room`. Cách sửa: đổi kiểu đúng những cột bị lệch, không cần xoá database.
+
+```bash
+sqlcmd -S localhost,1433 -U sa -C -f 65001 -d cinema_booking_test -Q "ALTER TABLE movies ALTER COLUMN title NVARCHAR(200) NOT NULL; ALTER TABLE movies ALTER COLUMN genre NVARCHAR(100) NULL; ALTER TABLE movies ALTER COLUMN poster_url NVARCHAR(500) NULL; ALTER TABLE movies ALTER COLUMN age_rating NVARCHAR(10) NULL; ALTER TABLE rooms ALTER COLUMN name NVARCHAR(50) NOT NULL;"
+```
+
+Muốn kiểm tra máy mình có bị lệch không thì liệt kê các cột chưa phải Unicode:
+
+```bash
+sqlcmd -S localhost,1433 -U sa -C -f 65001 -d cinema_booking_test -Q "SELECT t.name, c.name, ty.name FROM sys.tables t JOIN sys.columns c ON c.object_id=t.object_id JOIN sys.types ty ON ty.user_type_id=c.user_type_id WHERE ty.name IN ('varchar','char','text') ORDER BY 1,2;"
+```
+
+Đối chiếu danh sách đó với các trường có `@Nationalized` trong `entity/`. Trường nào có annotation
+mà cột vẫn `varchar` thì phải `ALTER`. Các cột không có annotation (`users`, `seats`, `tickets`)
+để `varchar` là đúng, đừng đổi bừa.
 
 ---
 
