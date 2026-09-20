@@ -1,5 +1,5 @@
 -- ================================================================
--- Cinema Booking - NHÓM 8 - Dữ liệu mẫu dùng chung
+-- UTE Cinema - Dữ liệu mẫu dùng chung
 --
 -- Mục đích: cả 4 người test trên CÙNG một bộ dữ liệu. Tài thêm suất chiếu,
 -- Thắng thử giữ ghế, Thanh thử thanh toán - tất cả nhìn thấy cùng phim,
@@ -17,8 +17,8 @@
 -- File này CHẠY LẠI ĐƯỢC NHIỀU LẦN: mỗi khối đều kiểm tra "nếu chưa có thì mới thêm",
 -- nên không sợ chạy nhầm hai lần rồi nhân đôi dữ liệu.
 --
--- THÔNG TIN PHIM LÀ THẬT: tên phim, thể loại, thời lượng, nhãn tuổi và ngày khởi chiếu
--- lấy theo lịch chiếu rạp Việt Nam ngày 20/09/2026. Ảnh poster để ở dạng đường dẫn tới
+-- DỮ LIỆU LẤY TỪ MỘT RẠP CÓ THẬT: phim, lịch chiếu, số phòng, loại phòng và giá vé
+-- đều lấy theo CGV Vincom Đồng Khởi (Quận 1, TP.HCM) ngày 20/09/2026. Ảnh poster để ở dạng đường dẫn tới
 -- máy chủ ảnh của nguồn (bản 800px, sắc nét cho màn hình lớn), không tải về kho mã.
 -- Nếu sau này ảnh hỏng thì chỉ cần thay
 -- cột poster_url, không ảnh hưởng gì tới chương trình.
@@ -31,32 +31,24 @@ SET NOCOUNT ON;
 -- ---------------------------------------------------------------
 -- 1. Người dùng mẫu
 -- ---------------------------------------------------------------
-IF NOT EXISTS (SELECT 1 FROM users WHERE email = 'khachhang@nhom8.local')
+IF NOT EXISTS (SELECT 1 FROM users WHERE email = 'khachhang@utecinema.local')
     INSERT INTO users (full_name, email, phone, password_hash, role)
-    VALUES (N'Nguyễn Văn Khách', 'khachhang@nhom8.local', '0901234567', N'chua_hash_123456', 'CUSTOMER');
+    VALUES (N'Nguyễn Văn Khách', 'khachhang@utecinema.local', '0901234567', N'chua_hash_123456', 'CUSTOMER');
 
-IF NOT EXISTS (SELECT 1 FROM users WHERE email = 'nhanvien@nhom8.local')
+IF NOT EXISTS (SELECT 1 FROM users WHERE email = 'nhanvien@utecinema.local')
     INSERT INTO users (full_name, email, phone, password_hash, role)
-    VALUES (N'Trần Thị Nhân Viên', 'nhanvien@nhom8.local', '0907654321', N'chua_hash_123456', 'STAFF');
+    VALUES (N'Trần Thị Nhân Viên', 'nhanvien@utecinema.local', '0907654321', N'chua_hash_123456', 'STAFF');
 
 -- ---------------------------------------------------------------
 -- 2. Phim
 -- ---------------------------------------------------------------
 -- Bóng Ma Nhà Hát - khởi chiếu 18/09/2026
-IF NOT EXISTS (SELECT 1 FROM movies WHERE title = N'Bóng Ma Nhà Hát')
+-- Út Lan 2 - khởi chiếu 25/09/2026
+IF NOT EXISTS (SELECT 1 FROM movies WHERE title = N'Út Lan 2')
     INSERT INTO movies (title, genre, duration_min, description, poster_url, age_rating, is_active)
-    VALUES (N'Bóng Ma Nhà Hát', N'Hài, Kinh dị', 97,
-            N'Một chuyên viên bất động sản nhận nhiệm vụ vực dậy nhà hát cũ trong vòng một tháng, rồi phát hiện nơi này có hồn ma một nữ diễn viên chưa siêu thoát.',
-            N'https://cdn.moveek.com/storage/media/cache/full/6aa3a066c7afd223776710.webp',
-            N'T16', 1);
-
-
--- Vùng Đất Quỷ Dữ 2026 - khởi chiếu 18/09/2026
-IF NOT EXISTS (SELECT 1 FROM movies WHERE title = N'Vùng Đất Quỷ Dữ 2026')
-    INSERT INTO movies (title, genre, duration_min, description, poster_url, age_rating, is_active)
-    VALUES (N'Vùng Đất Quỷ Dữ 2026', N'Kinh dị, Khoa học viễn tưởng', 94,
-            N'Phần phim Resident Evil mới với cốt truyện riêng: một nhân viên vận chuyển vật tư y tế bị cuốn vào cuộc chạy trốn sinh tồn suốt một đêm.',
-            N'https://cdn.moveek.com/storage/media/cache/full/6a98ed8bf12b6567604371.webp',
+    VALUES (N'Út Lan 2', N'Tâm lý, Kinh dị', 107,
+            N'Một con rắn hai đầu xuất hiện, ngôi làng ven sông liên tiếp có người chết bí ẩn và những lời nguyền cũ dần trồi lên mặt nước.',
+            N'https://cdn.moveek.com/storage/media/cache/full/6aa3a03fbe122916480363.webp',
             N'T18', 1);
 
 
@@ -69,40 +61,22 @@ IF NOT EXISTS (SELECT 1 FROM movies WHERE title = N'Lên Hương')
             N'T16', 1);
 
 
--- Tế Nhi Cải Mệnh - khởi chiếu 18/09/2026
-IF NOT EXISTS (SELECT 1 FROM movies WHERE title = N'Tế Nhi Cải Mệnh')
+-- Vùng Đất Quỷ Dữ 2026 - khởi chiếu 18/09/2026
+IF NOT EXISTS (SELECT 1 FROM movies WHERE title = N'Vùng Đất Quỷ Dữ 2026')
     INSERT INTO movies (title, genre, duration_min, description, poster_url, age_rating, is_active)
-    VALUES (N'Tế Nhi Cải Mệnh', N'Kinh dị', 104,
-            N'Người đàn ông ngập trong nợ cờ bạc tìm tới tà thuật cấm kỵ để đổi lấy tiền, và tai hoạ ập xuống cả gia đình ngay sau đó.',
-            N'https://cdn.moveek.com/storage/media/cache/full/6aa4d2eb9ebdd653449192.webp',
+    VALUES (N'Vùng Đất Quỷ Dữ 2026', N'Kinh dị, Khoa học viễn tưởng', 94,
+            N'Phần phim Resident Evil mới với cốt truyện riêng: một nhân viên vận chuyển vật tư y tế bị cuốn vào cuộc chạy trốn sinh tồn suốt một đêm.',
+            N'https://cdn.moveek.com/storage/media/cache/full/6a98ed8bf12b6567604371.webp',
             N'T18', 1);
 
 
--- Người Nhện 4: Khởi Đầu Mới - khởi chiếu 31/07/2026
-IF NOT EXISTS (SELECT 1 FROM movies WHERE title = N'Người Nhện 4: Khởi Đầu Mới')
+-- Bóng Ma Nhà Hát - khởi chiếu 18/09/2026
+IF NOT EXISTS (SELECT 1 FROM movies WHERE title = N'Bóng Ma Nhà Hát')
     INSERT INTO movies (title, genre, duration_min, description, poster_url, age_rating, is_active)
-    VALUES (N'Người Nhện 4: Khởi Đầu Mới', N'Hành động, Khoa học viễn tưởng', 145,
-            N'Peter Parker phải chiến đấu một mình khi không còn ai bên cạnh, trước một thế lực mới và một biến đổi thể chất đe doạ chính anh.',
-            N'https://cdn.moveek.com/storage/media/cache/full/6a545dce71636477839863.webp',
-            N'T13', 1);
-
-
--- Conan Movie 29 (2026): Thiên Thần Sa Ngã Trên Xa Lộ - khởi chiếu 24/07/2026
-IF NOT EXISTS (SELECT 1 FROM movies WHERE title = N'Conan Movie 29 (2026): Thiên Thần Sa Ngã Trên Xa Lộ')
-    INSERT INTO movies (title, genre, duration_min, description, poster_url, age_rating, is_active)
-    VALUES (N'Conan Movie 29 (2026): Thiên Thần Sa Ngã Trên Xa Lộ', N'Hoạt hình, Trinh thám, Hành động', 109,
-            N'Conan cùng nhóm bạn tới Yokohama dự lễ hội mô tô và vướng vào vụ án xoay quanh một tay đua bí ẩn cùng mẫu xe công nghệ cao.',
-            N'https://cdn.moveek.com/storage/media/cache/full/6a2e2b5d405dd381486132.webp',
-            N'T13', 1);
-
-
--- PAW Patrol: Phim Khủng Long - khởi chiếu 14/08/2026
-IF NOT EXISTS (SELECT 1 FROM movies WHERE title = N'PAW Patrol: Phim Khủng Long')
-    INSERT INTO movies (title, genre, duration_min, description, poster_url, age_rating, is_active)
-    VALUES (N'PAW Patrol: Phim Khủng Long', N'Hoạt hình, Phiêu lưu, Gia đình', 89,
-            N'Đội cứu hộ Paw Patrol trở lại màn ảnh rộng với một chuyến phiêu lưu giữa những con khủng long.',
-            N'https://cdn.moveek.com/storage/media/cache/full/69f9578c938ef360861815.webp',
-            N'P', 1);
+    VALUES (N'Bóng Ma Nhà Hát', N'Hài, Kinh dị', 97,
+            N'Một chuyên viên bất động sản nhận nhiệm vụ vực dậy nhà hát cũ trong vòng một tháng, rồi phát hiện nơi này có hồn ma một nữ diễn viên chưa siêu thoát.',
+            N'https://cdn.moveek.com/storage/media/cache/full/6aa3a066c7afd223776710.webp',
+            N'T16', 1);
 
 
 -- Yêu Nhân Thần Thám: Kỳ Án Trường An - khởi chiếu 18/09/2026
@@ -114,7 +88,70 @@ IF NOT EXISTS (SELECT 1 FROM movies WHERE title = N'Yêu Nhân Thần Thám: K�
             N'K', 1);
 
 
--- Phim ra rạp đã lâu, để trạng thái ngừng chiếu nhằm kiểm tra bộ lọc "chỉ lấy phim đang chiếu".
+-- Marine Yêu Dấu - khởi chiếu 18/09/2026
+IF NOT EXISTS (SELECT 1 FROM movies WHERE title = N'Marine Yêu Dấu')
+    INSERT INTO movies (title, genre, duration_min, description, poster_url, age_rating, is_active)
+    VALUES (N'Marine Yêu Dấu', N'Hoạt hình, Tâm lý, Gia đình', 103,
+            N'Phim hoạt hình Nhật Bản về cô bé được gửi về vùng quê ven biển và tình bạn kỳ lạ với một cô gái sống trong toà nhà bên đầm lầy.',
+            N'https://cdn.moveek.com/storage/media/cache/full/6a98eff7bd6ee444134711.webp',
+            N'K', 1);
+
+
+-- Nghỉ Hè Sợ Nghỉ Hưu - khởi chiếu 21/08/2026
+IF NOT EXISTS (SELECT 1 FROM movies WHERE title = N'Nghỉ Hè Sợ Nghỉ Hưu')
+    INSERT INTO movies (title, genre, duration_min, description, poster_url, age_rating, is_active)
+    VALUES (N'Nghỉ Hè Sợ Nghỉ Hưu', N'Hài, Tâm lý, Gia đình', 117,
+            N'Câu chuyện gia đình xoay quanh kỳ nghỉ hè và nỗi lo tuổi hưu của thế hệ đi trước.',
+            N'https://cdn.moveek.com/storage/media/cache/full/6a5dacd32459b264392741.webp',
+            N'T13', 1);
+
+
+-- Hope Vùng Tử Địa - khởi chiếu 04/09/2026
+IF NOT EXISTS (SELECT 1 FROM movies WHERE title = N'Hope Vùng Tử Địa')
+    INSERT INTO movies (title, genre, duration_min, description, poster_url, age_rating, is_active)
+    VALUES (N'Hope Vùng Tử Địa', N'Hành động, Trinh thám, Khoa học viễn tưởng', 157,
+            N'Phim hành động viễn tưởng dài 157 phút, suất chiếu đặc biệt có phụ đề cả tiếng Việt lẫn tiếng Anh.',
+            N'https://cdn.moveek.com/storage/media/cache/full/6a828aed8c1ae817893779.webp',
+            N'T16', 1);
+
+
+-- Quý Tử Vượt Giàu - khởi chiếu 28/08/2026
+IF NOT EXISTS (SELECT 1 FROM movies WHERE title = N'Quý Tử Vượt Giàu')
+    INSERT INTO movies (title, genre, duration_min, description, poster_url, age_rating, is_active)
+    VALUES (N'Quý Tử Vượt Giàu', N'Hài, Gia đình', 118,
+            N'Phim hài gia đình về cậu ấm nhà giàu và hành trình tự chứng minh mình.',
+            N'https://cdn.moveek.com/storage/media/cache/full/6a7bfad989660368179051.webp',
+            N'K', 1);
+
+
+-- Bùa Yêu: Bí Mật Gia Tộc - khởi chiếu 11/09/2026
+IF NOT EXISTS (SELECT 1 FROM movies WHERE title = N'Bùa Yêu: Bí Mật Gia Tộc')
+    INSERT INTO movies (title, genre, duration_min, description, poster_url, age_rating, is_active)
+    VALUES (N'Bùa Yêu: Bí Mật Gia Tộc', N'Hài, Lãng mạn, Giả tưởng', 130,
+            N'Phần tiếp theo của Practical Magic, với Sandra Bullock và Nicole Kidman trong vai hai chị em nhà Owens và phép thuật gia truyền.',
+            N'https://cdn.moveek.com/storage/media/cache/full/6a98eb5339465087886411.webp',
+            N'T13', 1);
+
+
+-- Chiikawa: Bí Mật Đảo Người Cá - khởi chiếu 28/08/2026
+IF NOT EXISTS (SELECT 1 FROM movies WHERE title = N'Chiikawa: Bí Mật Đảo Người Cá')
+    INSERT INTO movies (title, genre, duration_min, description, poster_url, age_rating, is_active)
+    VALUES (N'Chiikawa: Bí Mật Đảo Người Cá', N'Hoạt hình, Phiêu lưu, Gia đình', 99,
+            N'Nhóm Chiikawa lên đường tới hòn đảo của người cá trong chuyến phiêu lưu dành cho mọi lứa tuổi.',
+            N'https://cdn.moveek.com/storage/media/cache/full/6a83d7604f918994427126.webp',
+            N'P', 1);
+
+
+-- Tàu Buôn Người - khởi chiếu 28/08/2026
+IF NOT EXISTS (SELECT 1 FROM movies WHERE title = N'Tàu Buôn Người')
+    INSERT INTO movies (title, genre, duration_min, description, poster_url, age_rating, is_active)
+    VALUES (N'Tàu Buôn Người', N'Hành động, Giật gân', 95,
+            N'Phim hành động giật gân trên một con tàu, nơi nhóm người bị giam giữ tìm cách nổi dậy.',
+            N'https://cdn.moveek.com/storage/media/cache/full/6a82a0452a09c551249958.webp',
+            N'T18', 1);
+
+
+-- Phim đã kết thúc đợt chiếu, để trạng thái ngừng chiếu nhằm kiểm tra bộ lọc "chỉ lấy phim đang chiếu".
 -- Minions & Quái Vật - khởi chiếu 01/07/2026
 IF NOT EXISTS (SELECT 1 FROM movies WHERE title = N'Minions & Quái Vật')
     INSERT INTO movies (title, genre, duration_min, description, poster_url, age_rating, is_active)
@@ -125,35 +162,68 @@ IF NOT EXISTS (SELECT 1 FROM movies WHERE title = N'Minions & Quái Vật')
 
 -- ---------------------------------------------------------------
 -- 3. Phòng chiếu
+--    Mô phỏng một cụm rạp thật: 5 phòng thường, 1 phòng PREMIUM, 2 phòng GOLD CLASS.
+--    Số phòng không phải bịa ra: nó được suy từ chính lịch chiếu thật bên dưới —
+--    xếp 47 suất sao cho không phòng nào có hai suất chồng giờ thì cần đúng 8 phòng.
 -- ---------------------------------------------------------------
-IF NOT EXISTS (SELECT 1 FROM rooms WHERE name = N'Phòng 1')
-    INSERT INTO rooms (name, total_rows, total_columns) VALUES (N'Phòng 1', 8, 10);
+IF NOT EXISTS (SELECT 1 FROM rooms WHERE name = N'Cinema 1')
+    INSERT INTO rooms (name, total_rows, total_columns) VALUES (N'Cinema 1', 10, 14);
 
-IF NOT EXISTS (SELECT 1 FROM rooms WHERE name = N'Phòng 2 - VIP')
-    INSERT INTO rooms (name, total_rows, total_columns) VALUES (N'Phòng 2 - VIP', 5, 8);
+IF NOT EXISTS (SELECT 1 FROM rooms WHERE name = N'Cinema 2')
+    INSERT INTO rooms (name, total_rows, total_columns) VALUES (N'Cinema 2', 10, 14);
+
+IF NOT EXISTS (SELECT 1 FROM rooms WHERE name = N'Cinema 3')
+    INSERT INTO rooms (name, total_rows, total_columns) VALUES (N'Cinema 3', 10, 14);
+
+IF NOT EXISTS (SELECT 1 FROM rooms WHERE name = N'Cinema 4')
+    INSERT INTO rooms (name, total_rows, total_columns) VALUES (N'Cinema 4', 10, 14);
+
+IF NOT EXISTS (SELECT 1 FROM rooms WHERE name = N'Cinema 5')
+    INSERT INTO rooms (name, total_rows, total_columns) VALUES (N'Cinema 5', 10, 14);
+
+IF NOT EXISTS (SELECT 1 FROM rooms WHERE name = N'Cinema 6 - PREMIUM')
+    INSERT INTO rooms (name, total_rows, total_columns) VALUES (N'Cinema 6 - PREMIUM', 6, 10);
+
+IF NOT EXISTS (SELECT 1 FROM rooms WHERE name = N'Cinema 7 - GOLD CLASS')
+    INSERT INTO rooms (name, total_rows, total_columns) VALUES (N'Cinema 7 - GOLD CLASS', 4, 8);
+
+IF NOT EXISTS (SELECT 1 FROM rooms WHERE name = N'Cinema 8 - GOLD CLASS')
+    INSERT INTO rooms (name, total_rows, total_columns) VALUES (N'Cinema 8 - GOLD CLASS', 4, 8);
 
 -- ---------------------------------------------------------------
 -- 4. Ghế - sinh tự động theo số hàng/cột của từng phòng
 --    Hàng đặt tên A, B, C... ; cột đánh số từ 1.
---    Hai hàng cuối của mỗi phòng để loại VIP (giá cao hơn).
+--
+--    Cách bố trí ghế mô phỏng rạp thật:
+--    - Phòng thường: hàng cuối là ghế đôi (rạp hay gọi là Sweetbox),
+--      hai hàng ngay trước đó là ghế VIP, còn lại là ghế thường.
+--    - Phòng PREMIUM và GOLD CLASS: toàn bộ là ghế ngả cao cấp nên để hết loại VIP.
 -- ---------------------------------------------------------------
-DECLARE @roomId BIGINT, @totalRows INT, @totalColumns INT;
+DECLARE @roomId BIGINT, @roomName NVARCHAR(50), @totalRows INT, @totalColumns INT;
 DECLARE @rowIndex INT, @columnIndex INT, @rowLabel NVARCHAR(5), @seatType NVARCHAR(20);
+DECLARE @phongCaoCap BIT;
 
 DECLARE room_cursor CURSOR FOR
-    SELECT id, total_rows, total_columns FROM rooms;
+    SELECT id, name, total_rows, total_columns FROM rooms;
 
 OPEN room_cursor;
-FETCH NEXT FROM room_cursor INTO @roomId, @totalRows, @totalColumns;
+FETCH NEXT FROM room_cursor INTO @roomId, @roomName, @totalRows, @totalColumns;
 
 WHILE @@FETCH_STATUS = 0
 BEGIN
+    SET @phongCaoCap = CASE
+        WHEN @roomName LIKE N'%GOLD CLASS%' OR @roomName LIKE N'%PREMIUM%' THEN 1 ELSE 0 END;
+
     SET @rowIndex = 1;
     WHILE @rowIndex <= @totalRows
     BEGIN
         SET @rowLabel = CHAR(64 + @rowIndex);  -- 1 -> 'A', 2 -> 'B'...
-        -- Hai hàng cuối cùng là ghế VIP
-        SET @seatType = CASE WHEN @rowIndex > @totalRows - 2 THEN 'VIP' ELSE 'NORMAL' END;
+        SET @seatType = CASE
+            WHEN @phongCaoCap = 1            THEN 'VIP'
+            WHEN @rowIndex = @totalRows      THEN 'COUPLE'      -- hàng cuối: ghế đôi
+            WHEN @rowIndex > @totalRows - 3  THEN 'VIP'         -- hai hàng trước đó: VIP
+            ELSE 'NORMAL'
+        END;
 
         SET @columnIndex = 1;
         WHILE @columnIndex <= @totalColumns
@@ -171,60 +241,105 @@ BEGIN
         SET @rowIndex = @rowIndex + 1;
     END
 
-    FETCH NEXT FROM room_cursor INTO @roomId, @totalRows, @totalColumns;
+    FETCH NEXT FROM room_cursor INTO @roomId, @roomName, @totalRows, @totalColumns;
 END
 
 CLOSE room_cursor;
 DEALLOCATE room_cursor;
 
 -- ---------------------------------------------------------------
--- 5. Suất chiếu
---    Tính từ 0 giờ hôm nay để dữ liệu luôn "tương lai gần", chạy ngày nào
---    cũng có suất chiếu hợp lệ mà không phải sửa tay ngày tháng.
+-- 5. Suất chiếu - LỊCH CHIẾU THẬT
+--    Toàn bộ 47 suất dưới đây là lịch chiếu có thật của CGV Vincom Đồng Khởi
+--    (Tầng 3, Vincom Center Đồng Khởi, 72 Lê Thánh Tôn, Quận 1, TP.HCM)
+--    trong ngày 20/09/2026, giữ nguyên giờ chiếu và loại phòng.
+--
+--    Giá vé cũng là giá công bố của chính rạp đó, vé người lớn:
+--      - Phòng thường  135.000đ  (Thứ Sáu, Thứ Bảy, Chủ Nhật và ngày lễ;
+--                                 ngày thường 115.000đ, Thứ Tư Vui Vẻ 79.000đ)
+--      - PREMIUM       150.000đ
+--      - GOLD CLASS    200.000đ
+--    Rạp còn phụ thu ghế VIP +5.500đ và ghế đôi +26.000đ, nhưng dự án này tính
+--    phụ thu theo tỉ lệ trong SeatPricingService (VIP +50%, ghế đôi gấp đôi)
+--    nên cột base_price chỉ lưu giá ghế thường.
+--
+--    Lịch neo vào 0 giờ NGÀY MAI để suất chiếu luôn nằm ở tương lai, chạy lại
+--    ngày nào cũng có dữ liệu hợp lệ mà không phải sửa tay ngày tháng.
 -- ---------------------------------------------------------------
-DECLARE @today DATETIME2 = CAST(CAST(SYSDATETIME() AS DATE) AS DATETIME2);
-DECLARE @room1 BIGINT = (SELECT id FROM rooms WHERE name = N'Phòng 1');
-DECLARE @room2 BIGINT = (SELECT id FROM rooms WHERE name = N'Phòng 2 - VIP');
+DECLARE @ngayMai DATETIME2 = DATEADD(DAY, 1, CAST(CAST(SYSDATETIME() AS DATE) AS DATETIME2));
 
--- Bảng tạm mô tả các suất muốn tạo: phim, phòng, số giờ kể từ 0h hôm nay, giá vé
+-- phim, phòng, số phút kể từ 0 giờ ngày mai, giá vé ghế thường
 DECLARE @plannedShowtimes TABLE (
-    movieTitle   NVARCHAR(200),
-    roomId       BIGINT,
-    hoursFromNow INT,
-    basePrice    DECIMAL(10, 2)
+    movieTitle  NVARCHAR(200),
+    roomName    NVARCHAR(50),
+    minuteOfDay INT,
+    basePrice   DECIMAL(10, 2)
 );
 
-INSERT INTO @plannedShowtimes (movieTitle, roomId, hoursFromNow, basePrice) VALUES
-    -- Phòng 1 - xếp nối tiếp nhau, suất sau bắt đầu sau khi suất trước đã dọn xong
-    (N'PAW Patrol: Phim Khủng Long',                         @room1, 31,  65000),
-    (N'Lên Hương',                                           @room1, 33,  75000),
-    (N'Bóng Ma Nhà Hát',                                     @room1, 36,  75000),
-    (N'Vùng Đất Quỷ Dữ 2026',                                @room1, 38,  85000),
-    (N'Người Nhện 4: Khởi Đầu Mới',                          @room1, 40,  95000),
-    (N'Conan Movie 29 (2026): Thiên Thần Sa Ngã Trên Xa Lộ',  @room1, 43,  85000),
-    (N'Tế Nhi Cải Mệnh',                                     @room1, 46,  85000),
-    -- Phòng 2 - VIP, giá cao hơn
-    (N'Yêu Nhân Thần Thám: Kỳ Án Trường An',                 @room2, 33, 110000),
-    (N'Bóng Ma Nhà Hát',                                     @room2, 36, 120000),
-    (N'Vùng Đất Quỷ Dữ 2026',                                @room2, 38, 130000),
-    (N'Lên Hương',                                           @room2, 41, 120000),
-    (N'Người Nhện 4: Khởi Đầu Mới',                          @room2, 44, 140000);
+INSERT INTO @plannedShowtimes (movieTitle, roomName, minuteOfDay, basePrice) VALUES
+    (N'Marine Yêu Dấu', N'Cinema 1', 690, 135000),
+    (N'Bóng Ma Nhà Hát', N'Cinema 1', 820, 135000),
+    (N'Marine Yêu Dấu', N'Cinema 1', 940, 135000),
+    (N'Út Lan 2', N'Cinema 1', 1060, 135000),
+    (N'Út Lan 2', N'Cinema 1', 1190, 135000),
+    (N'Út Lan 2', N'Cinema 1', 1320, 135000),
+    (N'Lên Hương', N'Cinema 2', 700, 135000),
+    (N'Út Lan 2', N'Cinema 2', 840, 135000),
+    (N'Út Lan 2', N'Cinema 2', 970, 135000),
+    (N'Marine Yêu Dấu', N'Cinema 2', 1100, 135000),
+    (N'Lên Hương', N'Cinema 2', 1230, 135000),
+    (N'Lên Hương', N'Cinema 2', 1380, 135000),
+    (N'Út Lan 2', N'Cinema 3', 710, 135000),
+    (N'Lên Hương', N'Cinema 3', 850, 135000),
+    (N'Lên Hương', N'Cinema 3', 1000, 135000),
+    (N'Vùng Đất Quỷ Dữ 2026', N'Cinema 3', 1140, 135000),
+    (N'Lên Hương', N'Cinema 3', 1260, 135000),
+    (N'Út Lan 2', N'Cinema 3', 1400, 135000),
+    (N'Nghỉ Hè Sợ Nghỉ Hưu', N'Cinema 4', 730, 135000),
+    (N'Chiikawa: Bí Mật Đảo Người Cá', N'Cinema 4', 880, 135000),
+    (N'Marine Yêu Dấu', N'Cinema 4', 1010, 135000),
+    (N'Lên Hương', N'Cinema 4', 1150, 135000),
+    (N'Lên Hương', N'Cinema 4', 1300, 135000),
+    (N'Lên Hương', N'Cinema 5', 750, 135000),
+    (N'Lên Hương', N'Cinema 5', 900, 135000),
+    (N'Lên Hương', N'Cinema 5', 1050, 135000),
+    (N'Lên Hương', N'Cinema 5', 1200, 135000),
+    (N'Lên Hương', N'Cinema 5', 1340, 135000),
+    (N'Vùng Đất Quỷ Dữ 2026', N'Cinema 6 - PREMIUM', 645, 150000),
+    (N'Út Lan 2', N'Cinema 6 - PREMIUM', 760, 150000),
+    (N'Quý Tử Vượt Giàu', N'Cinema 6 - PREMIUM', 890, 150000),
+    (N'Lên Hương', N'Cinema 6 - PREMIUM', 1030, 150000),
+    (N'Vùng Đất Quỷ Dữ 2026', N'Cinema 6 - PREMIUM', 1170, 150000),
+    (N'Vùng Đất Quỷ Dữ 2026', N'Cinema 6 - PREMIUM', 1290, 150000),
+    (N'Vùng Đất Quỷ Dữ 2026', N'Cinema 6 - PREMIUM', 1410, 150000),
+    (N'Yêu Nhân Thần Thám: Kỳ Án Trường An', N'Cinema 7 - GOLD CLASS', 630, 200000),
+    (N'Hope Vùng Tử Địa', N'Cinema 7 - GOLD CLASS', 770, 200000),
+    (N'Bùa Yêu: Bí Mật Gia Tộc', N'Cinema 7 - GOLD CLASS', 960, 200000),
+    (N'Tàu Buôn Người', N'Cinema 7 - GOLD CLASS', 1120, 200000),
+    (N'Út Lan 2', N'Cinema 7 - GOLD CLASS', 1240, 200000),
+    (N'Vùng Đất Quỷ Dữ 2026', N'Cinema 7 - GOLD CLASS', 1370, 200000),
+    (N'Vùng Đất Quỷ Dữ 2026', N'Cinema 8 - GOLD CLASS', 740, 200000),
+    (N'Vùng Đất Quỷ Dữ 2026', N'Cinema 8 - GOLD CLASS', 860, 200000),
+    (N'Vùng Đất Quỷ Dữ 2026', N'Cinema 8 - GOLD CLASS', 975, 200000),
+    (N'Vùng Đất Quỷ Dữ 2026', N'Cinema 8 - GOLD CLASS', 1090, 200000),
+    (N'Nghỉ Hè Sợ Nghỉ Hưu', N'Cinema 8 - GOLD CLASS', 1210, 200000),
+    (N'Út Lan 2', N'Cinema 8 - GOLD CLASS', 1350, 200000);
 
 INSERT INTO showtimes (movie_id, room_id, start_time, end_time, base_price)
 SELECT
     m.id,
-    p.roomId,
-    DATEADD(HOUR, p.hoursFromNow, @today),
+    r.id,
+    DATEADD(MINUTE, p.minuteOfDay, @ngayMai),
     -- Kết thúc = bắt đầu + thời lượng phim + 15 phút dọn phòng
-    DATEADD(MINUTE, m.duration_min + 15, DATEADD(HOUR, p.hoursFromNow, @today)),
+    DATEADD(MINUTE, m.duration_min + 15, DATEADD(MINUTE, p.minuteOfDay, @ngayMai)),
     p.basePrice
 FROM @plannedShowtimes p
 JOIN movies m ON m.title = p.movieTitle
+JOIN rooms  r ON r.name  = p.roomName
 WHERE NOT EXISTS (
     SELECT 1 FROM showtimes s
     WHERE s.movie_id = m.id
-      AND s.room_id = p.roomId
-      AND s.start_time = DATEADD(HOUR, p.hoursFromNow, @today)
+      AND s.room_id = r.id
+      AND s.start_time = DATEADD(MINUTE, p.minuteOfDay, @ngayMai)
 );
 
 -- ---------------------------------------------------------------
