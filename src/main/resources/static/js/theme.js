@@ -1,5 +1,5 @@
 /* =====================================================================
-   Cinema Booking - NHÓM 05 - Chuyển chế độ sáng / tối
+   UTE Cinema - Chuyển chế độ sáng / tối
    Phụ trách: Thọ (Module 4)
 
    Cách hoạt động:
@@ -16,7 +16,7 @@
 (function () {
     "use strict";
 
-    var STORAGE_KEY = "nhom05-theme";
+    var STORAGE_KEY = "ute-theme";
     var THEME_LIGHT = "light";
     var THEME_DARK = "dark";
 

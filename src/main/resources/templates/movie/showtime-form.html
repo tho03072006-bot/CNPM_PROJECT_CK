@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout" layout:decorate="~{layout/base}">
+<head><title th:text="${showtimeId == null} ? 'Thêm suất chiếu' : 'Sửa suất chiếu'">Form suất chiếu</title></head>
+<body><div layout:fragment="content">
+    <a class="module1-back-link" th:href="@{/admin/showtimes}"><span aria-hidden="true">←</span> Quản lý suất chiếu</a>
+    <div class="module1-form-head">
+        <span class="module1-kicker">LỊCH CHIẾU</span>
+        <h1 th:text="${showtimeId == null} ? 'Thêm suất chiếu' : 'Cập nhật suất chiếu'">Suất chiếu</h1>
+        <p class="text-muted">Chọn phim, phòng và thời điểm bắt đầu để lên lịch.</p>
+    </div>
+    <form class="card module1-form-panel" th:object="${showtimeForm}"
+          th:action="${showtimeId == null} ? @{/admin/showtimes} : @{/admin/showtimes/{id}(id=${showtimeId})}"
+          method="post">
+        <div class="module1-form-grid">
+            <div class="form-field"><label for="movieId">Phim *</label>
+                <select class="form-control" id="movieId" th:field="*{movieId}" required>
+                    <option value="">Chọn phim</option>
+                    <option th:each="movie : ${movies}" th:value="${movie.id}" th:text="${movie.title}"></option>
+                </select><span class="form-error" th:if="${#fields.hasErrors('movieId')}" th:errors="*{movieId}"></span></div>
+            <div class="form-field"><label for="roomId">Phòng chiếu *</label>
+                <select class="form-control" id="roomId" th:field="*{roomId}" required>
+                    <option value="">Chọn phòng</option>
+                    <option th:each="room : ${rooms}" th:value="${room.id}" th:text="${room.name}"></option>
+                </select><span class="form-error" th:if="${#fields.hasErrors('roomId')}" th:errors="*{roomId}"></span></div>
+            <div class="form-field"><label for="startTime">Giờ bắt đầu *</label>
+                <input class="form-control" id="startTime" type="datetime-local" th:field="*{startTime}" required>
+                <span class="form-error" th:if="${#fields.hasErrors('startTime')}" th:errors="*{startTime}"></span></div>
+            <div class="form-field"><label for="basePrice">Giá vé cơ bản (đồng) *</label>
+                <input class="form-control" id="basePrice" type="number" min="1" step="1" th:field="*{basePrice}" required
+                       placeholder="75000">
+                <span class="form-error" th:if="${#fields.hasErrors('basePrice')}" th:errors="*{basePrice}"></span></div>
+        </div>
+        <p class="module1-form-note">Giờ kết thúc được tính tự động bằng thời lượng phim cộng 15 phút dọn phòng. Lịch trùng trong cùng phòng sẽ bị từ chối.</p>
+        <div class="module1-form-actions">
+            <button class="btn" type="submit">Lưu suất chiếu</button>
+            <a class="btn btn-ghost" th:href="@{/admin/showtimes}">Huỷ</a>
+        </div>
+    </form>
+</div></body></html>

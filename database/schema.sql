@@ -1,5 +1,5 @@
 -- ================================================
--- Cinema Booking - NHÓM 05 - Schema cho SQL Server trên máy cá nhân
+-- UTE Cinema - Schema cho SQL Server trên máy cá nhân
 --
 -- Cách chạy:
 --   sqlcmd -S localhost,1433 -U sa -C -f 65001 -i database\schema.sql
@@ -36,7 +36,7 @@ CREATE TABLE movies (
     duration_min    INT             NOT NULL,
     description     NVARCHAR(MAX)   NULL,
     poster_url      NVARCHAR(500)   NULL,
-    age_rating      NVARCHAR(10)    NULL, -- P, C13, C16, C18
+    age_rating      NVARCHAR(10)    NULL, -- Nhãn phân loại hiện hành: P, K, T13, T16, T18, C
     is_active       BIT             NOT NULL DEFAULT 1,
     created_at      DATETIME2       NOT NULL DEFAULT SYSUTCDATETIME()
 );
@@ -85,7 +85,7 @@ CREATE TABLE tickets (
 
 -- Tài khoản admin mặc định. Mật khẩu ở đây CHƯA HASH, chỉ là dữ liệu mẫu để test nhanh.
 -- Module 3 làm xong phần đăng nhập thì phải thay bằng chuỗi hash BCrypt.
-IF NOT EXISTS (SELECT 1 FROM users WHERE email = 'admin@nhom05.local')
+IF NOT EXISTS (SELECT 1 FROM users WHERE email = 'admin@utecinema.local')
     INSERT INTO users (full_name, email, password_hash, role)
-    VALUES (N'Quản trị viên', 'admin@nhom05.local', '123456', 'ADMIN');
+    VALUES (N'Quản trị viên', 'admin@utecinema.local', '123456', 'ADMIN');
 GO
