@@ -1,6 +1,6 @@
-# CNPM_PROJECT_CK_NHOM5 — Hệ thống đặt vé xem phim
+# CNPM_PROJECT_CK — Hệ thống đặt vé xem phim
 
-[![Kiểm thử](https://github.com/tho03072006-bot/CNPM_PROJECT_CK_NHOM5/actions/workflows/ci.yml/badge.svg?branch=develop)](https://github.com/tho03072006-bot/CNPM_PROJECT_CK_NHOM5/actions/workflows/ci.yml)
+[![Kiểm thử](https://github.com/tho03072006-bot/CNPM_PROJECT_CK/actions/workflows/ci.yml/badge.svg?branch=develop)](https://github.com/tho03072006-bot/CNPM_PROJECT_CK/actions/workflows/ci.yml)
 
 Đồ án cuối kỳ môn Công nghệ phần mềm (CNPM) — Nhóm 05.
 
@@ -21,7 +21,7 @@ giữ riêng trong 5 phút để không ai đặt trùng.
 Công việc chi tiết của từng người: [`docs/PHAN_CONG.md`](docs/PHAN_CONG.md) — 29 đầu việc kèm
 mã việc, phụ thuộc, ước lượng giờ và tuần thực hiện.
 
-**Việc cụ thể của bạn nằm ở [tab Issues](https://github.com/tho03072006-bot/CNPM_PROJECT_CK_NHOM5/issues)**,
+**Việc cụ thể của bạn nằm ở [tab Issues](https://github.com/tho03072006-bot/CNPM_PROJECT_CK/issues)**,
 lọc theo nhãn `module-1` / `module-2` / `module-3` / `module-4`. Làm mấy việc gắn nhãn
 `uu-tien-cao` trước, vì chúng đang chặn việc của người khác.
 

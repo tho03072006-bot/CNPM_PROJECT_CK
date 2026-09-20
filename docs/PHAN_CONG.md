@@ -1,7 +1,7 @@
 # Bảng phân công chi tiết — Nhóm 05
 
 Mỗi dòng trong bảng dưới đây đã được tạo thành một **Issue trên GitHub**. Vào
-[tab Issues](https://github.com/tho03072006-bot/CNPM_PROJECT_CK_NHOM5/issues) lọc theo nhãn
+[tab Issues](https://github.com/tho03072006-bot/CNPM_PROJECT_CK/issues) lọc theo nhãn
 `module-1` / `module-2` / `module-3` / `module-4` để thấy việc của mình, trong đó có mô tả đầy
 đủ và tiêu chí "xong là khi nào".
 
