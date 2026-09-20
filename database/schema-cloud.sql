@@ -1,5 +1,5 @@
 ﻿-- ================================================================
--- Cinema Booking - NHÓM 05 - Schema cho database dùng chung trên cloud
+-- Cinema Booking - NHÓM 8 - Schema cho database dùng chung trên cloud
 --
 -- Khác gì so với database/schema.sql (bản chạy ở máy cá nhân):
 --   - Nhà cung cấp cloud đã tạo sẵn database cho mình, nên file này KHÔNG có
@@ -89,7 +89,7 @@ CREATE TABLE tickets (
 GO
 
 -- Tai khoan admin mac dinh
-IF NOT EXISTS (SELECT 1 FROM users WHERE email = 'admin@nhom05.local')
+IF NOT EXISTS (SELECT 1 FROM users WHERE email = 'admin@nhom8.local')
     INSERT INTO users (full_name, email, password_hash, role)
-    VALUES (N'Quản trị viên', 'admin@nhom05.local', '123456', 'ADMIN');
+    VALUES (N'Quản trị viên', 'admin@nhom8.local', '123456', 'ADMIN');
 GO

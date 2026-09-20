@@ -1,4 +1,4 @@
-# Bảng phân công chi tiết — Nhóm 05
+# Bảng phân công chi tiết — Nhóm 8
 
 Mỗi dòng trong bảng dưới đây đã được tạo thành một **Issue trên GitHub**. Vào
 [tab Issues](https://github.com/tho03072006-bot/CNPM_PROJECT_CK/issues) lọc theo nhãn

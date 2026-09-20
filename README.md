@@ -2,7 +2,7 @@
 
 [![Kiểm thử](https://github.com/tho03072006-bot/CNPM_PROJECT_CK/actions/workflows/ci.yml/badge.svg?branch=develop)](https://github.com/tho03072006-bot/CNPM_PROJECT_CK/actions/workflows/ci.yml)
 
-Đồ án cuối kỳ môn Công nghệ phần mềm (CNPM) — Nhóm 05.
+Đồ án cuối kỳ môn Công nghệ phần mềm (CNPM) — Nhóm 8.
 
 Người dùng chọn phim, chọn suất chiếu, chọn ghế trên sơ đồ trực quan rồi thanh toán. Ghế được
 giữ riêng trong 5 phút để không ai đặt trùng.
@@ -84,7 +84,7 @@ thư mục JDK 21 rồi **mở lại terminal**. Spring Boot 3.5 không build đ
 **Bản Express vẫn dùng `localhost,1433`**, không cần gõ `\SQLEXPRESS`. Kiểm tra instance nào
 đang chạy: `sqlcmd -S localhost,1433 -U sa -C -Q "SELECT @@SERVERNAME"`.
 
-**Đặt thư mục dự án ở đường dẫn KHÔNG CÓ DẤU tiếng Việt** — ví dụ `D:\CNPM\Project_CK_NHOM05`.
+**Đặt thư mục dự án ở đường dẫn KHÔNG CÓ DẤU tiếng Việt** — ví dụ `D:\CNPM\Project_CK`.
 Nếu đường dẫn có dấu, `mvn spring-boot:run` sẽ báo `Could not find or load main class`, vì JVM
 trên Windows tiếng Việt dùng bảng mã Cp1252 nên đọc sai đường dẫn khi tạo tiến trình con.
 Bẫy ở chỗ **`mvn test` vẫn chạy bình thường**, rất dễ tưởng là lỗi code.

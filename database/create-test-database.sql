@@ -1,5 +1,5 @@
 -- ================================================
--- Cinema Booking - NHÓM 05
+-- Cinema Booking - NHÓM 8
 -- Tạo database RIÊNG dành cho test tích hợp.
 --
 -- Vì sao cần database riêng:

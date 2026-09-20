@@ -1,4 +1,4 @@
-# Quy ước làm việc nhóm — NHÓM 05 (Đồ án CNPM: Hệ thống đặt vé xem phim)
+# Quy ước làm việc nhóm — NHÓM 8 (Đồ án CNPM: Hệ thống đặt vé xem phim)
 
 Tài liệu này áp dụng cho cả 4 thành viên (Thọ, Tài, Thắng, Thanh). Mục tiêu: code của 4 người
 nhìn vào giống như một người viết, tránh xung đột khi merge, và dễ chấm điểm theo đúng tính chất

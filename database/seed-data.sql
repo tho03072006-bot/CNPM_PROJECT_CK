@@ -1,5 +1,5 @@
 -- ================================================================
--- Cinema Booking - NHÓM 05 - Dữ liệu mẫu dùng chung
+-- Cinema Booking - NHÓM 8 - Dữ liệu mẫu dùng chung
 --
 -- Mục đích: cả 4 người test trên CÙNG một bộ dữ liệu. Tài thêm suất chiếu,
 -- Thắng thử giữ ghế, Thanh thử thanh toán - tất cả nhìn thấy cùng phim,
@@ -19,7 +19,8 @@
 --
 -- THÔNG TIN PHIM LÀ THẬT: tên phim, thể loại, thời lượng, nhãn tuổi và ngày khởi chiếu
 -- lấy theo lịch chiếu rạp Việt Nam ngày 20/09/2026. Ảnh poster để ở dạng đường dẫn tới
--- máy chủ ảnh của nguồn, không tải về kho mã. Nếu sau này ảnh hỏng thì chỉ cần thay
+-- máy chủ ảnh của nguồn (bản 800px, sắc nét cho màn hình lớn), không tải về kho mã.
+-- Nếu sau này ảnh hỏng thì chỉ cần thay
 -- cột poster_url, không ảnh hưởng gì tới chương trình.
 --
 -- Tài khoản, phòng chiếu và suất chiếu vẫn là dữ liệu tự đặt để chạy thử.
@@ -30,13 +31,13 @@ SET NOCOUNT ON;
 -- ---------------------------------------------------------------
 -- 1. Người dùng mẫu
 -- ---------------------------------------------------------------
-IF NOT EXISTS (SELECT 1 FROM users WHERE email = 'khachhang@nhom05.local')
+IF NOT EXISTS (SELECT 1 FROM users WHERE email = 'khachhang@nhom8.local')
     INSERT INTO users (full_name, email, phone, password_hash, role)
-    VALUES (N'Nguyễn Văn Khách', 'khachhang@nhom05.local', '0901234567', N'chua_hash_123456', 'CUSTOMER');
+    VALUES (N'Nguyễn Văn Khách', 'khachhang@nhom8.local', '0901234567', N'chua_hash_123456', 'CUSTOMER');
 
-IF NOT EXISTS (SELECT 1 FROM users WHERE email = 'nhanvien@nhom05.local')
+IF NOT EXISTS (SELECT 1 FROM users WHERE email = 'nhanvien@nhom8.local')
     INSERT INTO users (full_name, email, phone, password_hash, role)
-    VALUES (N'Trần Thị Nhân Viên', 'nhanvien@nhom05.local', '0907654321', N'chua_hash_123456', 'STAFF');
+    VALUES (N'Trần Thị Nhân Viên', 'nhanvien@nhom8.local', '0907654321', N'chua_hash_123456', 'STAFF');
 
 -- ---------------------------------------------------------------
 -- 2. Phim
@@ -46,7 +47,7 @@ IF NOT EXISTS (SELECT 1 FROM movies WHERE title = N'Bóng Ma Nhà Hát')
     INSERT INTO movies (title, genre, duration_min, description, poster_url, age_rating, is_active)
     VALUES (N'Bóng Ma Nhà Hát', N'Hài, Kinh dị', 97,
             N'Một chuyên viên bất động sản nhận nhiệm vụ vực dậy nhà hát cũ trong vòng một tháng, rồi phát hiện nơi này có hồn ma một nữ diễn viên chưa siêu thoát.',
-            N'https://cdn.moveek.com/storage/media/cache/tall/6aa3a066c7afd223776710.webp',
+            N'https://cdn.moveek.com/storage/media/cache/full/6aa3a066c7afd223776710.webp',
             N'T16', 1);
 
 
@@ -55,7 +56,7 @@ IF NOT EXISTS (SELECT 1 FROM movies WHERE title = N'Vùng Đất Quỷ Dữ 2026
     INSERT INTO movies (title, genre, duration_min, description, poster_url, age_rating, is_active)
     VALUES (N'Vùng Đất Quỷ Dữ 2026', N'Kinh dị, Khoa học viễn tưởng', 94,
             N'Phần phim Resident Evil mới với cốt truyện riêng: một nhân viên vận chuyển vật tư y tế bị cuốn vào cuộc chạy trốn sinh tồn suốt một đêm.',
-            N'https://cdn.moveek.com/storage/media/cache/tall/6a98ed8bf12b6567604371.webp',
+            N'https://cdn.moveek.com/storage/media/cache/full/6a98ed8bf12b6567604371.webp',
             N'T18', 1);
 
 
@@ -64,7 +65,7 @@ IF NOT EXISTS (SELECT 1 FROM movies WHERE title = N'Lên Hương')
     INSERT INTO movies (title, genre, duration_min, description, poster_url, age_rating, is_active)
     VALUES (N'Lên Hương', N'Tâm lý, Gia đình', 121,
             N'Bà chủ một trại hòm ế khách và chàng trai cần tiền chữa bệnh cho mẹ vướng vào một giao kèo, kéo theo món nợ bị chôn giấu nhiều năm.',
-            N'https://cdn.moveek.com/storage/media/cache/tall/6a853e8a114e2776669135.webp',
+            N'https://cdn.moveek.com/storage/media/cache/full/6a853e8a114e2776669135.webp',
             N'T16', 1);
 
 
@@ -73,7 +74,7 @@ IF NOT EXISTS (SELECT 1 FROM movies WHERE title = N'Tế Nhi Cải Mệnh')
     INSERT INTO movies (title, genre, duration_min, description, poster_url, age_rating, is_active)
     VALUES (N'Tế Nhi Cải Mệnh', N'Kinh dị', 104,
             N'Người đàn ông ngập trong nợ cờ bạc tìm tới tà thuật cấm kỵ để đổi lấy tiền, và tai hoạ ập xuống cả gia đình ngay sau đó.',
-            N'https://cdn.moveek.com/storage/media/cache/tall/6aa4d2eb9ebdd653449192.webp',
+            N'https://cdn.moveek.com/storage/media/cache/full/6aa4d2eb9ebdd653449192.webp',
             N'T18', 1);
 
 
@@ -82,7 +83,7 @@ IF NOT EXISTS (SELECT 1 FROM movies WHERE title = N'Người Nhện 4: Khởi Đ
     INSERT INTO movies (title, genre, duration_min, description, poster_url, age_rating, is_active)
     VALUES (N'Người Nhện 4: Khởi Đầu Mới', N'Hành động, Khoa học viễn tưởng', 145,
             N'Peter Parker phải chiến đấu một mình khi không còn ai bên cạnh, trước một thế lực mới và một biến đổi thể chất đe doạ chính anh.',
-            N'https://cdn.moveek.com/storage/media/cache/tall/6a545dce71636477839863.webp',
+            N'https://cdn.moveek.com/storage/media/cache/full/6a545dce71636477839863.webp',
             N'T13', 1);
 
 
@@ -91,7 +92,7 @@ IF NOT EXISTS (SELECT 1 FROM movies WHERE title = N'Conan Movie 29 (2026): Thiê
     INSERT INTO movies (title, genre, duration_min, description, poster_url, age_rating, is_active)
     VALUES (N'Conan Movie 29 (2026): Thiên Thần Sa Ngã Trên Xa Lộ', N'Hoạt hình, Trinh thám, Hành động', 109,
             N'Conan cùng nhóm bạn tới Yokohama dự lễ hội mô tô và vướng vào vụ án xoay quanh một tay đua bí ẩn cùng mẫu xe công nghệ cao.',
-            N'https://cdn.moveek.com/storage/media/cache/tall/6a2e2b5d405dd381486132.webp',
+            N'https://cdn.moveek.com/storage/media/cache/full/6a2e2b5d405dd381486132.webp',
             N'T13', 1);
 
 
@@ -100,7 +101,7 @@ IF NOT EXISTS (SELECT 1 FROM movies WHERE title = N'PAW Patrol: Phim Khủng Lon
     INSERT INTO movies (title, genre, duration_min, description, poster_url, age_rating, is_active)
     VALUES (N'PAW Patrol: Phim Khủng Long', N'Hoạt hình, Phiêu lưu, Gia đình', 89,
             N'Đội cứu hộ Paw Patrol trở lại màn ảnh rộng với một chuyến phiêu lưu giữa những con khủng long.',
-            N'https://cdn.moveek.com/storage/media/cache/tall/69f9578c938ef360861815.webp',
+            N'https://cdn.moveek.com/storage/media/cache/full/69f9578c938ef360861815.webp',
             N'P', 1);
 
 
@@ -109,7 +110,7 @@ IF NOT EXISTS (SELECT 1 FROM movies WHERE title = N'Yêu Nhân Thần Thám: K�
     INSERT INTO movies (title, genre, duration_min, description, poster_url, age_rating, is_active)
     VALUES (N'Yêu Nhân Thần Thám: Kỳ Án Trường An', N'Hoạt hình, Hài, Trinh thám', 117,
             N'Ở Trường An thời Đường nơi người và yêu quái sống chung, một thiếu niên mê suy luận cùng tân binh yêu sói cùng nhau phá án.',
-            N'https://cdn.moveek.com/storage/media/cache/tall/6a98ed129ae79346045889.webp',
+            N'https://cdn.moveek.com/storage/media/cache/full/6a98ed129ae79346045889.webp',
             N'K', 1);
 
 
@@ -119,7 +120,7 @@ IF NOT EXISTS (SELECT 1 FROM movies WHERE title = N'Minions & Quái Vật')
     INSERT INTO movies (title, genre, duration_min, description, poster_url, age_rating, is_active)
     VALUES (N'Minions & Quái Vật', N'Hoạt hình, Hài', 90,
             N'Nhóm Minions nổi danh ở Hollywood rồi mất tất cả, vô tình thả quái vật ra khắp thế giới và phải tự dọn mớ hỗn loạn do mình gây ra.',
-            N'https://cdn.moveek.com/storage/media/cache/tall/6a0191c8e9620912668089.webp',
+            N'https://cdn.moveek.com/storage/media/cache/full/6a0191c8e9620912668089.webp',
             N'P', 0);
 
 -- ---------------------------------------------------------------

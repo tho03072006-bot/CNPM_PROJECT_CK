@@ -5,7 +5,7 @@
 <body><div layout:fragment="content">
     <section class="module1-hero" aria-labelledby="movie-page-title">
         <div>
-            <span class="module1-eyebrow">NHÓM 05 CINEMA · LỊCH CHIẾU</span>
+            <span class="module1-eyebrow">NHÓM 8 CINEMA · LỊCH CHIẾU</span>
             <h1 id="movie-page-title">Một bộ phim hay bắt đầu từ đây.</h1>
             <p>Khám phá phim đang chiếu, xem lịch chiếu và chọn buổi xem phù hợp với bạn.</p>
         </div>
@@ -39,7 +39,7 @@
                     <span class="module1-poster-index" th:text="${#numbers.formatInteger(iter.count, 2)}">01</span>
                     <span class="module1-poster-letter" aria-hidden="true"
                           th:text="${#strings.substring(movie.title, 0, 1)}">B</span>
-                    <span class="module1-poster-caption">CINEMA · NHÓM 05</span>
+                    <span class="module1-poster-caption">CINEMA · NHÓM 8</span>
                 </div>
                 <span class="badge badge-accent" th:if="${movie.ageRating != null}"
                       th:text="${movie.ageRating}">C13</span>
