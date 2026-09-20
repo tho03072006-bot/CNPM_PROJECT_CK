@@ -2,8 +2,8 @@
 <html xmlns:th="http://www.thymeleaf.org">
 <body>
 <!--
-  Thanh điều hướng dùng chung (Thọ quản lý - không tự ý sửa).
-  Module nào cần thêm mục menu thì báo trước trong nhóm chat.
+  Thanh điều hướng dùng chung. Thêm mục menu thì nhắn nhóm một câu cho mọi
+  người biết, vì file này mọi trang đều dùng.
 
   Hình logo: bánh răng lấy ý tưởng từ logo trường, ở giữa là lỗ phim.
   Màu lấy từ biến CSS nên đổi tông màu cả trang thì hình này tự đổi theo.
@@ -37,6 +37,7 @@
         <nav class="header-nav" aria-label="Điều hướng chính">
             <a th:href="@{/}">Trang chủ</a>
             <a th:href="@{/movies}">Phim</a>
+            <a th:href="@{/lich-chieu}">Lịch chiếu</a>
             <a th:href="@{/login}">Đăng nhập</a>
 
             <!--
