@@ -53,7 +53,7 @@ commit trên đó; xong việc thì gộp vào `develop`; `main` chỉ chứa co
 
 | Nhánh | Ai dùng | Dùng để làm gì |
 |---|---|---|
-| `main` | cả nhóm | Code ổn định, chỉ nhận merge từ `develop` |
+| `main` | cả nhóm | Code ổn định, nhận code từ `develop` khi đã chạy được |
 | `develop` | cả nhóm | Nhánh gộp chung của 4 module |
 | `Minh_Thọ` | Thọ | Module 4 — kiến trúc dùng chung, testing, tài liệu |
 | `Hữu_Tài` | Tài | Module 1 — phim / phòng chiếu / suất chiếu |
@@ -102,19 +102,19 @@ src/main/java/edu/hcmute/cnpm/cinema/
                    MỖI THÀNH VIÊN TỰ TẠO service riêng cho module mình:
                    MovieService, SeatBookingService, PaymentService, AuthService
   controller/   — @Controller Spring MVC, chỉ nhận request và trả view
-  exception/    — exception nghiệp vụ + GlobalExceptionHandler dùng chung (Thọ quản lý)
+  exception/    — exception nghiệp vụ + GlobalExceptionHandler dùng chung
   constants/    — hằng số dùng chung
 src/main/resources/
   templates/
-    layout/     — layout dùng chung (Thọ quản lý, không tự ý sửa)
-    fragments/  — header / footer / alert dùng chung (Thọ quản lý)
-    error.html  — trang báo lỗi chung (Thọ quản lý)
+    layout/     — layout dùng chung
+    fragments/  — header / footer / alert dùng chung
+    error.html  — trang báo lỗi chung
     <module>/   — MỖI MODULE tạo một thư mục con riêng:
                    templates/movie/, templates/booking/, templates/account/
   static/css/style.css — design system dùng chung, thêm class mới vào cuối file
-  static/js/theme.js   — chuyển chế độ sáng/tối (Thọ quản lý)
+  static/js/theme.js   — chuyển chế độ sáng/tối, dùng chung
 src/test/java/edu/hcmute/cnpm/cinema/
-  support/      — IntegrationTestBase + TestDataFactory dùng chung (Thọ quản lý)
+  support/      — IntegrationTestBase + TestDataFactory dùng chung
   <module>/     — test của từng module
 database/       — script SQL (Thọ gộp lại từ đề xuất của từng người)
 docs/           — kế hoạch, phân công, ADR
@@ -131,18 +131,18 @@ phân lớp đã học ở Chương 2 và đã áp dụng ở môn Lập trình 
 1. Code trên nhánh cá nhân của bạn (xem bảng ở Mục 1.4). Trước khi bắt đầu, kéo `develop` về
    nhánh mình để không làm trên bản cũ: `git merge origin/develop`.
 2. Code xong, tự kiểm tra lại: đọc lại diff một lượt và chạy `mvn test` cho chắc.
-3. Push nhánh cá nhân, mở Pull Request **vào `develop`** (không mở thẳng vào `main`), mô tả rõ
-   PR làm gì, kèm ảnh chụp màn hình nếu có giao diện mới.
-4. Cần ít nhất **một thành viên khác approve** trước khi merge — ưu tiên người làm module liên
-   quan gần nhất.
-5. Bảng kiểm tối thiểu trước khi duyệt PR:
+3. Đưa code lên `develop`. Nhánh `develop` **không khoá**, nên chọn cách nào tiện nhất cho bạn:
+   push thẳng từ nhánh cá nhân, hoặc mở Pull Request nếu muốn người khác xem qua trước.
+4. **Không phải chờ ai duyệt.** Mở Pull Request thì tự bấm merge được ngay, không đợi Thọ hay
+   bất kỳ ai. Nhờ review khi bạn thấy cần, đó không phải thủ tục bắt buộc.
+5. Tự rà lại bảng kiểm này trước khi đưa code lên `develop`:
    - [ ] `mvn test` chạy xanh
    - [ ] Không có logic nghiệp vụ trong Controller
    - [ ] Có xử lý lỗi, không để lỗi 500 thô ra màn hình
    - [ ] Không hardcode chuỗi kết nối database / mật khẩu / API key
    - [ ] Đặt tên biến, hàm, class đúng quy ước ở Mục 1
    - [ ] Giao diện dùng class có sẵn trong `style.css`, không tự viết CSS riêng
-   - [ ] Không sửa file thuộc module người khác mà chưa báo trước trong nhóm chat
+   - [ ] Sửa file dùng chung hoặc file của module khác thì nhắn nhóm một câu cho mọi người biết
 6. Nhánh cá nhân thì **giữ lại** (dùng suốt kỳ đồ án). Chỉ xoá các nhánh phụ `feature/...` sau
    khi đã merge xong, để repo khỏi rối.
 7. Cuối tuần 3 / đầu tuần 4: merge `develop` vào `main` sau khi cả 4 module đã tích hợp và chạy được.
@@ -161,7 +161,7 @@ Một tính năng được tính là xong khi:
 - Không còn `System.out.println` debug sót lại
 - Giao diện dùng đúng layout chung, không vỡ bố cục trên màn hình nhỏ, xem được ở **cả chế độ
   sáng và tối**
-- Đã được ít nhất một người khác review
+- Đã chạy thử thật trên máy, không chỉ đọc code thấy đúng
 
 ---
 
