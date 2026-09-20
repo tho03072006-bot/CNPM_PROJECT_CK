@@ -18,7 +18,7 @@
 -- nên không sợ chạy nhầm hai lần rồi nhân đôi dữ liệu.
 --
 -- DỮ LIỆU LẤY TỪ MỘT RẠP CÓ THẬT: phim, lịch chiếu, số phòng, loại phòng và giá vé
--- đều lấy theo CGV Vincom Đồng Khởi (Quận 1, TP.HCM) ngày 20/09/2026. Ảnh poster để ở dạng đường dẫn tới
+-- đều lấy theo CGV Vincom Đồng Khởi (Quận 1, TP.HCM), lịch 5 ngày 20-24/09/2026. Ảnh poster để ở dạng đường dẫn tới
 -- máy chủ ảnh của nguồn (bản 800px, sắc nét cho màn hình lớn), không tải về kho mã.
 -- Nếu sau này ảnh hỏng thì chỉ cần thay
 -- cột poster_url, không ảnh hưởng gì tới chương trình.
@@ -42,7 +42,6 @@ IF NOT EXISTS (SELECT 1 FROM users WHERE email = 'nhanvien@utecinema.local')
 -- ---------------------------------------------------------------
 -- 2. Phim
 -- ---------------------------------------------------------------
--- Bóng Ma Nhà Hát - khởi chiếu 18/09/2026
 -- Út Lan 2 - khởi chiếu 25/09/2026
 IF NOT EXISTS (SELECT 1 FROM movies WHERE title = N'Út Lan 2')
     INSERT INTO movies (title, genre, duration_min, description, poster_url, age_rating, is_active)
@@ -79,6 +78,15 @@ IF NOT EXISTS (SELECT 1 FROM movies WHERE title = N'Bóng Ma Nhà Hát')
             N'T16', 1);
 
 
+-- Tế Nhi Cải Mệnh - khởi chiếu 18/09/2026
+IF NOT EXISTS (SELECT 1 FROM movies WHERE title = N'Tế Nhi Cải Mệnh')
+    INSERT INTO movies (title, genre, duration_min, description, poster_url, age_rating, is_active)
+    VALUES (N'Tế Nhi Cải Mệnh', N'Kinh dị', 104,
+            N'Người đàn ông ngập trong nợ cờ bạc tìm tới tà thuật cấm kỵ để đổi lấy tiền, và tai hoạ ập xuống cả gia đình ngay sau đó.',
+            N'https://cdn.moveek.com/storage/media/cache/full/6aa4d2eb9ebdd653449192.webp',
+            N'T18', 1);
+
+
 -- Yêu Nhân Thần Thám: Kỳ Án Trường An - khởi chiếu 18/09/2026
 IF NOT EXISTS (SELECT 1 FROM movies WHERE title = N'Yêu Nhân Thần Thám: Kỳ Án Trường An')
     INSERT INTO movies (title, genre, duration_min, description, poster_url, age_rating, is_active)
@@ -110,7 +118,7 @@ IF NOT EXISTS (SELECT 1 FROM movies WHERE title = N'Nghỉ Hè Sợ Nghỉ Hưu'
 IF NOT EXISTS (SELECT 1 FROM movies WHERE title = N'Hope Vùng Tử Địa')
     INSERT INTO movies (title, genre, duration_min, description, poster_url, age_rating, is_active)
     VALUES (N'Hope Vùng Tử Địa', N'Hành động, Trinh thám, Khoa học viễn tưởng', 157,
-            N'Phim hành động viễn tưởng dài 157 phút, suất chiếu đặc biệt có phụ đề cả tiếng Việt lẫn tiếng Anh.',
+            N'Phim hành động viễn tưởng dài 157 phút, có suất chiếu phụ đề cả tiếng Việt lẫn tiếng Anh.',
             N'https://cdn.moveek.com/storage/media/cache/full/6a828aed8c1ae817893779.webp',
             N'T16', 1);
 
@@ -151,6 +159,33 @@ IF NOT EXISTS (SELECT 1 FROM movies WHERE title = N'Tàu Buôn Người')
             N'T18', 1);
 
 
+-- Bát Tiên Truy Tìm Lưu Ly Đăng - khởi chiếu 11/09/2026
+IF NOT EXISTS (SELECT 1 FROM movies WHERE title = N'Bát Tiên Truy Tìm Lưu Ly Đăng')
+    INSERT INTO movies (title, genre, duration_min, description, poster_url, age_rating, is_active)
+    VALUES (N'Bát Tiên Truy Tìm Lưu Ly Đăng', N'Hoạt hình, Hài, Phiêu lưu, Giả tưởng', 144,
+            N'Phim hoạt hình phiêu lưu lấy cảm hứng từ truyền thuyết Bát Tiên đi tìm chiếc đèn lưu ly.',
+            N'https://cdn.moveek.com/storage/media/cache/full/6a98eb9dce992412855239.webp',
+            N'K', 1);
+
+
+-- Hòn Đảo Quên Lãng - khởi chiếu 25/09/2026
+IF NOT EXISTS (SELECT 1 FROM movies WHERE title = N'Hòn Đảo Quên Lãng')
+    INSERT INTO movies (title, genre, duration_min, description, poster_url, age_rating, is_active)
+    VALUES (N'Hòn Đảo Quên Lãng', N'Hoạt hình, Hài, Phiêu lưu, Gia đình', 109,
+            N'Phim hoạt hình phiêu lưu trên một hòn đảo bị lãng quên, dành cho cả gia đình.',
+            N'https://cdn.moveek.com/storage/media/cache/full/6a545e65722cc932065499.webp',
+            N'K', 1);
+
+
+-- Trại Buôn Người - khởi chiếu 25/09/2026
+IF NOT EXISTS (SELECT 1 FROM movies WHERE title = N'Trại Buôn Người')
+    INSERT INTO movies (title, genre, duration_min, description, poster_url, age_rating, is_active)
+    VALUES (N'Trại Buôn Người', N'Hành động, Giật gân', 135,
+            N'Để cứu em gái sa bẫy buôn người ở biên giới miền Tây, một thanh niên cùng bạn thân bị bắt làm nô dịch trong sào huyệt lừa đảo.',
+            N'https://cdn.moveek.com/storage/media/cache/full/6aab64f6218f3539064479.webp',
+            N'T18', 1);
+
+
 -- Phim đã kết thúc đợt chiếu, để trạng thái ngừng chiếu nhằm kiểm tra bộ lọc "chỉ lấy phim đang chiếu".
 -- Minions & Quái Vật - khởi chiếu 01/07/2026
 IF NOT EXISTS (SELECT 1 FROM movies WHERE title = N'Minions & Quái Vật')
@@ -162,9 +197,10 @@ IF NOT EXISTS (SELECT 1 FROM movies WHERE title = N'Minions & Quái Vật')
 
 -- ---------------------------------------------------------------
 -- 3. Phòng chiếu
---    Mô phỏng một cụm rạp thật: 5 phòng thường, 1 phòng PREMIUM, 2 phòng GOLD CLASS.
---    Số phòng không phải bịa ra: nó được suy từ chính lịch chiếu thật bên dưới —
---    xếp 47 suất sao cho không phòng nào có hai suất chồng giờ thì cần đúng 8 phòng.
+--    Mô phỏng một cụm rạp thật: 6 phòng thường, 1 phòng PREMIUM, 2 phòng GOLD CLASS.
+--    Số phòng không phải bịa: nó suy ra từ chính lịch chiếu thật bên dưới. Xếp 242 suất
+--    của 5 ngày sao cho không phòng nào có hai suất chồng giờ thì cần đúng 9 phòng —
+--    ngày đông nhất (52 suất) là ngày quyết định con số này.
 -- ---------------------------------------------------------------
 IF NOT EXISTS (SELECT 1 FROM rooms WHERE name = N'Cinema 1')
     INSERT INTO rooms (name, total_rows, total_columns) VALUES (N'Cinema 1', 10, 14);
@@ -181,14 +217,17 @@ IF NOT EXISTS (SELECT 1 FROM rooms WHERE name = N'Cinema 4')
 IF NOT EXISTS (SELECT 1 FROM rooms WHERE name = N'Cinema 5')
     INSERT INTO rooms (name, total_rows, total_columns) VALUES (N'Cinema 5', 10, 14);
 
-IF NOT EXISTS (SELECT 1 FROM rooms WHERE name = N'Cinema 6 - PREMIUM')
-    INSERT INTO rooms (name, total_rows, total_columns) VALUES (N'Cinema 6 - PREMIUM', 6, 10);
+IF NOT EXISTS (SELECT 1 FROM rooms WHERE name = N'Cinema 6')
+    INSERT INTO rooms (name, total_rows, total_columns) VALUES (N'Cinema 6', 10, 14);
 
-IF NOT EXISTS (SELECT 1 FROM rooms WHERE name = N'Cinema 7 - GOLD CLASS')
-    INSERT INTO rooms (name, total_rows, total_columns) VALUES (N'Cinema 7 - GOLD CLASS', 4, 8);
+IF NOT EXISTS (SELECT 1 FROM rooms WHERE name = N'Cinema 7 - PREMIUM')
+    INSERT INTO rooms (name, total_rows, total_columns) VALUES (N'Cinema 7 - PREMIUM', 6, 10);
 
 IF NOT EXISTS (SELECT 1 FROM rooms WHERE name = N'Cinema 8 - GOLD CLASS')
     INSERT INTO rooms (name, total_rows, total_columns) VALUES (N'Cinema 8 - GOLD CLASS', 4, 8);
+
+IF NOT EXISTS (SELECT 1 FROM rooms WHERE name = N'Cinema 9 - GOLD CLASS')
+    INSERT INTO rooms (name, total_rows, total_columns) VALUES (N'Cinema 9 - GOLD CLASS', 4, 8);
 
 -- ---------------------------------------------------------------
 -- 4. Ghế - sinh tự động theo số hàng/cột của từng phòng
@@ -248,90 +287,311 @@ CLOSE room_cursor;
 DEALLOCATE room_cursor;
 
 -- ---------------------------------------------------------------
--- 5. Suất chiếu - LỊCH CHIẾU THẬT
---    Toàn bộ 47 suất dưới đây là lịch chiếu có thật của CGV Vincom Đồng Khởi
+-- 5. Suất chiếu - LỊCH CHIẾU THẬT CỦA 5 NGÀY LIÊN TIẾP
+--
+--    Toàn bộ 242 suất dưới đây là lịch chiếu có thật của CGV Vincom Đồng Khởi
 --    (Tầng 3, Vincom Center Đồng Khởi, 72 Lê Thánh Tôn, Quận 1, TP.HCM)
---    trong ngày 20/09/2026, giữ nguyên giờ chiếu và loại phòng.
+--    trong 5 ngày 20/09 đến 24/09/2026, giữ nguyên giờ chiếu và loại phòng.
 --
---    Giá vé cũng là giá công bố của chính rạp đó, vé người lớn:
---      - Phòng thường  135.000đ  (Thứ Sáu, Thứ Bảy, Chủ Nhật và ngày lễ;
---                                 ngày thường 115.000đ, Thứ Tư Vui Vẻ 79.000đ)
---      - PREMIUM       150.000đ
---      - GOLD CLASS    200.000đ
---    Rạp còn phụ thu ghế VIP +5.500đ và ghế đôi +26.000đ, nhưng dự án này tính
---    phụ thu theo tỉ lệ trong SeatPricingService (VIP +50%, ghế đôi gấp đôi)
---    nên cột base_price chỉ lưu giá ghế thường.
+--    Mỗi ngày một lịch khác nhau, đúng như rạp thật: phim mới vào lịch ở ngày sau
+--    (Trại Buôn Người và Hòn Đảo Quên Lãng chỉ có suất từ ngày thứ 5), phim cũ
+--    giảm dần số suất, và giờ chiếu ngày thường khác ngày cuối tuần.
 --
---    Lịch neo vào 0 giờ NGÀY MAI để suất chiếu luôn nằm ở tương lai, chạy lại
---    ngày nào cũng có dữ liệu hợp lệ mà không phải sửa tay ngày tháng.
+--    GIÁ VÉ tính ngay trong câu lệnh theo đúng quy tắc của rạp, dựa vào thứ trong
+--    tuần mà suất chiếu rơi vào:
+--      - Phòng thường: Thứ Hai / Ba / Năm 115.000đ, Thứ Tư Vui Vẻ 79.000đ,
+--                      Thứ Sáu / Bảy / Chủ Nhật và ngày lễ 135.000đ
+--      - PREMIUM 150.000đ, GOLD CLASS 200.000đ (hai mức này rạp chỉ công bố một giá,
+--        không đổi theo ngày)
+--    Nhờ tính trong SQL nên chạy seed vào ngày nào thì giá vẫn khớp với thứ của
+--    ngày đó, không bao giờ lệch.
+--
+--    Rạp còn phụ thu ghế VIP +5.500đ và ghế đôi +26.000đ, nhưng dự án tính phụ thu
+--    theo tỉ lệ trong SeatPricingService (VIP +50%, ghế đôi gấp đôi) nên cột
+--    base_price chỉ lưu giá ghế thường.
+--
+--    Lịch neo vào 0 giờ NGÀY MAI nên mọi suất luôn nằm ở tương lai.
 -- ---------------------------------------------------------------
 DECLARE @ngayMai DATETIME2 = DATEADD(DAY, 1, CAST(CAST(SYSDATETIME() AS DATE) AS DATETIME2));
 
--- phim, phòng, số phút kể từ 0 giờ ngày mai, giá vé ghế thường
+-- phim, phòng, ngày thứ mấy kể từ ngày mai (0..4), số phút kể từ 0 giờ ngày đó
 DECLARE @plannedShowtimes TABLE (
     movieTitle  NVARCHAR(200),
     roomName    NVARCHAR(50),
-    minuteOfDay INT,
-    basePrice   DECIMAL(10, 2)
+    dayOffset   INT,
+    minuteOfDay INT
 );
 
-INSERT INTO @plannedShowtimes (movieTitle, roomName, minuteOfDay, basePrice) VALUES
-    (N'Marine Yêu Dấu', N'Cinema 1', 690, 135000),
-    (N'Bóng Ma Nhà Hát', N'Cinema 1', 820, 135000),
-    (N'Marine Yêu Dấu', N'Cinema 1', 940, 135000),
-    (N'Út Lan 2', N'Cinema 1', 1060, 135000),
-    (N'Út Lan 2', N'Cinema 1', 1190, 135000),
-    (N'Út Lan 2', N'Cinema 1', 1320, 135000),
-    (N'Lên Hương', N'Cinema 2', 700, 135000),
-    (N'Út Lan 2', N'Cinema 2', 840, 135000),
-    (N'Út Lan 2', N'Cinema 2', 970, 135000),
-    (N'Marine Yêu Dấu', N'Cinema 2', 1100, 135000),
-    (N'Lên Hương', N'Cinema 2', 1230, 135000),
-    (N'Lên Hương', N'Cinema 2', 1380, 135000),
-    (N'Út Lan 2', N'Cinema 3', 710, 135000),
-    (N'Lên Hương', N'Cinema 3', 850, 135000),
-    (N'Lên Hương', N'Cinema 3', 1000, 135000),
-    (N'Vùng Đất Quỷ Dữ 2026', N'Cinema 3', 1140, 135000),
-    (N'Lên Hương', N'Cinema 3', 1260, 135000),
-    (N'Út Lan 2', N'Cinema 3', 1400, 135000),
-    (N'Nghỉ Hè Sợ Nghỉ Hưu', N'Cinema 4', 730, 135000),
-    (N'Chiikawa: Bí Mật Đảo Người Cá', N'Cinema 4', 880, 135000),
-    (N'Marine Yêu Dấu', N'Cinema 4', 1010, 135000),
-    (N'Lên Hương', N'Cinema 4', 1150, 135000),
-    (N'Lên Hương', N'Cinema 4', 1300, 135000),
-    (N'Lên Hương', N'Cinema 5', 750, 135000),
-    (N'Lên Hương', N'Cinema 5', 900, 135000),
-    (N'Lên Hương', N'Cinema 5', 1050, 135000),
-    (N'Lên Hương', N'Cinema 5', 1200, 135000),
-    (N'Lên Hương', N'Cinema 5', 1340, 135000),
-    (N'Vùng Đất Quỷ Dữ 2026', N'Cinema 6 - PREMIUM', 645, 150000),
-    (N'Út Lan 2', N'Cinema 6 - PREMIUM', 760, 150000),
-    (N'Quý Tử Vượt Giàu', N'Cinema 6 - PREMIUM', 890, 150000),
-    (N'Lên Hương', N'Cinema 6 - PREMIUM', 1030, 150000),
-    (N'Vùng Đất Quỷ Dữ 2026', N'Cinema 6 - PREMIUM', 1170, 150000),
-    (N'Vùng Đất Quỷ Dữ 2026', N'Cinema 6 - PREMIUM', 1290, 150000),
-    (N'Vùng Đất Quỷ Dữ 2026', N'Cinema 6 - PREMIUM', 1410, 150000),
-    (N'Yêu Nhân Thần Thám: Kỳ Án Trường An', N'Cinema 7 - GOLD CLASS', 630, 200000),
-    (N'Hope Vùng Tử Địa', N'Cinema 7 - GOLD CLASS', 770, 200000),
-    (N'Bùa Yêu: Bí Mật Gia Tộc', N'Cinema 7 - GOLD CLASS', 960, 200000),
-    (N'Tàu Buôn Người', N'Cinema 7 - GOLD CLASS', 1120, 200000),
-    (N'Út Lan 2', N'Cinema 7 - GOLD CLASS', 1240, 200000),
-    (N'Vùng Đất Quỷ Dữ 2026', N'Cinema 7 - GOLD CLASS', 1370, 200000),
-    (N'Vùng Đất Quỷ Dữ 2026', N'Cinema 8 - GOLD CLASS', 740, 200000),
-    (N'Vùng Đất Quỷ Dữ 2026', N'Cinema 8 - GOLD CLASS', 860, 200000),
-    (N'Vùng Đất Quỷ Dữ 2026', N'Cinema 8 - GOLD CLASS', 975, 200000),
-    (N'Vùng Đất Quỷ Dữ 2026', N'Cinema 8 - GOLD CLASS', 1090, 200000),
-    (N'Nghỉ Hè Sợ Nghỉ Hưu', N'Cinema 8 - GOLD CLASS', 1210, 200000),
-    (N'Út Lan 2', N'Cinema 8 - GOLD CLASS', 1350, 200000);
+INSERT INTO @plannedShowtimes (movieTitle, roomName, dayOffset, minuteOfDay) VALUES
+    -- ngày thứ 1 trong lịch (hôm nay)
+    (N'Marine Yêu Dấu', N'Cinema 1', 0, 690),
+    (N'Bóng Ma Nhà Hát', N'Cinema 1', 0, 820),
+    (N'Marine Yêu Dấu', N'Cinema 1', 0, 940),
+    (N'Út Lan 2', N'Cinema 1', 0, 1060),
+    (N'Út Lan 2', N'Cinema 1', 0, 1190),
+    (N'Út Lan 2', N'Cinema 1', 0, 1320),
+    (N'Lên Hương', N'Cinema 2', 0, 700),
+    (N'Út Lan 2', N'Cinema 2', 0, 840),
+    (N'Út Lan 2', N'Cinema 2', 0, 970),
+    (N'Marine Yêu Dấu', N'Cinema 2', 0, 1100),
+    (N'Lên Hương', N'Cinema 2', 0, 1230),
+    (N'Lên Hương', N'Cinema 2', 0, 1380),
+    (N'Út Lan 2', N'Cinema 3', 0, 710),
+    (N'Lên Hương', N'Cinema 3', 0, 850),
+    (N'Lên Hương', N'Cinema 3', 0, 1000),
+    (N'Vùng Đất Quỷ Dữ 2026', N'Cinema 3', 0, 1140),
+    (N'Lên Hương', N'Cinema 3', 0, 1260),
+    (N'Út Lan 2', N'Cinema 3', 0, 1400),
+    (N'Nghỉ Hè Sợ Nghỉ Hưu', N'Cinema 4', 0, 730),
+    (N'Chiikawa: Bí Mật Đảo Người Cá', N'Cinema 4', 0, 880),
+    (N'Marine Yêu Dấu', N'Cinema 4', 0, 1010),
+    (N'Lên Hương', N'Cinema 4', 0, 1150),
+    (N'Lên Hương', N'Cinema 4', 0, 1300),
+    (N'Lên Hương', N'Cinema 5', 0, 750),
+    (N'Lên Hương', N'Cinema 5', 0, 900),
+    (N'Lên Hương', N'Cinema 5', 0, 1050),
+    (N'Lên Hương', N'Cinema 5', 0, 1200),
+    (N'Lên Hương', N'Cinema 5', 0, 1340),
+    (N'Út Lan 2', N'Cinema 7 - PREMIUM', 0, 760),
+    (N'Quý Tử Vượt Giàu', N'Cinema 7 - PREMIUM', 0, 890),
+    (N'Lên Hương', N'Cinema 7 - PREMIUM', 0, 1030),
+    (N'Vùng Đất Quỷ Dữ 2026', N'Cinema 7 - PREMIUM', 0, 1170),
+    (N'Vùng Đất Quỷ Dữ 2026', N'Cinema 7 - PREMIUM', 0, 1290),
+    (N'Vùng Đất Quỷ Dữ 2026', N'Cinema 7 - PREMIUM', 0, 1410),
+    (N'Vùng Đất Quỷ Dữ 2026', N'Cinema 8 - GOLD CLASS', 0, 740),
+    (N'Vùng Đất Quỷ Dữ 2026', N'Cinema 8 - GOLD CLASS', 0, 860),
+    (N'Vùng Đất Quỷ Dữ 2026', N'Cinema 8 - GOLD CLASS', 0, 975),
+    (N'Vùng Đất Quỷ Dữ 2026', N'Cinema 8 - GOLD CLASS', 0, 1090),
+    (N'Nghỉ Hè Sợ Nghỉ Hưu', N'Cinema 8 - GOLD CLASS', 0, 1210),
+    (N'Út Lan 2', N'Cinema 8 - GOLD CLASS', 0, 1350),
+    (N'Hope Vùng Tử Địa', N'Cinema 9 - GOLD CLASS', 0, 770),
+    (N'Bùa Yêu: Bí Mật Gia Tộc', N'Cinema 9 - GOLD CLASS', 0, 960),
+    (N'Tàu Buôn Người', N'Cinema 9 - GOLD CLASS', 0, 1120),
+    (N'Út Lan 2', N'Cinema 9 - GOLD CLASS', 0, 1240),
+    (N'Vùng Đất Quỷ Dữ 2026', N'Cinema 9 - GOLD CLASS', 0, 1370),
+    -- ngày thứ 2 trong lịch (ngày mai)
+    (N'Vùng Đất Quỷ Dữ 2026', N'Cinema 1', 1, 600),
+    (N'Marine Yêu Dấu', N'Cinema 1', 1, 720),
+    (N'Lên Hương', N'Cinema 1', 1, 850),
+    (N'Lên Hương', N'Cinema 1', 1, 1000),
+    (N'Út Lan 2', N'Cinema 1', 1, 1140),
+    (N'Út Lan 2', N'Cinema 1', 1, 1270),
+    (N'Út Lan 2', N'Cinema 1', 1, 1400),
+    (N'Chiikawa: Bí Mật Đảo Người Cá', N'Cinema 2', 1, 610),
+    (N'Nghỉ Hè Sợ Nghỉ Hưu', N'Cinema 2', 1, 730),
+    (N'Nghỉ Hè Sợ Nghỉ Hưu', N'Cinema 2', 1, 870),
+    (N'Út Lan 2', N'Cinema 2', 1, 1010),
+    (N'Lên Hương', N'Cinema 2', 1, 1150),
+    (N'Lên Hương', N'Cinema 2', 1, 1300),
+    (N'Lên Hương', N'Cinema 3', 1, 615),
+    (N'Bóng Ma Nhà Hát', N'Cinema 3', 1, 800),
+    (N'Marine Yêu Dấu', N'Cinema 3', 1, 930),
+    (N'Marine Yêu Dấu', N'Cinema 3', 1, 1050),
+    (N'Lên Hương', N'Cinema 3', 1, 1180),
+    (N'Út Lan 2', N'Cinema 3', 1, 1320),
+    (N'Marine Yêu Dấu', N'Cinema 4', 1, 670),
+    (N'Út Lan 2', N'Cinema 4', 1, 825),
+    (N'Út Lan 2', N'Cinema 4', 1, 950),
+    (N'Lên Hương', N'Cinema 4', 1, 1080),
+    (N'Lên Hương', N'Cinema 4', 1, 1220),
+    (N'Lên Hương', N'Cinema 4', 1, 1360),
+    (N'Út Lan 2', N'Cinema 5', 1, 690),
+    (N'Lên Hương', N'Cinema 5', 1, 900),
+    (N'Út Lan 2', N'Cinema 5', 1, 1060),
+    (N'Út Lan 2', N'Cinema 5', 1, 1200),
+    (N'Bát Tiên Truy Tìm Lưu Ly Đăng', N'Cinema 5', 1, 1340),
+    (N'Lên Hương', N'Cinema 6', 1, 750),
+    (N'Yêu Nhân Thần Thám: Kỳ Án Trường An', N'Cinema 7 - PREMIUM', 1, 650),
+    (N'Tàu Buôn Người', N'Cinema 7 - PREMIUM', 1, 790),
+    (N'Chiikawa: Bí Mật Đảo Người Cá', N'Cinema 7 - PREMIUM', 1, 910),
+    (N'Tế Nhi Cải Mệnh', N'Cinema 7 - PREMIUM', 1, 1040),
+    (N'Vùng Đất Quỷ Dữ 2026', N'Cinema 7 - PREMIUM', 1, 1170),
+    (N'Vùng Đất Quỷ Dữ 2026', N'Cinema 7 - PREMIUM', 1, 1290),
+    (N'Vùng Đất Quỷ Dữ 2026', N'Cinema 7 - PREMIUM', 1, 1410),
+    (N'Hope Vùng Tử Địa', N'Cinema 8 - GOLD CLASS', 1, 630),
+    (N'Bùa Yêu: Bí Mật Gia Tộc', N'Cinema 8 - GOLD CLASS', 1, 820),
+    (N'Vùng Đất Quỷ Dữ 2026', N'Cinema 8 - GOLD CLASS', 1, 975),
+    (N'Vùng Đất Quỷ Dữ 2026', N'Cinema 8 - GOLD CLASS', 1, 1090),
+    (N'Vùng Đất Quỷ Dữ 2026', N'Cinema 8 - GOLD CLASS', 1, 1210),
+    (N'Hope Vùng Tử Địa', N'Cinema 8 - GOLD CLASS', 1, 1330),
+    (N'Tế Nhi Cải Mệnh', N'Cinema 9 - GOLD CLASS', 1, 640),
+    (N'Vùng Đất Quỷ Dữ 2026', N'Cinema 9 - GOLD CLASS', 1, 770),
+    (N'Vùng Đất Quỷ Dữ 2026', N'Cinema 9 - GOLD CLASS', 1, 890),
+    (N'Vùng Đất Quỷ Dữ 2026', N'Cinema 9 - GOLD CLASS', 1, 1010),
+    (N'Vùng Đất Quỷ Dữ 2026', N'Cinema 9 - GOLD CLASS', 1, 1130),
+    (N'Lên Hương', N'Cinema 9 - GOLD CLASS', 1, 1250),
+    (N'Lên Hương', N'Cinema 9 - GOLD CLASS', 1, 1390),
+    -- ngày thứ 3 trong lịch (ngày kia)
+    (N'Marine Yêu Dấu', N'Cinema 1', 2, 600),
+    (N'Marine Yêu Dấu', N'Cinema 1', 2, 720),
+    (N'Lên Hương', N'Cinema 1', 2, 850),
+    (N'Lên Hương', N'Cinema 1', 2, 990),
+    (N'Marine Yêu Dấu', N'Cinema 1', 2, 1130),
+    (N'Vùng Đất Quỷ Dữ 2026', N'Cinema 1', 2, 1260),
+    (N'Vùng Đất Quỷ Dữ 2026', N'Cinema 1', 2, 1380),
+    (N'Vùng Đất Quỷ Dữ 2026', N'Cinema 2', 2, 610),
+    (N'Nghỉ Hè Sợ Nghỉ Hưu', N'Cinema 2', 2, 730),
+    (N'Nghỉ Hè Sợ Nghỉ Hưu', N'Cinema 2', 2, 870),
+    (N'Út Lan 2', N'Cinema 2', 2, 1010),
+    (N'Lên Hương', N'Cinema 2', 2, 1140),
+    (N'Út Lan 2', N'Cinema 2', 2, 1280),
+    (N'Út Lan 2', N'Cinema 2', 2, 1410),
+    (N'Út Lan 2', N'Cinema 3', 2, 615),
+    (N'Lên Hương', N'Cinema 3', 2, 750),
+    (N'Lên Hương', N'Cinema 3', 2, 900),
+    (N'Lên Hương', N'Cinema 3', 2, 1050),
+    (N'Út Lan 2', N'Cinema 3', 2, 1190),
+    (N'Bát Tiên Truy Tìm Lưu Ly Đăng', N'Cinema 3', 2, 1320),
+    (N'Út Lan 2', N'Cinema 4', 2, 670),
+    (N'Bóng Ma Nhà Hát', N'Cinema 4', 2, 800),
+    (N'Marine Yêu Dấu', N'Cinema 4', 2, 920),
+    (N'Marine Yêu Dấu', N'Cinema 4', 2, 1060),
+    (N'Lên Hương', N'Cinema 4', 2, 1200),
+    (N'Lên Hương', N'Cinema 4', 2, 1340),
+    (N'Lên Hương', N'Cinema 5', 2, 680),
+    (N'Út Lan 2', N'Cinema 5', 2, 825),
+    (N'Út Lan 2', N'Cinema 5', 2, 950),
+    (N'Nghỉ Hè Sợ Nghỉ Hưu', N'Cinema 5', 2, 1080),
+    (N'Út Lan 2', N'Cinema 5', 2, 1220),
+    (N'Út Lan 2', N'Cinema 5', 2, 1350),
+    (N'Chiikawa: Bí Mật Đảo Người Cá', N'Cinema 7 - PREMIUM', 2, 640),
+    (N'Tế Nhi Cải Mệnh', N'Cinema 7 - PREMIUM', 2, 760),
+    (N'Quý Tử Vượt Giàu', N'Cinema 7 - PREMIUM', 2, 890),
+    (N'Tế Nhi Cải Mệnh', N'Cinema 7 - PREMIUM', 2, 1040),
+    (N'Vùng Đất Quỷ Dữ 2026', N'Cinema 7 - PREMIUM', 2, 1170),
+    (N'Vùng Đất Quỷ Dữ 2026', N'Cinema 7 - PREMIUM', 2, 1290),
+    (N'Vùng Đất Quỷ Dữ 2026', N'Cinema 7 - PREMIUM', 2, 1410),
+    (N'Tàu Buôn Người', N'Cinema 8 - GOLD CLASS', 2, 620),
+    (N'Vùng Đất Quỷ Dữ 2026', N'Cinema 8 - GOLD CLASS', 2, 740),
+    (N'Vùng Đất Quỷ Dữ 2026', N'Cinema 8 - GOLD CLASS', 2, 860),
+    (N'Vùng Đất Quỷ Dữ 2026', N'Cinema 8 - GOLD CLASS', 2, 975),
+    (N'Vùng Đất Quỷ Dữ 2026', N'Cinema 8 - GOLD CLASS', 2, 1090),
+    (N'Vùng Đất Quỷ Dữ 2026', N'Cinema 8 - GOLD CLASS', 2, 1210),
+    (N'Hope Vùng Tử Địa', N'Cinema 8 - GOLD CLASS', 2, 1330),
+    (N'Yêu Nhân Thần Thám: Kỳ Án Trường An', N'Cinema 9 - GOLD CLASS', 2, 630),
+    (N'Hope Vùng Tử Địa', N'Cinema 9 - GOLD CLASS', 2, 770),
+    (N'Bùa Yêu: Bí Mật Gia Tộc', N'Cinema 9 - GOLD CLASS', 2, 960),
+    (N'Tàu Buôn Người', N'Cinema 9 - GOLD CLASS', 2, 1120),
+    (N'Lên Hương', N'Cinema 9 - GOLD CLASS', 2, 1240),
+    (N'Lên Hương', N'Cinema 9 - GOLD CLASS', 2, 1390),
+    -- ngày thứ 4 trong lịch (ngày thứ tư)
+    (N'Marine Yêu Dấu', N'Cinema 1', 3, 600),
+    (N'Marine Yêu Dấu', N'Cinema 1', 3, 720),
+    (N'Lên Hương', N'Cinema 1', 3, 850),
+    (N'Lên Hương', N'Cinema 1', 3, 1000),
+    (N'Út Lan 2', N'Cinema 1', 3, 1140),
+    (N'Út Lan 2', N'Cinema 1', 3, 1270),
+    (N'Út Lan 2', N'Cinema 1', 3, 1400),
+    (N'Vùng Đất Quỷ Dữ 2026', N'Cinema 2', 3, 610),
+    (N'Nghỉ Hè Sợ Nghỉ Hưu', N'Cinema 2', 3, 730),
+    (N'Nghỉ Hè Sợ Nghỉ Hưu', N'Cinema 2', 3, 870),
+    (N'Út Lan 2', N'Cinema 2', 3, 1010),
+    (N'Lên Hương', N'Cinema 2', 3, 1150),
+    (N'Lên Hương', N'Cinema 2', 3, 1300),
+    (N'Út Lan 2', N'Cinema 3', 3, 615),
+    (N'Lên Hương', N'Cinema 3', 3, 750),
+    (N'Lên Hương', N'Cinema 3', 3, 900),
+    (N'Lên Hương', N'Cinema 3', 3, 1050),
+    (N'Marine Yêu Dấu', N'Cinema 3', 3, 1190),
+    (N'Bát Tiên Truy Tìm Lưu Ly Đăng', N'Cinema 3', 3, 1320),
+    (N'Út Lan 2', N'Cinema 4', 3, 670),
+    (N'Bóng Ma Nhà Hát', N'Cinema 4', 3, 800),
+    (N'Chiikawa: Bí Mật Đảo Người Cá', N'Cinema 4', 3, 930),
+    (N'Marine Yêu Dấu', N'Cinema 4', 3, 1060),
+    (N'Lên Hương', N'Cinema 4', 3, 1200),
+    (N'Lên Hương', N'Cinema 4', 3, 1340),
+    (N'Lên Hương', N'Cinema 5', 3, 680),
+    (N'Út Lan 2', N'Cinema 5', 3, 825),
+    (N'Út Lan 2', N'Cinema 5', 3, 950),
+    (N'Út Lan 2', N'Cinema 5', 3, 1080),
+    (N'Út Lan 2', N'Cinema 5', 3, 1220),
+    (N'Út Lan 2', N'Cinema 5', 3, 1360),
+    (N'Quý Tử Vượt Giàu', N'Cinema 7 - PREMIUM', 3, 650),
+    (N'Vùng Đất Quỷ Dữ 2026', N'Cinema 7 - PREMIUM', 3, 790),
+    (N'Vùng Đất Quỷ Dữ 2026', N'Cinema 7 - PREMIUM', 3, 910),
+    (N'Tế Nhi Cải Mệnh', N'Cinema 7 - PREMIUM', 3, 1030),
+    (N'Vùng Đất Quỷ Dữ 2026', N'Cinema 7 - PREMIUM', 3, 1170),
+    (N'Vùng Đất Quỷ Dữ 2026', N'Cinema 7 - PREMIUM', 3, 1290),
+    (N'Vùng Đất Quỷ Dữ 2026', N'Cinema 7 - PREMIUM', 3, 1410),
+    (N'Tàu Buôn Người', N'Cinema 8 - GOLD CLASS', 3, 620),
+    (N'Vùng Đất Quỷ Dữ 2026', N'Cinema 8 - GOLD CLASS', 3, 740),
+    (N'Vùng Đất Quỷ Dữ 2026', N'Cinema 8 - GOLD CLASS', 3, 860),
+    (N'Vùng Đất Quỷ Dữ 2026', N'Cinema 8 - GOLD CLASS', 3, 975),
+    (N'Vùng Đất Quỷ Dữ 2026', N'Cinema 8 - GOLD CLASS', 3, 1090),
+    (N'Nghỉ Hè Sợ Nghỉ Hưu', N'Cinema 8 - GOLD CLASS', 3, 1210),
+    (N'Hope Vùng Tử Địa', N'Cinema 8 - GOLD CLASS', 3, 1350),
+    (N'Yêu Nhân Thần Thám: Kỳ Án Trường An', N'Cinema 9 - GOLD CLASS', 3, 630),
+    (N'Hope Vùng Tử Địa', N'Cinema 9 - GOLD CLASS', 3, 770),
+    (N'Bùa Yêu: Bí Mật Gia Tộc', N'Cinema 9 - GOLD CLASS', 3, 960),
+    (N'Tàu Buôn Người', N'Cinema 9 - GOLD CLASS', 3, 1120),
+    (N'Lên Hương', N'Cinema 9 - GOLD CLASS', 3, 1240),
+    (N'Lên Hương', N'Cinema 9 - GOLD CLASS', 3, 1390),
+    -- ngày thứ 5 trong lịch (ngày thứ năm)
+    (N'Marine Yêu Dấu', N'Cinema 1', 4, 600),
+    (N'Marine Yêu Dấu', N'Cinema 1', 4, 720),
+    (N'Lên Hương', N'Cinema 1', 4, 850),
+    (N'Lên Hương', N'Cinema 1', 4, 1000),
+    (N'Hòn Đảo Quên Lãng', N'Cinema 1', 4, 1185),
+    (N'Lên Hương', N'Cinema 1', 4, 1340),
+    (N'Vùng Đất Quỷ Dữ 2026', N'Cinema 2', 4, 610),
+    (N'Nghỉ Hè Sợ Nghỉ Hưu', N'Cinema 2', 4, 730),
+    (N'Nghỉ Hè Sợ Nghỉ Hưu', N'Cinema 2', 4, 870),
+    (N'Hòn Đảo Quên Lãng', N'Cinema 2', 4, 1010),
+    (N'Lên Hương', N'Cinema 2', 4, 1200),
+    (N'Út Lan 2', N'Cinema 2', 4, 1360),
+    (N'Út Lan 2', N'Cinema 3', 4, 615),
+    (N'Lên Hương', N'Cinema 3', 4, 750),
+    (N'Lên Hương', N'Cinema 3', 4, 900),
+    (N'Lên Hương', N'Cinema 3', 4, 1050),
+    (N'Trại Buôn Người', N'Cinema 3', 4, 1210),
+    (N'Trại Buôn Người', N'Cinema 3', 4, 1370),
+    (N'Hòn Đảo Quên Lãng', N'Cinema 4', 4, 660),
+    (N'Bóng Ma Nhà Hát', N'Cinema 4', 4, 800),
+    (N'Marine Yêu Dấu', N'Cinema 4', 4, 920),
+    (N'Marine Yêu Dấu', N'Cinema 4', 4, 1060),
+    (N'Lên Hương', N'Cinema 5', 4, 680),
+    (N'Út Lan 2', N'Cinema 5', 4, 820),
+    (N'Út Lan 2', N'Cinema 5', 4, 950),
+    (N'Út Lan 2', N'Cinema 5', 4, 1080),
+    (N'Chiikawa: Bí Mật Đảo Người Cá', N'Cinema 7 - PREMIUM', 4, 640),
+    (N'Tế Nhi Cải Mệnh', N'Cinema 7 - PREMIUM', 4, 760),
+    (N'Quý Tử Vượt Giàu', N'Cinema 7 - PREMIUM', 4, 890),
+    (N'Út Lan 2', N'Cinema 7 - PREMIUM', 4, 1035),
+    (N'Vùng Đất Quỷ Dữ 2026', N'Cinema 7 - PREMIUM', 4, 1380),
+    (N'Tàu Buôn Người', N'Cinema 8 - GOLD CLASS', 4, 620),
+    (N'Vùng Đất Quỷ Dữ 2026', N'Cinema 8 - GOLD CLASS', 4, 740),
+    (N'Vùng Đất Quỷ Dữ 2026', N'Cinema 8 - GOLD CLASS', 4, 860),
+    (N'Vùng Đất Quỷ Dữ 2026', N'Cinema 8 - GOLD CLASS', 4, 980),
+    (N'Vùng Đất Quỷ Dữ 2026', N'Cinema 8 - GOLD CLASS', 4, 1100),
+    (N'Út Lan 2', N'Cinema 8 - GOLD CLASS', 4, 1220),
+    (N'Trại Buôn Người', N'Cinema 8 - GOLD CLASS', 4, 1400),
+    (N'Yêu Nhân Thần Thám: Kỳ Án Trường An', N'Cinema 9 - GOLD CLASS', 4, 630),
+    (N'Hope Vùng Tử Địa', N'Cinema 9 - GOLD CLASS', 4, 770),
+    (N'Bùa Yêu: Bí Mật Gia Tộc', N'Cinema 9 - GOLD CLASS', 4, 960),
+    (N'Trại Buôn Người', N'Cinema 9 - GOLD CLASS', 4, 1120),
+    (N'Vùng Đất Quỷ Dữ 2026', N'Cinema 9 - GOLD CLASS', 4, 1280);
 
 INSERT INTO showtimes (movie_id, room_id, start_time, end_time, base_price)
 SELECT
     m.id,
     r.id,
-    DATEADD(MINUTE, p.minuteOfDay, @ngayMai),
+    DATEADD(MINUTE, p.minuteOfDay, DATEADD(DAY, p.dayOffset, @ngayMai)),
     -- Kết thúc = bắt đầu + thời lượng phim + 15 phút dọn phòng
-    DATEADD(MINUTE, m.duration_min + 15, DATEADD(MINUTE, p.minuteOfDay, @ngayMai)),
-    p.basePrice
+    DATEADD(MINUTE, m.duration_min + 15,
+            DATEADD(MINUTE, p.minuteOfDay, DATEADD(DAY, p.dayOffset, @ngayMai))),
+    CASE
+        WHEN r.name LIKE N'%GOLD CLASS%' THEN 200000
+        WHEN r.name LIKE N'%PREMIUM%'    THEN 150000
+        -- DATEDIFF(DAY, 0, ...) % 7 cho 0 = Thứ Hai ... 6 = Chủ Nhật,
+        -- không phụ thuộc cài đặt DATEFIRST của máy chủ.
+        ELSE CASE DATEDIFF(DAY, 0, DATEADD(DAY, p.dayOffset, @ngayMai)) % 7
+                 WHEN 2 THEN 79000    -- Thứ Tư Vui Vẻ
+                 WHEN 4 THEN 135000   -- Thứ Sáu
+                 WHEN 5 THEN 135000   -- Thứ Bảy
+                 WHEN 6 THEN 135000   -- Chủ Nhật
+                 ELSE 115000          -- Thứ Hai, Thứ Ba, Thứ Năm
+             END
+    END
 FROM @plannedShowtimes p
 JOIN movies m ON m.title = p.movieTitle
 JOIN rooms  r ON r.name  = p.roomName
@@ -339,7 +599,7 @@ WHERE NOT EXISTS (
     SELECT 1 FROM showtimes s
     WHERE s.movie_id = m.id
       AND s.room_id = r.id
-      AND s.start_time = DATEADD(MINUTE, p.minuteOfDay, @ngayMai)
+      AND s.start_time = DATEADD(MINUTE, p.minuteOfDay, DATEADD(DAY, p.dayOffset, @ngayMai))
 );
 
 -- ---------------------------------------------------------------
