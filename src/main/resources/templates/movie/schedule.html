@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout" layout:decorate="~{layout/base}">
+<head><title>Lịch chiếu</title></head>
+<body><div layout:fragment="content">
+
+    <section class="module1-section-head schedule-head" aria-labelledby="schedule-title">
+        <div>
+            <span class="module1-kicker">UTE CINEMA · LỊCH CHIẾU</span>
+            <h1 id="schedule-title">Hôm nay rạp chiếu gì?</h1>
+            <p class="text-muted">Chọn một ngày để xem toàn bộ phim và giờ chiếu của ngày đó.</p>
+        </div>
+        <p class="text-muted" th:if="${selectedDate != null}"
+           th:text="|${#lists.size(schedule)} phim · ngày ${#temporals.format(selectedDate, 'dd/MM/yyyy')}|">
+            Số phim trong ngày</p>
+    </section>
+
+    <!-- Dải chọn ngày. Chỉ liệt kê ngày thật sự còn suất chiếu chưa bắt đầu. -->
+    <nav class="schedule-dates" aria-label="Chọn ngày chiếu" th:if="${!scheduleDates.isEmpty()}">
+        <a class="schedule-date" th:each="item : ${scheduleDates}"
+           th:href="@{/lich-chieu(ngay=${item.date})}"
+           th:classappend="${item.date.equals(selectedDate)} ? ' is-selected' : ''"
+           th:aria-current="${item.date.equals(selectedDate)} ? 'page' : null">
+            <span class="schedule-date-dow" th:text="${item.dayLabel}">Thứ 2</span>
+            <span class="schedule-date-day" th:text="${#temporals.format(item.date, 'dd')}">21</span>
+            <span class="schedule-date-month" th:text="|Tháng ${#temporals.format(item.date, 'MM')}|">Tháng 09</span>
+        </a>
+    </nav>
+
+    <div class="module1-empty" th:if="${#lists.isEmpty(schedule)}">
+        <span class="module1-empty-icon" aria-hidden="true">◷</span>
+        <h2>Chưa có suất chiếu</h2>
+        <p>Hiện chưa có lịch chiếu cho ngày này. Bạn thử chọn ngày khác trên dải ngày phía trên nhé.</p>
+        <a class="btn" th:href="@{/movies}">Xem danh sách phim</a>
+    </div>
+
+    <section class="schedule-list" th:unless="${#lists.isEmpty(schedule)}">
+        <article class="schedule-movie" th:each="entry : ${schedule}">
+
+            <a class="schedule-poster" th:href="@{/movies/{id}(id=${entry.movie.id})}"
+               th:aria-label="|Xem chi tiết phim ${entry.movie.title}|">
+                <img th:if="${entry.movie.posterUrl != null and !#strings.isEmpty(entry.movie.posterUrl)}"
+                     th:src="${entry.movie.posterUrl}" th:alt="|Poster phim ${entry.movie.title}|" loading="lazy">
+                <span class="schedule-poster-fallback" aria-hidden="true"
+                      th:unless="${entry.movie.posterUrl != null and !#strings.isEmpty(entry.movie.posterUrl)}"
+                      th:text="${#strings.substring(entry.movie.title, 0, 1)}">P</span>
+            </a>
+
+            <div class="schedule-movie-body">
+                <div class="schedule-movie-head">
+                    <h2 class="schedule-movie-title">
+                        <a th:href="@{/movies/{id}(id=${entry.movie.id})}" th:text="${entry.movie.title}">Tên phim</a>
+                    </h2>
+                    <span class="badge badge-accent" th:if="${entry.movie.ageRating != null}"
+                          th:text="${entry.movie.ageRating}">T16</span>
+                </div>
+
+                <div class="schedule-tags">
+                    <span th:text="${entry.movie.genre ?: 'Chưa phân loại'}">Thể loại</span>
+                    <span th:text="|${entry.movie.durationMin} phút|">120 phút</span>
+                    <span th:text="|${entry.totalShowtimes} suất|">5 suất</span>
+                    <span th:if="${entry.lowestPrice != null}"
+                          th:text="|Giá từ ${#numbers.formatDecimal(entry.lowestPrice, 0, 'POINT', 0, 'COMMA')} đ|">
+                        Giá từ</span>
+                </div>
+
+                <!-- Mỗi loại phòng một hàng giờ chiếu, thứ tự do ScheduleService sắp sẵn. -->
+                <div class="schedule-room-group" th:each="group : ${entry.showtimesByRoomType}">
+                    <span class="schedule-room-label" th:text="${group.key}">Phòng thường</span>
+                    <div class="schedule-times">
+                        <a class="schedule-time" th:each="showtime : ${group.value}"
+                           th:href="@{/booking/showtime/{id}(id=${showtime.id})}"
+                           th:classappend="${group.key == 'Gold Class'} ? ' is-gold' :
+                                           (${group.key == 'Premium'} ? ' is-premium' : '')"
+                           th:aria-label="|Đặt vé suất ${#temporals.format(showtime.startTime, 'HH:mm')} phim ${entry.movie.title} tại ${showtime.room.name}, giá ${#numbers.formatDecimal(showtime.basePrice, 0, 'POINT', 0, 'COMMA')} đồng|">
+                            <span class="schedule-time-hour"
+                                  th:text="${#temporals.format(showtime.startTime, 'HH:mm')}">18:00</span>
+                            <span class="schedule-time-room" th:text="${showtime.room.name}">Cinema 1</span>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </article>
+    </section>
+
+</div></body></html>
