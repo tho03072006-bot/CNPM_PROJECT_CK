@@ -17,8 +17,13 @@
 -- File này CHẠY LẠI ĐƯỢC NHIỀU LẦN: mỗi khối đều kiểm tra "nếu chưa có thì mới thêm",
 -- nên không sợ chạy nhầm hai lần rồi nhân đôi dữ liệu.
 --
--- LƯU Ý: đây là dữ liệu GIẢ để chạy thử. Mật khẩu trong này chưa hash,
--- phải thay bằng BCrypt khi Module 3 làm xong phần đăng nhập.
+-- THÔNG TIN PHIM LÀ THẬT: tên phim, thể loại, thời lượng, nhãn tuổi và ngày khởi chiếu
+-- lấy theo lịch chiếu rạp Việt Nam ngày 20/09/2026. Ảnh poster để ở dạng đường dẫn tới
+-- máy chủ ảnh của nguồn, không tải về kho mã. Nếu sau này ảnh hỏng thì chỉ cần thay
+-- cột poster_url, không ảnh hưởng gì tới chương trình.
+--
+-- Tài khoản, phòng chiếu và suất chiếu vẫn là dữ liệu tự đặt để chạy thử.
+-- Mật khẩu trong này chưa hash, phải thay bằng BCrypt khi Module 3 làm xong đăng nhập.
 -- ================================================================
 SET NOCOUNT ON;
 
@@ -36,41 +41,85 @@ IF NOT EXISTS (SELECT 1 FROM users WHERE email = 'nhanvien@nhom05.local')
 -- ---------------------------------------------------------------
 -- 2. Phim
 -- ---------------------------------------------------------------
-IF NOT EXISTS (SELECT 1 FROM movies WHERE title = N'Bão Giữa Trời Quang')
-    INSERT INTO movies (title, genre, duration_min, description, age_rating, is_active)
-    VALUES (N'Bão Giữa Trời Quang', N'Tâm lý', 118,
-            N'Một gia đình nhỏ ở miền Trung đối mặt với mùa bão và những bí mật chưa từng nói ra.',
-            N'C13', 1);
+-- Bóng Ma Nhà Hát - khởi chiếu 18/09/2026
+IF NOT EXISTS (SELECT 1 FROM movies WHERE title = N'Bóng Ma Nhà Hát')
+    INSERT INTO movies (title, genre, duration_min, description, poster_url, age_rating, is_active)
+    VALUES (N'Bóng Ma Nhà Hát', N'Hài, Kinh dị', 97,
+            N'Một chuyên viên bất động sản nhận nhiệm vụ vực dậy nhà hát cũ trong vòng một tháng, rồi phát hiện nơi này có hồn ma một nữ diễn viên chưa siêu thoát.',
+            N'https://cdn.moveek.com/storage/media/cache/tall/6aa3a066c7afd223776710.webp',
+            N'T16', 1);
 
-IF NOT EXISTS (SELECT 1 FROM movies WHERE title = N'Mật Mã Thành Phố')
-    INSERT INTO movies (title, genre, duration_min, description, age_rating, is_active)
-    VALUES (N'Mật Mã Thành Phố', N'Hành động', 132,
-            N'Một kỹ sư an ninh mạng bị cuốn vào âm mưu đánh sập hệ thống giao thông của cả thành phố.',
-            N'C16', 1);
 
-IF NOT EXISTS (SELECT 1 FROM movies WHERE title = N'Chuyến Tàu Mùa Hạ')
-    INSERT INTO movies (title, genre, duration_min, description, age_rating, is_active)
-    VALUES (N'Chuyến Tàu Mùa Hạ', N'Hoạt hình', 95,
-            N'Cô bé mười tuổi cùng chú mèo lạc lên chuyến tàu đi qua những mùa ký ức.',
+-- Vùng Đất Quỷ Dữ 2026 - khởi chiếu 18/09/2026
+IF NOT EXISTS (SELECT 1 FROM movies WHERE title = N'Vùng Đất Quỷ Dữ 2026')
+    INSERT INTO movies (title, genre, duration_min, description, poster_url, age_rating, is_active)
+    VALUES (N'Vùng Đất Quỷ Dữ 2026', N'Kinh dị, Khoa học viễn tưởng', 94,
+            N'Phần phim Resident Evil mới với cốt truyện riêng: một nhân viên vận chuyển vật tư y tế bị cuốn vào cuộc chạy trốn sinh tồn suốt một đêm.',
+            N'https://cdn.moveek.com/storage/media/cache/tall/6a98ed8bf12b6567604371.webp',
+            N'T18', 1);
+
+
+-- Lên Hương - khởi chiếu 14/09/2026
+IF NOT EXISTS (SELECT 1 FROM movies WHERE title = N'Lên Hương')
+    INSERT INTO movies (title, genre, duration_min, description, poster_url, age_rating, is_active)
+    VALUES (N'Lên Hương', N'Tâm lý, Gia đình', 121,
+            N'Bà chủ một trại hòm ế khách và chàng trai cần tiền chữa bệnh cho mẹ vướng vào một giao kèo, kéo theo món nợ bị chôn giấu nhiều năm.',
+            N'https://cdn.moveek.com/storage/media/cache/tall/6a853e8a114e2776669135.webp',
+            N'T16', 1);
+
+
+-- Tế Nhi Cải Mệnh - khởi chiếu 18/09/2026
+IF NOT EXISTS (SELECT 1 FROM movies WHERE title = N'Tế Nhi Cải Mệnh')
+    INSERT INTO movies (title, genre, duration_min, description, poster_url, age_rating, is_active)
+    VALUES (N'Tế Nhi Cải Mệnh', N'Kinh dị', 104,
+            N'Người đàn ông ngập trong nợ cờ bạc tìm tới tà thuật cấm kỵ để đổi lấy tiền, và tai hoạ ập xuống cả gia đình ngay sau đó.',
+            N'https://cdn.moveek.com/storage/media/cache/tall/6aa4d2eb9ebdd653449192.webp',
+            N'T18', 1);
+
+
+-- Người Nhện 4: Khởi Đầu Mới - khởi chiếu 31/07/2026
+IF NOT EXISTS (SELECT 1 FROM movies WHERE title = N'Người Nhện 4: Khởi Đầu Mới')
+    INSERT INTO movies (title, genre, duration_min, description, poster_url, age_rating, is_active)
+    VALUES (N'Người Nhện 4: Khởi Đầu Mới', N'Hành động, Khoa học viễn tưởng', 145,
+            N'Peter Parker phải chiến đấu một mình khi không còn ai bên cạnh, trước một thế lực mới và một biến đổi thể chất đe doạ chính anh.',
+            N'https://cdn.moveek.com/storage/media/cache/tall/6a545dce71636477839863.webp',
+            N'T13', 1);
+
+
+-- Conan Movie 29 (2026): Thiên Thần Sa Ngã Trên Xa Lộ - khởi chiếu 24/07/2026
+IF NOT EXISTS (SELECT 1 FROM movies WHERE title = N'Conan Movie 29 (2026): Thiên Thần Sa Ngã Trên Xa Lộ')
+    INSERT INTO movies (title, genre, duration_min, description, poster_url, age_rating, is_active)
+    VALUES (N'Conan Movie 29 (2026): Thiên Thần Sa Ngã Trên Xa Lộ', N'Hoạt hình, Trinh thám, Hành động', 109,
+            N'Conan cùng nhóm bạn tới Yokohama dự lễ hội mô tô và vướng vào vụ án xoay quanh một tay đua bí ẩn cùng mẫu xe công nghệ cao.',
+            N'https://cdn.moveek.com/storage/media/cache/tall/6a2e2b5d405dd381486132.webp',
+            N'T13', 1);
+
+
+-- PAW Patrol: Phim Khủng Long - khởi chiếu 14/08/2026
+IF NOT EXISTS (SELECT 1 FROM movies WHERE title = N'PAW Patrol: Phim Khủng Long')
+    INSERT INTO movies (title, genre, duration_min, description, poster_url, age_rating, is_active)
+    VALUES (N'PAW Patrol: Phim Khủng Long', N'Hoạt hình, Phiêu lưu, Gia đình', 89,
+            N'Đội cứu hộ Paw Patrol trở lại màn ảnh rộng với một chuyến phiêu lưu giữa những con khủng long.',
+            N'https://cdn.moveek.com/storage/media/cache/tall/69f9578c938ef360861815.webp',
             N'P', 1);
 
-IF NOT EXISTS (SELECT 1 FROM movies WHERE title = N'Đêm Không Ngủ')
-    INSERT INTO movies (title, genre, duration_min, description, age_rating, is_active)
-    VALUES (N'Đêm Không Ngủ', N'Kinh dị', 104,
-            N'Ca trực đêm cuối cùng của một y tá trong bệnh viện sắp đóng cửa.',
-            N'C18', 1);
 
-IF NOT EXISTS (SELECT 1 FROM movies WHERE title = N'Hẹn Em Ngày Nắng')
-    INSERT INTO movies (title, genre, duration_min, description, age_rating, is_active)
-    VALUES (N'Hẹn Em Ngày Nắng', N'Lãng mạn', 110,
-            N'Hai người bạn thời đại học gặp lại nhau sau mười năm, ở đúng quán cà phê ngày xưa.',
-            N'C13', 1);
+-- Yêu Nhân Thần Thám: Kỳ Án Trường An - khởi chiếu 18/09/2026
+IF NOT EXISTS (SELECT 1 FROM movies WHERE title = N'Yêu Nhân Thần Thám: Kỳ Án Trường An')
+    INSERT INTO movies (title, genre, duration_min, description, poster_url, age_rating, is_active)
+    VALUES (N'Yêu Nhân Thần Thám: Kỳ Án Trường An', N'Hoạt hình, Hài, Trinh thám', 117,
+            N'Ở Trường An thời Đường nơi người và yêu quái sống chung, một thiếu niên mê suy luận cùng tân binh yêu sói cùng nhau phá án.',
+            N'https://cdn.moveek.com/storage/media/cache/tall/6a98ed129ae79346045889.webp',
+            N'K', 1);
 
--- Một phim đã ngừng chiếu, để thử bộ lọc "chỉ lấy phim đang chiếu"
-IF NOT EXISTS (SELECT 1 FROM movies WHERE title = N'Phim Đã Ngừng Chiếu')
-    INSERT INTO movies (title, genre, duration_min, description, age_rating, is_active)
-    VALUES (N'Phim Đã Ngừng Chiếu', N'Tài liệu', 88,
-            N'Phim này để trạng thái ngừng chiếu, dùng để kiểm tra chức năng lọc phim đang chiếu.',
+
+-- Phim ra rạp đã lâu, để trạng thái ngừng chiếu nhằm kiểm tra bộ lọc "chỉ lấy phim đang chiếu".
+-- Minions & Quái Vật - khởi chiếu 01/07/2026
+IF NOT EXISTS (SELECT 1 FROM movies WHERE title = N'Minions & Quái Vật')
+    INSERT INTO movies (title, genre, duration_min, description, poster_url, age_rating, is_active)
+    VALUES (N'Minions & Quái Vật', N'Hoạt hình, Hài', 90,
+            N'Nhóm Minions nổi danh ở Hollywood rồi mất tất cả, vô tình thả quái vật ra khắp thế giới và phải tự dọn mớ hỗn loạn do mình gây ra.',
+            N'https://cdn.moveek.com/storage/media/cache/tall/6a0191c8e9620912668089.webp',
             N'P', 0);
 
 -- ---------------------------------------------------------------
@@ -145,16 +194,20 @@ DECLARE @plannedShowtimes TABLE (
 );
 
 INSERT INTO @plannedShowtimes (movieTitle, roomId, hoursFromNow, basePrice) VALUES
-    (N'Bão Giữa Trời Quang', @room1, 33,  75000),
-    (N'Bão Giữa Trời Quang', @room1, 39,  85000),
-    (N'Mật Mã Thành Phố',    @room1, 36,  75000),
-    (N'Mật Mã Thành Phố',    @room2, 42, 120000),
-    (N'Chuyến Tàu Mùa Hạ',   @room1, 31,  65000),
-    (N'Chuyến Tàu Mùa Hạ',   @room2, 34, 110000),
-    (N'Đêm Không Ngủ',       @room1, 45,  85000),
-    (N'Hẹn Em Ngày Nắng',    @room1, 38,  75000),
-    (N'Hẹn Em Ngày Nắng',    @room2, 44, 120000),
-    (N'Bão Giữa Trời Quang', @room2, 57, 120000);
+    -- Phòng 1 - xếp nối tiếp nhau, suất sau bắt đầu sau khi suất trước đã dọn xong
+    (N'PAW Patrol: Phim Khủng Long',                         @room1, 31,  65000),
+    (N'Lên Hương',                                           @room1, 33,  75000),
+    (N'Bóng Ma Nhà Hát',                                     @room1, 36,  75000),
+    (N'Vùng Đất Quỷ Dữ 2026',                                @room1, 38,  85000),
+    (N'Người Nhện 4: Khởi Đầu Mới',                          @room1, 40,  95000),
+    (N'Conan Movie 29 (2026): Thiên Thần Sa Ngã Trên Xa Lộ',  @room1, 43,  85000),
+    (N'Tế Nhi Cải Mệnh',                                     @room1, 46,  85000),
+    -- Phòng 2 - VIP, giá cao hơn
+    (N'Yêu Nhân Thần Thám: Kỳ Án Trường An',                 @room2, 33, 110000),
+    (N'Bóng Ma Nhà Hát',                                     @room2, 36, 120000),
+    (N'Vùng Đất Quỷ Dữ 2026',                                @room2, 38, 130000),
+    (N'Lên Hương',                                           @room2, 41, 120000),
+    (N'Người Nhện 4: Khởi Đầu Mới',                          @room2, 44, 140000);
 
 INSERT INTO showtimes (movie_id, room_id, start_time, end_time, base_price)
 SELECT

@@ -36,7 +36,7 @@ CREATE TABLE movies (
     duration_min    INT             NOT NULL,
     description     NVARCHAR(MAX)   NULL,
     poster_url      NVARCHAR(500)   NULL,
-    age_rating      NVARCHAR(10)    NULL, -- P, C13, C16, C18
+    age_rating      NVARCHAR(10)    NULL, -- Nhãn phân loại hiện hành: P, K, T13, T16, T18, C
     is_active       BIT             NOT NULL DEFAULT 1,
     created_at      DATETIME2       NOT NULL DEFAULT SYSUTCDATETIME()
 );
