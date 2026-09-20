@@ -1,5 +1,5 @@
 # =====================================================================
-# Cinema Booking - NHÓM 8 - Kiểm thử tự động
+# UTE Cinema - Kiểm thử tự động
 # Phụ trách: Thọ (Module 4)
 #
 # Chạy toàn bộ test mỗi khi có người push hoặc mở Pull Request, để không ai
@@ -25,7 +25,7 @@ env:
   # ngay sau khi chạy xong và không chứa dữ liệu thật, nên đây KHÔNG phải là
   # bí mật của nhóm. Ai muốn chặt chẽ hơn thì tạo secret tên CI_SQL_PASSWORD
   # trong Settings > Secrets, workflow sẽ tự ưu tiên dùng secret đó.
-  MSSQL_SA_PASSWORD: ${{ secrets.CI_SQL_PASSWORD || 'Nhom8@CI#2026' }}
+  MSSQL_SA_PASSWORD: ${{ secrets.CI_SQL_PASSWORD || 'UteCinema@CI#2026' }}
 
 jobs:
   test:
@@ -37,7 +37,7 @@ jobs:
         image: mcr.microsoft.com/mssql/server:2022-latest
         env:
           ACCEPT_EULA: 'Y'
-          MSSQL_SA_PASSWORD: ${{ secrets.CI_SQL_PASSWORD || 'Nhom8@CI#2026' }}
+          MSSQL_SA_PASSWORD: ${{ secrets.CI_SQL_PASSWORD || 'UteCinema@CI#2026' }}
           MSSQL_PID: Developer
         ports:
           - 1433:1433
@@ -78,7 +78,7 @@ jobs:
         # (đã gitignore), còn ở đây lấy từ container tạm phía trên.
         env:
           SPRING_DATASOURCE_USERNAME: sa
-          SPRING_DATASOURCE_PASSWORD: ${{ secrets.CI_SQL_PASSWORD || 'Nhom8@CI#2026' }}
+          SPRING_DATASOURCE_PASSWORD: ${{ secrets.CI_SQL_PASSWORD || 'UteCinema@CI#2026' }}
           TEST_DB_HOST: localhost
           TEST_DB_PORT: '1433'
           TEST_DB_NAME: cinema_booking_test

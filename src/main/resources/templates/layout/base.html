@@ -3,7 +3,7 @@
       xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout">
 <head>
     <meta charset="UTF-8">
-    <title layout:title-pattern="$CONTENT_TITLE - $LAYOUT_TITLE">Cinema Booking - Nhóm 8</title>
+    <title layout:title-pattern="$CONTENT_TITLE - $LAYOUT_TITLE">UTE Cinema</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
     <!--
@@ -15,7 +15,7 @@
     <script th:inline="none">
         (function () {
             try {
-                var saved = localStorage.getItem("nhom8-theme");
+                var saved = localStorage.getItem("ute-theme");
                 if (saved === "light" || saved === "dark") {
                     document.documentElement.setAttribute("data-theme", saved);
                 }

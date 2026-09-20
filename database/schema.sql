@@ -1,5 +1,5 @@
 -- ================================================
--- Cinema Booking - NHÓM 8 - Schema cho SQL Server trên máy cá nhân
+-- UTE Cinema - Schema cho SQL Server trên máy cá nhân
 --
 -- Cách chạy:
 --   sqlcmd -S localhost,1433 -U sa -C -f 65001 -i database\schema.sql
@@ -85,7 +85,7 @@ CREATE TABLE tickets (
 
 -- Tài khoản admin mặc định. Mật khẩu ở đây CHƯA HASH, chỉ là dữ liệu mẫu để test nhanh.
 -- Module 3 làm xong phần đăng nhập thì phải thay bằng chuỗi hash BCrypt.
-IF NOT EXISTS (SELECT 1 FROM users WHERE email = 'admin@nhom8.local')
+IF NOT EXISTS (SELECT 1 FROM users WHERE email = 'admin@utecinema.local')
     INSERT INTO users (full_name, email, password_hash, role)
-    VALUES (N'Quản trị viên', 'admin@nhom8.local', '123456', 'ADMIN');
+    VALUES (N'Quản trị viên', 'admin@utecinema.local', '123456', 'ADMIN');
 GO
