@@ -9,7 +9,7 @@ Mỗi dòng trong bảng dưới đây đã được tạo thành một **Issue 
 
 Ước lượng tính bằng giờ làm thật, không tính thời gian ngồi nghĩ. Cột **Cần có trước** ghi
 mã công việc phải xong trước thì mới làm được việc này. Thấy mô tả chưa đúng hoặc ước lượng
-lệch thì báo Thọ, sửa sớm đỡ tốn công.
+lệch thì nhắn nhóm, sửa sớm đỡ tốn công.
 
 ---
 
@@ -83,7 +83,7 @@ Tóm tắt các việc mà 3 bạn kia **phải chờ**, nên Thọ làm sớm:
    này quyết định code của bạn có merge được hay không.
 3. **Chạy ứng dụng rồi mở `http://localhost:8082/ui-kit`** xem sẵn bộ giao diện dùng chung.
    Cần nút, bảng, form, sơ đồ ghế thì chép class ở đó về, đừng tự viết CSS riêng.
-4. **Xin Thọ thông tin kết nối database dùng chung** trong nhóm chat.
+4. **Xin thông tin kết nối database dùng chung** trong nhóm chat.
 
 ### Về database dùng chung trên cloud
 
@@ -97,7 +97,7 @@ Nhớ hai điều:
 - **Cloud chỉ dùng để tích hợp và demo.** Code hằng ngày vẫn chạy SQL Server trên máy mình cho
   nhanh — datacenter cloud đặt ở châu Âu nên chậm hơn đáng kể.
 - **Không tự sửa schema trên cloud.** Profile `cloud` đặt `ddl-auto=validate` nên Hibernate
-  không được tự đổi bảng. Cần thêm/sửa bảng thì báo Thọ.
+  không được tự đổi bảng. Cần thêm/sửa bảng thì nhắn nhóm trước khi làm.
 
 ---
 
@@ -112,7 +112,8 @@ Nhớ hai điều:
 
 ## Việc ai cũng phải làm, không chia cho riêng ai
 
-- Review Pull Request của người khác (mỗi PR cần ít nhất 1 người duyệt).
+- Ngó qua code của người khác khi rảnh. Không bắt buộc duyệt mới được merge, nhưng bốn người
+  cùng sửa một dự án thì biết người kia đang làm gì vẫn hơn.
 - Viết mô tả PR tử tế, có ảnh chụp màn hình nếu đụng tới giao diện.
 - Tự chạy `mvn test` trước khi mở PR, đừng để CI báo đỏ rồi mới sửa.
 - Báo ngay trong nhóm chat khi cần sửa file thuộc module người khác.

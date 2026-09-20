@@ -97,18 +97,18 @@ src/main/java/edu/hcmute/cnpm/cinema/
   repository/   — interface extends JpaRepository
   service/      — logic nghiệp vụ, mỗi người tự tạo service cho module của mình
   controller/   — @Controller Spring MVC, chỉ nhận request và trả view
-  exception/    — exception nghiệp vụ + GlobalExceptionHandler dùng chung (Thọ quản lý)
+  exception/    — exception nghiệp vụ + GlobalExceptionHandler dùng chung
   constants/    — hằng số dùng chung
 src/main/resources/
   templates/
-    layout/     — layout chung (Thọ quản lý)
-    fragments/  — header / footer / alert dùng chung (Thọ quản lý)
-    error.html  — trang báo lỗi chung (Thọ quản lý)
+    layout/     — layout chung
+    fragments/  — header / footer / alert dùng chung
+    error.html  — trang báo lỗi chung
     <module>/   — mỗi module một thư mục con cho trang của mình
   static/css/style.css — design system dùng chung
   static/js/theme.js   — chuyển chế độ sáng/tối
 src/test/java/edu/hcmute/cnpm/cinema/
-  support/      — IntegrationTestBase + TestDataFactory dùng chung (Thọ quản lý)
+  support/      — IntegrationTestBase + TestDataFactory dùng chung
   <module>/     — test của từng module
 database/
   schema.sql              — tạo database trên máy cá nhân
@@ -236,15 +236,16 @@ Cách dùng cụ thể: Mục 5 của [`CONTRIBUTING.md`](CONTRIBUTING.md).
 
 ## Quy ước GitHub
 
-- Nhánh `main`: code ổn định, chỉ nhận merge từ `develop` qua Pull Request.
+- Nhánh `main`: code ổn định, nhận code từ `develop` khi đã chạy được.
 - Nhánh `develop`: nhánh gộp chung của 4 module.
 - Mỗi thành viên code trên nhánh cá nhân mang tên mình (`Minh_Thọ`, `Hữu_Tài`, `Hữu_Thắng`,
-  `Tuấn_Thanh`), xong việc thì mở Pull Request vào `develop`.
+  `Tuấn_Thanh`), xong việc thì đưa lên `develop` — push thẳng hoặc mở Pull Request, tuỳ bạn.
 - Tính năng làm dài ngày thì tách thêm nhánh phụ `feature/<module>-<mô-tả-ngắn>`
   (ví dụ `feature/module1-movie-crud`) từ nhánh cá nhân.
 - Commit theo dạng `<loại>(<module>): <mô tả ngắn>` với loại là `feat` / `fix` / `refactor` /
   `docs` / `test` / `chore`. **Mỗi commit chỉ làm một việc.**
-- Mỗi Pull Request cần ít nhất một thành viên khác duyệt trước khi merge vào `develop`.
+- `develop` không khoá: ai cũng push và merge được, không phải chờ người khác duyệt.
+  `main` chỉ chặn force-push và chặn xoá nhánh, để bản nộp không bị lỡ tay làm mất.
 - **Commit sớm, commit thường xuyên.** Trước khi đổi nhánh luôn chạy `git status` xem còn gì
   chưa commit.
 
