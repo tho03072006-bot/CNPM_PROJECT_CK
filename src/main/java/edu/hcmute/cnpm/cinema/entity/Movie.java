@@ -1,6 +1,7 @@
 package edu.hcmute.cnpm.cinema.entity;
 
 import jakarta.persistence.*;
+import org.hibernate.annotations.Nationalized;
 import java.time.LocalDateTime;
 
 @Entity
@@ -11,9 +12,11 @@ public class Movie {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Nationalized
     @Column(nullable = false, length = 200)
     private String title;
 
+    @Nationalized
     @Column(length = 100)
     private String genre;
 
@@ -23,9 +26,11 @@ public class Movie {
     @Column(columnDefinition = "NVARCHAR(MAX)")
     private String description;
 
+    @Nationalized
     @Column(name = "poster_url", length = 500)
     private String posterUrl;
 
+    @Nationalized
     @Column(name = "age_rating", length = 10)
     private String ageRating;
 

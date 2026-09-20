@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout" layout:decorate="~{layout/base}">
+<head><title>Quản lý phòng chiếu</title></head>
+<body><div layout:fragment="content">
+    <div class="module1-admin-head">
+        <div>
+            <span class="module1-kicker">BẢNG ĐIỀU KHIỂN · MODULE 1</span>
+            <h1>Phòng chiếu</h1>
+            <p class="text-muted">Quản lý sức chứa và sơ đồ ghế của từng phòng.</p>
+        </div>
+        <a class="btn" th:href="@{/admin/rooms/new}">+ Thêm phòng</a>
+    </div>
+    <nav class="module1-admin-nav" aria-label="Quản lý lịch chiếu">
+        <a th:href="@{/admin/movies}">Phim</a>
+        <a th:href="@{/admin/rooms}" aria-current="page">Phòng chiếu</a>
+        <a th:href="@{/admin/showtimes}">Suất chiếu</a>
+    </nav>
+    <div class="module1-admin-summary">
+        <span class="module1-summary-number" th:text="${#lists.size(rooms)}">2</span>
+        <div><strong>Phòng chiếu</strong><span>Ghế được tạo tự động theo số hàng và số cột.</span></div>
+    </div>
+    <div class="module1-empty" th:if="${#lists.isEmpty(rooms)}">
+        <h2>Chưa có phòng chiếu</h2><p>Thêm phòng trước khi xếp lịch chiếu.</p>
+    </div>
+    <div class="table-wrap" th:unless="${#lists.isEmpty(rooms)}">
+        <table class="admin-table module1-table"><thead><tr>
+            <th>Phòng</th><th>Sơ đồ ghế</th><th>Sức chứa</th><th>Thao tác</th>
+        </tr></thead><tbody><tr th:each="room : ${rooms}">
+            <td><strong th:text="${room.name}">Phòng 1</strong></td>
+            <td th:text="|${room.totalRows} hàng × ${room.totalColumns} cột|">8 hàng × 10 cột</td>
+            <td><span class="badge badge-brand" th:text="|${room.totalRows * room.totalColumns} ghế|">80 ghế</span></td>
+            <td><div class="module1-row-actions">
+                <a class="btn btn-ghost btn-sm" th:href="@{/admin/rooms/{id}/edit(id=${room.id})}">Sửa</a>
+                <form th:action="@{/admin/rooms/{id}/delete(id=${room.id})}" method="post">
+                    <button class="btn btn-ghost btn-sm" type="submit">Xoá</button>
+                </form>
+            </div></td>
+        </tr></tbody></table>
+    </div>
+</div></body></html>
