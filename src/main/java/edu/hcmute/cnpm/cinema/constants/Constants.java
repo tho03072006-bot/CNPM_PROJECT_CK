@@ -5,6 +5,18 @@ public class Constants {
 
     public static final int SEAT_HOLD_MINUTES = 5;
 
+    // ===== He so gia theo loai ghe =====
+    // Gia cuoi cung cua mot ghe = base_price cua suat chieu x he so duoi day.
+    // De o day (khong de rieng trong tung service) vi ca Module 2 khi tinh tien
+    // lan trang bang gia ve cua Module 4 deu phai dung CUNG mot con so - lech
+    // nhau la khach thay mot gia tren bang gia, tra mot gia khac luc dat ve.
+    /** Ghe thuong: giu nguyen gia goc. */
+    public static final String SEAT_PRICE_MULTIPLIER_NORMAL = "1";
+    /** Ghe VIP: cong them 50%. */
+    public static final String SEAT_PRICE_MULTIPLIER_VIP = "1.5";
+    /** Ghe doi (Sweetbox): gap doi vi ngoi duoc hai nguoi. */
+    public static final String SEAT_PRICE_MULTIPLIER_COUPLE = "2";
+
     // Ten session attribute luu thong tin user dang dang nhap
     public static final String SESSION_USER = "LOGGED_IN_USER";
 

@@ -88,12 +88,22 @@ public class TestDataFactory {
     }
 
     public Showtime createShowtime(Movie movie, Room room, LocalDateTime startTime) {
+        return createShowtime(movie, room, startTime, DEFAULT_BASE_PRICE);
+    }
+
+    /**
+     * Tao suat chieu voi gia ve tu chon.
+     *
+     * Dung cho test bang gia ve: can dung gia cu the de kiem tra gia cong bo co
+     * khop voi gia gan vao suat chieu hay khong.
+     */
+    public Showtime createShowtime(Movie movie, Room room, LocalDateTime startTime, BigDecimal basePrice) {
         Showtime showtime = new Showtime();
         showtime.setMovie(movie);
         showtime.setRoom(room);
         showtime.setStartTime(startTime);
         showtime.setEndTime(startTime.plusMinutes(movie.getDurationMin()));
-        showtime.setBasePrice(DEFAULT_BASE_PRICE);
+        showtime.setBasePrice(basePrice);
         return showtimeRepository.save(showtime);
     }
 
