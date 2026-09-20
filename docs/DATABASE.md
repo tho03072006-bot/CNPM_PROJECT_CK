@@ -112,6 +112,51 @@ thua vì giữa lúc kiểm tra và lúc ghi vẫn có người chen vào.
 Tuyệt đối không xoá ràng buộc này. Cách xử lý khi đụng phải nó: xem Mục 5 của
 [`CONTRIBUTING.md`](../CONTRIBUTING.md).
 
+### ADR-2: vé chưa thanh toán mà hết hạn hoặc bị huỷ thì **xoá hẳn dòng**
+
+*Chốt ngày 20/09/2026.*
+
+**Vấn đề.** Ràng buộc `UNIQUE (showtime_id, seat_id)` ở trên chỉ nhìn hai cột suất chiếu và
+ghế — nó **không nhìn cột `status`**. Nên chỉ cần dòng vé còn nằm trong bảng là chỗ đó đã bị
+chiếm, bất kể vé mang trạng thái gì. Hệ quả: đổi vé sang `EXPIRED` hay `CANCELLED` **không
+giải phóng được ghế** — ghế đó chết luôn cho tới hết suất chiếu, không ai mua lại được.
+
+Đã kiểm chứng trực tiếp trên SQL Server: giữ ghế → đổi sang `EXPIRED` → người khác đặt lại
+cùng ghế đó thì nhận `Violation of UNIQUE KEY constraint 'uq_showtime_seat'`. Thử lại với
+`CANCELLED` cũng y hệt.
+
+**Quyết định.** Vé **chưa thanh toán** mà hết hạn giữ hoặc bị người dùng huỷ thì `DELETE` hẳn
+dòng đó, **không** `UPDATE` sang `EXPIRED`/`CANCELLED`.
+
+```java
+// M2.6 - don ve giu qua han
+ticketRepository.deleteAll(
+        ticketRepository.findExpiredHeldTickets(LocalDateTime.now().minusMinutes(Constants.SEAT_HOLD_MINUTES)));
+
+// M2.7 - nguoi dung tu huy truoc khi thanh toan
+ticketRepository.delete(ticket);
+```
+
+**Vì sao chọn cách này.** Ràng buộc ADR-1 giữ nguyên không phải đụng tới, hạ tầng test không
+phải sửa, Module 2 làm được ngay. Và trong phạm vi đồ án thì không mất mát gì thật: M2.7 ghi
+rõ là huỷ **trước khi thanh toán**, nên `CANCELLED` và `EXPIRED` chỉ rơi vào vé chưa trả tiền.
+Vé `PAID` không bao giờ bị xoá, nên trang lịch sử vé của Module 3 vẫn đủ dữ liệu.
+
+**Đã cân nhắc và loại: filtered index.** Có thể thay ràng buộc bằng
+`CREATE UNIQUE INDEX ... WHERE status IN ('HELD','PAID')` để giữ được lịch sử. Loại vì
+Hibernate không khai báo được mệnh đề `WHERE` của index qua annotation, mà database test lại
+do Hibernate tự sinh bảng (`ddl-auto=update`) — index sẽ không tồn tại trong database test và
+test ADR-1 sẽ báo xanh giả, tức là mất luôn thứ đang chứng minh ADR-1 hoạt động.
+
+**Hai điều kèm theo.**
+
+- Hai giá trị `EXPIRED` và `CANCELLED` trong enum `TicketStatus` **không còn được dùng** trong
+  luồng hiện tại. Giữ lại trong enum vì Module 2 đang tham chiếu `TicketStatus.values()`, xoá đi
+  sẽ làm gãy `SeatService`.
+- Giới hạn đã biết: nếu sau này làm hoàn tiền cho vé **đã thanh toán**, sẽ đụng lại đúng vấn đề
+  này — muốn trả ghế về trống thì phải xoá dòng, mà xoá dòng thì mất chứng từ thanh toán. Hoàn
+  tiền nằm ngoài phạm vi đồ án nên chưa giải quyết.
+
 ---
 
 ## Lưu ý khi demo

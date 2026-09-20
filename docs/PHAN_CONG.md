@@ -37,8 +37,8 @@ lệch thì nhắn nhóm, sửa sớm đỡ tốn công.
 | M2.3 | **`SeatBookingService.holdSeats()` — mấu chốt của ADR-1.** Bắt `DataIntegrityViolationException` và ném `SeatAlreadyTakenException` | M2.1, M4.5 | 4h | 2 |
 | M2.4 | API giữ ghế gọi bằng AJAX, trả JSON `{success, message}` | M2.3 | 2h | 3 |
 | M2.5 | Đồng hồ đếm ngược thời gian giữ ghế trên giao diện (5 phút) | M2.4 | 2h | 3 |
-| M2.6 | Xử lý vé quá hạn giữ: `HELD` quá `SEAT_HOLD_MINUTES` phút thì chuyển `EXPIRED` và trả ghế về trạng thái trống | M2.3 | 3h | 3 |
-| M2.7 | Cho người dùng tự huỷ giữ ghế trước khi thanh toán | M2.3 | 2h | 3 |
+| M2.6 | Xử lý vé quá hạn giữ: `HELD` quá `SEAT_HOLD_MINUTES` phút thì **xoá hẳn dòng vé** để ghế trống lại — xem ADR-2 trong [`DATABASE.md`](DATABASE.md) | M2.3 | 3h | 3 |
+| M2.7 | Cho người dùng tự huỷ giữ ghế trước khi thanh toán — cũng **xoá dòng vé**, không đổi sang `CANCELLED` (ADR-2) | M2.3 | 2h | 3 |
 | M2.8 | Tính tiền theo loại ghế: `NORMAL` giá gốc, `VIP` +50%, `COUPLE` ×2 | M2.1 | 2h | 3 |
 | M2.9 | Test tranh chấp ở tầng Service: 2 request cùng gọi `holdSeats()` thì đúng 1 thành công, request kia nhận `SeatAlreadyTakenException` chứ không phải lỗi 500 | M2.3 | 2h | 3 |
 
