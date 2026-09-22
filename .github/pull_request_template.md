@@ -17,7 +17,7 @@
 
 ---
 
-## Bảng kiểm trước khi nhờ duyệt
+## Bảng kiểm tự rà trước khi merge
 
 - [ ] `mvn test` chạy xanh trên máy tôi
 - [ ] Không có logic nghiệp vụ nằm trong Controller (Controller gọi Service, Service gọi Repository)
@@ -26,8 +26,9 @@
 - [ ] Đặt tên biến, hàm, class đúng quy ước ở Mục 1 của `CONTRIBUTING.md`
 - [ ] Không còn `System.out.println` để debug sót lại
 - [ ] Giao diện dùng class có sẵn trong `style.css`, không tự viết CSS riêng cho module mình
-- [ ] Không sửa file thuộc module người khác (nếu có thì đã báo trước trong nhóm chat)
+- [ ] Có sửa file dùng chung hoặc file của module khác thì đã nhắn nhóm một câu cho mọi người biết
 
-## Người duyệt
+## Nhờ xem giúp (không bắt buộc)
 
-<!-- Nhắc tên người phù hợp nhất để review — ưu tiên người làm module liên quan gần nhất. -->
+<!-- Không cần ai duyệt mới merge được: tự rà xong bảng kiểm ở trên là bấm merge.
+     Nếu muốn người khác góp ý thì nhắc tên ở đây, ưu tiên người làm module liên quan gần nhất. -->

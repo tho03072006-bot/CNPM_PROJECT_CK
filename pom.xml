@@ -47,6 +47,16 @@
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-validation</artifactId>
         </dependency>
+        <!--
+          Chi lay phan ma hoa mat khau cua Spring Security (BCrypt), KHONG lay
+          spring-boot-starter-security. Lay ca starter thi Spring tu dung mot
+          lop bao ve chan het moi duong dan va dung trang dang nhap rieng cua no,
+          se da nhau voi luong dang nhap bang session ma Module 3 tu viet.
+        -->
+        <dependency>
+            <groupId>org.springframework.security</groupId>
+            <artifactId>spring-security-crypto</artifactId>
+        </dependency>
         <dependency>
             <groupId>com.microsoft.sqlserver</groupId>
             <artifactId>mssql-jdbc</artifactId>
