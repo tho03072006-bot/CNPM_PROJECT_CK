@@ -6,6 +6,10 @@
     <title layout:title-pattern="$CONTENT_TITLE - $LAYOUT_TITLE">UTE Cinema</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
+    <!-- Khai báo icon cho tab trình duyệt. Thiếu dòng này thì trình duyệt tự xin
+         /favicon.ico, không có nên console báo lỗi 404 trên mọi trang. -->
+    <link rel="icon" type="image/svg+xml" th:href="@{/images/favicon.svg}">
+
     <!--
       Đoạn script này PHẢI nằm ngay đây, trước khi nạp CSS và trước khi trang vẽ.
       Nếu để xuống cuối trang thì người dùng chọn giao diện tối sẽ thấy trang loé
