@@ -41,9 +41,14 @@ class SeatBookingServiceIntegrationTest extends IntegrationTestBase {
     @BeforeEach
     void setUpBookingData() {
         Movie movie = testDataFactory.createMovie("Phim kiểm thử Module 2");
-        Room room = testDataFactory.createRoom("Phòng kiểm thử Module 2", 1, 2);
+        // Hàng ghế dài 4 chỗ để việc giữ A1 hoặc A1+A2 không để lại ghế trống đơn độc.
+        // Nếu hàng chỉ có 2 ghế thì quy tắc chống ghế lẻ của SeatSelectionPolicy sẽ chặn,
+        // che mất thứ mà các test ở đây cần chứng minh là tranh chấp ghế và rollback.
+        Room room = testDataFactory.createRoom("Phòng kiểm thử Module 2", 1, 4);
         firstSeat = testDataFactory.createSeat(room, "A", 1);
         secondSeat = testDataFactory.createSeat(room, "A", 2);
+        testDataFactory.createSeat(room, "A", 3);
+        testDataFactory.createSeat(room, "A", 4);
         showtime = testDataFactory.createShowtime(movie, room, LocalDateTime.now().plusDays(1));
         firstCustomer = testDataFactory.createCustomer("module2.first@test.local");
         secondCustomer = testDataFactory.createCustomer("module2.second@test.local");
