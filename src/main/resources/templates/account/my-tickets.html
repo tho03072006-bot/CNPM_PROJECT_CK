@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout" layout:decorate="~{layout/base}">
+<head><title>Vé của tôi</title></head>
+<body><div layout:fragment="content">
+
+    <section class="module1-section-head" aria-labelledby="my-tickets-title">
+        <div>
+            <span class="module1-kicker">UTE CINEMA</span>
+            <h1 id="my-tickets-title">Vé của tôi</h1>
+            <p class="text-muted">Toàn bộ vé bạn đã đặt, mới nhất lên đầu.</p>
+        </div>
+        <p class="text-muted" th:unless="${#lists.isEmpty(tickets)}"
+           th:text="|Đã chi ${#numbers.formatDecimal(total, 0, 'POINT', 0, 'COMMA')} đ|">Đã chi</p>
+    </section>
+
+    <div class="module1-empty" th:if="${#lists.isEmpty(tickets)}">
+        <span class="module1-empty-icon" aria-hidden="true">◷</span>
+        <h2>Bạn chưa đặt vé nào</h2>
+        <p>Chọn một suất chiếu và giữ ghế, vé sẽ hiện ở đây.</p>
+        <a class="btn" th:href="@{/lich-chieu}">Xem lịch chiếu</a>
+    </div>
+
+    <div class="account-ticket-list" th:unless="${#lists.isEmpty(tickets)}">
+        <th:block th:each="ticket : ${tickets}">
+            <div th:replace="~{account/ticket-fragment :: ticketCard(${ticket})}"></div>
+        </th:block>
+    </div>
+
+</div></body></html>

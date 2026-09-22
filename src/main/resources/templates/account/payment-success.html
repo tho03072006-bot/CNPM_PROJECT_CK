@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout" layout:decorate="~{layout/base}">
+<head><title>Đặt vé thành công</title></head>
+<body><div layout:fragment="content">
+
+    <section class="account-success-head" aria-labelledby="success-title">
+        <span class="account-success-mark" aria-hidden="true">✓</span>
+        <h1 id="success-title">Đặt vé thành công</h1>
+        <p class="text-muted">
+            Vé đã được ghi nhận. Bạn tới quầy trước giờ chiếu 15 phút để nhận vé giấy.
+        </p>
+    </section>
+
+    <div class="account-ticket-list">
+        <th:block th:each="ticket : ${tickets}">
+            <div th:replace="~{account/ticket-fragment :: ticketCard(${ticket})}"></div>
+        </th:block>
+    </div>
+
+    <div class="card account-summary">
+        <div class="account-summary-line">
+            <span th:text="|${#lists.size(tickets)} vé|">2 vé</span>
+            <strong th:text="|${#numbers.formatDecimal(total, 0, 'POINT', 0, 'COMMA')} đ|">230.000 đ</strong>
+        </div>
+        <p class="text-muted account-summary-note">
+            Một bản xác nhận cũng đã được gửi tới email của bạn, nếu rạp có cấu hình gửi thư.
+        </p>
+        <div class="account-actions">
+            <a class="btn" th:href="@{/ve-cua-toi}">Xem vé của tôi</a>
+            <a class="btn btn-ghost" th:href="@{/lich-chieu}">Đặt thêm vé</a>
+        </div>
+    </div>
+
+</div></body></html>

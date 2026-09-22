@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<body>
+<!--
+  Mảnh giao diện một tấm vé, dùng lại ở trang thanh toán, trang đặt vé thành công
+  và trang vé của tôi. Sửa ở đây là cả ba trang đổi theo.
+
+  Dùng class .ticket có sẵn trong design system (thẻ có răng cưa hai bên).
+-->
+<article th:fragment="ticketCard(ticket)" class="ticket account-ticket">
+    <div class="account-ticket-head">
+        <div>
+            <h3 class="account-ticket-title" th:text="${ticket.showtime.movie.title}">Tên phim</h3>
+            <p class="account-ticket-sub"
+               th:text="|${ticket.showtime.room.name} · ${#temporals.format(ticket.showtime.startTime, 'HH:mm dd/MM/yyyy')}|">
+                Phòng · Giờ chiếu</p>
+        </div>
+
+        <span class="badge badge-ok" th:if="${ticket.status.name() == 'PAID'}">Đã thanh toán</span>
+        <span class="badge badge-accent" th:if="${ticket.status.name() == 'HELD'}">Đang giữ ghế</span>
+        <span class="badge badge-danger"
+              th:if="${ticket.status.name() != 'PAID' and ticket.status.name() != 'HELD'}"
+              th:text="${ticket.status}">Trạng thái</span>
+    </div>
+
+    <dl class="account-ticket-grid">
+        <div>
+            <dt>Ghế</dt>
+            <dd th:text="|${ticket.seat.seatRow}${ticket.seat.seatColumn}|">A1</dd>
+        </div>
+        <div>
+            <dt>Loại ghế</dt>
+            <dd th:switch="${ticket.seat.seatType}">
+                <span th:case="'VIP'">Ghế VIP</span>
+                <span th:case="'COUPLE'">Ghế đôi</span>
+                <span th:case="*">Ghế thường</span>
+            </dd>
+        </div>
+        <div>
+            <dt>Giá vé</dt>
+            <dd th:text="|${#numbers.formatDecimal(ticket.price, 0, 'POINT', 0, 'COMMA')} đ|">115.000 đ</dd>
+        </div>
+        <div th:if="${ticket.paidAt != null}">
+            <dt>Thanh toán lúc</dt>
+            <dd th:text="${#temporals.format(ticket.paidAt, 'HH:mm dd/MM/yyyy')}">10:00 21/09/2026</dd>
+        </div>
+    </dl>
+</article>
+</body>
+</html>

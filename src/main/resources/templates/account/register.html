@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout" layout:decorate="~{layout/base}">
+<head><title>Đăng ký</title></head>
+<body><div layout:fragment="content">
+
+    <section class="account-panel" aria-labelledby="register-title">
+        <div class="account-intro">
+            <span class="module1-kicker">UTE CINEMA</span>
+            <h1 id="register-title">Tạo tài khoản</h1>
+            <p class="text-muted">Chỉ mất một phút. Có tài khoản rồi là giữ ghế được ngay.</p>
+        </div>
+
+        <form class="card account-form" th:object="${registerForm}" th:action="@{/dang-ky}" method="post">
+
+            <div class="alert alert-error" role="alert" th:if="${#fields.hasGlobalErrors()}">
+                <span th:each="loi : ${#fields.globalErrors()}" th:text="${loi}">Lỗi</span>
+            </div>
+
+            <div class="form-field">
+                <label for="fullName">Họ và tên</label>
+                <input class="form-control" id="fullName" type="text" th:field="*{fullName}"
+                       autocomplete="name" required maxlength="150" placeholder="Nguyễn Văn A">
+                <span class="form-error" th:if="${#fields.hasErrors('fullName')}" th:errors="*{fullName}"></span>
+            </div>
+
+            <div class="form-field">
+                <label for="email">Email</label>
+                <input class="form-control" id="email" type="email" th:field="*{email}"
+                       autocomplete="email" required maxlength="150" placeholder="ban@example.com">
+                <span class="form-hint">Dùng để đăng nhập và nhận vé sau khi thanh toán.</span>
+                <span class="form-error" th:if="${#fields.hasErrors('email')}" th:errors="*{email}"></span>
+            </div>
+
+            <div class="form-field">
+                <label for="phone">Số điện thoại</label>
+                <input class="form-control" id="phone" type="tel" th:field="*{phone}"
+                       autocomplete="tel" maxlength="11" placeholder="0901234567">
+                <span class="form-hint">Không bắt buộc.</span>
+                <span class="form-error" th:if="${#fields.hasErrors('phone')}" th:errors="*{phone}"></span>
+            </div>
+
+            <div class="form-field">
+                <label for="password">Mật khẩu</label>
+                <input class="form-control" id="password" type="password" th:field="*{password}"
+                       autocomplete="new-password" required minlength="6">
+                <span class="form-hint">Ít nhất 6 ký tự.</span>
+                <span class="form-error" th:if="${#fields.hasErrors('password')}" th:errors="*{password}"></span>
+            </div>
+
+            <div class="form-field">
+                <label for="confirmPassword">Nhập lại mật khẩu</label>
+                <input class="form-control" id="confirmPassword" type="password" th:field="*{confirmPassword}"
+                       autocomplete="new-password" required>
+                <span class="form-error" th:if="${#fields.hasErrors('confirmPassword')}"
+                      th:errors="*{confirmPassword}"></span>
+            </div>
+
+            <button class="btn account-submit" type="submit">Tạo tài khoản</button>
+
+            <p class="account-switch">
+                Đã có tài khoản?
+                <a th:href="@{/dang-nhap}">Đăng nhập</a>
+            </p>
+        </form>
+    </section>
+
+</div></body></html>

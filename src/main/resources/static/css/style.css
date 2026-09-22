@@ -1511,3 +1511,120 @@ main.container {
 @media (max-width: 640px) {
     .pricing-actions .btn { flex: 1; }
 }
+
+/* =====================================================================
+   23. Trang tài khoản, thanh toán, vé của tôi (Module 3)
+   ===================================================================== */
+
+/* ---- Khung đăng nhập / đăng ký ---- */
+.account-panel { max-width: 460px; margin: 0 auto; }
+.account-intro { text-align: center; margin-bottom: var(--space-5); }
+.account-intro h1 { margin: 0 0 var(--space-2); }
+.account-intro p { margin: 0; }
+
+.account-form { display: grid; gap: var(--space-4); padding: var(--space-6); }
+.account-submit { width: 100%; }
+.account-switch { margin: 0; text-align: center; font-size: var(--text-sm); color: var(--text-muted); }
+.account-switch a { font-weight: 600; }
+
+/* ---- Danh sách vé ----
+   .ticket có hai hình tròn răng cưa thò ra ngoài 12px ở hai bên, nên chừa
+   khoảng trống hai bên để chúng không bị cắt mất. */
+.account-ticket-list {
+    display: grid;
+    gap: var(--space-5);
+    padding: 0 14px;
+    margin-bottom: var(--space-5);
+}
+
+.account-ticket-head {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: var(--space-3);
+    flex-wrap: wrap;
+    margin-bottom: var(--space-4);
+}
+.account-ticket-title { margin: 0; font-size: var(--text-lg); }
+.account-ticket-sub { margin: var(--space-1) 0 0; color: var(--text-muted); font-size: var(--text-sm); }
+
+.account-ticket-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: var(--space-3) var(--space-4);
+    margin: 0;
+    padding-top: var(--space-4);
+    border-top: 1px dashed var(--border);
+}
+.account-ticket-grid dt { font-size: var(--text-xs); text-transform: uppercase; letter-spacing: .06em; color: var(--text-muted); font-weight: 700; }
+.account-ticket-grid dd { margin: 2px 0 0; font-weight: 700; }
+
+/* ---- Khối tổng tiền ---- */
+.account-summary { display: grid; gap: var(--space-4); padding: var(--space-5); }
+.account-summary-line {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: var(--space-3);
+    font-size: var(--text-lg);
+}
+.account-summary-line strong { font-size: var(--text-2xl); }
+.account-summary-note { margin: 0; font-size: var(--text-sm); }
+.account-actions { display: flex; flex-wrap: wrap; gap: var(--space-3); }
+
+/* ---- Trang đặt vé thành công ---- */
+.account-success-head { text-align: center; margin-bottom: var(--space-6); }
+.account-success-mark {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 64px;
+    height: 64px;
+    margin-bottom: var(--space-3);
+    border-radius: 50%;
+    background: var(--tint-ok);
+    color: var(--ok-700);
+    font-size: var(--text-2xl);
+    font-weight: 800;
+}
+[data-theme="dark"] .account-success-mark { color: #6fd79f; }
+@media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) .account-success-mark { color: #6fd79f; }
+}
+.account-success-head h1 { margin: 0 0 var(--space-2); }
+.account-success-head p { margin: 0 auto; max-width: 46ch; }
+
+/* ---- Ô số liệu ---- */
+.account-stat-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: var(--space-4);
+    margin-bottom: var(--space-6);
+}
+.account-stat { display: grid; gap: var(--space-1); padding: var(--space-5); }
+.account-stat-label { font-size: var(--text-xs); text-transform: uppercase; letter-spacing: .06em; color: var(--text-muted); font-weight: 700; }
+.account-stat-value { font-size: var(--text-2xl); }
+
+/* ---- Đồng hồ đếm ngược thời gian giữ ghế (M2.5) ---- */
+.seat-hold-timer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-3);
+    flex-wrap: wrap;
+    padding: var(--space-3) var(--space-4);
+    margin-bottom: var(--space-4);
+    border: 1px solid var(--accent-500);
+    border-radius: var(--radius-md);
+    background: var(--tint-accent);
+}
+.seat-hold-timer-label { font-size: var(--text-sm); }
+.seat-hold-timer-value { font-size: var(--text-xl); font-weight: 800; font-variant-numeric: tabular-nums; }
+.seat-hold-timer.is-over { border-color: var(--danger-500); background: var(--tint-danger); }
+.seat-hold-timer-actions { display: flex; gap: var(--space-2); flex-wrap: wrap; }
+
+@media (max-width: 640px) {
+    .account-form { padding: var(--space-5); }
+    .account-ticket-grid { grid-template-columns: 1fr; }
+    .account-actions .btn { flex: 1; }
+}

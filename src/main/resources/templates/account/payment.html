@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout" layout:decorate="~{layout/base}">
+<head><title>Thanh toán</title></head>
+<body><div layout:fragment="content">
+
+    <section class="module1-section-head" aria-labelledby="payment-title">
+        <div>
+            <span class="module1-kicker">BƯỚC CUỐI</span>
+            <h1 id="payment-title">Xác nhận thanh toán</h1>
+            <p class="text-muted" th:unless="${#lists.isEmpty(tickets)}">
+                Kiểm tra lại ghế và số tiền trước khi xác nhận.</p>
+        </div>
+    </section>
+
+    <div class="module1-empty" th:if="${#lists.isEmpty(tickets)}">
+        <span class="module1-empty-icon" aria-hidden="true">◷</span>
+        <h2>Không còn ghế nào đang giữ</h2>
+        <p>Có thể bạn đã thanh toán rồi, hoặc quá thời gian giữ ghế nên ghế đã được trả lại.</p>
+        <div class="account-actions">
+            <a class="btn" th:href="@{/booking/showtime/{id}(id=${showtimeId})}">Chọn ghế lại</a>
+            <a class="btn btn-ghost" th:href="@{/ve-cua-toi}">Xem vé của tôi</a>
+        </div>
+    </div>
+
+    <div th:unless="${#lists.isEmpty(tickets)}">
+        <div class="account-ticket-list">
+            <th:block th:each="ticket : ${tickets}">
+                <div th:replace="~{account/ticket-fragment :: ticketCard(${ticket})}"></div>
+            </th:block>
+        </div>
+
+        <div class="card account-summary">
+            <div class="account-summary-line">
+                <span th:text="|${#lists.size(tickets)} vé|">2 vé</span>
+                <strong th:text="|${#numbers.formatDecimal(total, 0, 'POINT', 0, 'COMMA')} đ|">230.000 đ</strong>
+            </div>
+            <p class="text-muted account-summary-note">
+                Đây là đồ án nên chưa nối cổng thanh toán thật. Bấm xác nhận là coi như
+                bạn đã trả tiền tại quầy.
+            </p>
+            <form th:action="@{/thanh-toan/{id}(id=${showtimeId})}" method="post">
+                <button class="btn btn-accent account-submit" type="submit">Xác nhận thanh toán</button>
+            </form>
+        </div>
+    </div>
+
+</div></body></html>
