@@ -10,6 +10,7 @@ import edu.hcmute.cnpm.cinema.exception.InvalidBookingException;
 import edu.hcmute.cnpm.cinema.exception.ResourceNotFoundException;
 import edu.hcmute.cnpm.cinema.exception.SeatAlreadyTakenException;
 import edu.hcmute.cnpm.cinema.service.SeatBookingService;
+import edu.hcmute.cnpm.cinema.service.SeatHoldService;
 import edu.hcmute.cnpm.cinema.service.SeatService;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -47,6 +48,10 @@ class BookingControllerTest {
     private SeatService seatService;
     @MockitoBean
     private SeatBookingService seatBookingService;
+    // Module 3 them endpoint huy giu ghe (M2.7) vao BookingController nen test slice
+    // nay phai gia lap them service do, neu khong Spring khong dung duoc controller.
+    @MockitoBean
+    private SeatHoldService seatHoldService;
 
     @Test
     @DisplayName("Trang chọn ghế dùng layout và thành phần giao diện chung")

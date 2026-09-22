@@ -39,7 +39,16 @@
             <a th:href="@{/movies}">Phim</a>
             <a th:href="@{/lich-chieu}">Lịch chiếu</a>
             <a th:href="@{/gia-ve}">Giá vé</a>
-            <a th:href="@{/login}">Đăng nhập</a>
+
+            <!--
+              Phiên đăng nhập nằm trong session dưới tên LOGGED_IN_USER
+              (xem Constants.SESSION_USER). Chưa đăng nhập thì hiện nút đăng nhập,
+              đăng nhập rồi thì hiện tên và lối vào trang tài khoản.
+            -->
+            <a th:if="${session.LOGGED_IN_USER == null}" th:href="@{/dang-nhap}">Đăng nhập</a>
+            <a th:if="${session.LOGGED_IN_USER != null}" th:href="@{/tai-khoan}"
+               th:text="${session.LOGGED_IN_USER.fullName}">Tài khoản</a>
+            <a th:if="${session.LOGGED_IN_USER != null}" th:href="@{/dang-xuat}">Đăng xuất</a>
 
             <!--
               Nút đổi sáng/tối. Nhãn aria-label do theme.js đặt lại theo chế độ

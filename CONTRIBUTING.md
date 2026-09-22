@@ -231,9 +231,17 @@ Muốn báo thành công / báo lỗi nhẹ trên trang (không phải exception
 
 ## 7. Liên hệ / thắc mắc
 
-Nếu không chắc quy ước áp dụng thế nào cho trường hợp cụ thể, **hỏi trước trong nhóm chat** thay
-vì tự quyết định rồi phải sửa lại sau — đồ án chỉ có 4 tuần, sửa đi sửa lại rất tốn thời gian.
+Nếu không chắc quy ước áp dụng thế nào cho trường hợp cụ thể thì cứ hỏi trong nhóm chat — nhưng
+**không ai phải chờ ai cho phép mới được làm**. Cả bốn người đều commit, push và merge thẳng vào
+`develop` được, không cần xin duyệt của ai.
 
-Đặc biệt phải hỏi trước khi: sửa file thuộc module người khác, sửa entity, đổi phiên bản trong
-`pom.xml`, hoặc sửa các file dùng chung mà Thọ đang quản lý (layout, fragments, `style.css`,
-`Constants.java`, package `exception`, package `support` của test).
+Những chỗ dưới đây thì **nhắn nhóm một câu** cho mọi người biết, không phải để xin phép mà để
+tránh hai người cùng sửa một chỗ rồi đè mất công nhau:
+
+- File dùng chung: `layout/`, `fragments/`, `style.css`, `Constants.java`, package `exception`,
+  package `support` của test.
+- Entity và schema database, vì đụng tới là cả bốn module đều ảnh hưởng.
+- Đổi phiên bản trong `pom.xml`.
+
+Riêng ràng buộc `UNIQUE (showtime_id, seat_id)` của ADR-1 thì tuyệt đối không được xoá — đó là
+thứ duy nhất chặn được hai người đặt trùng một ghế.

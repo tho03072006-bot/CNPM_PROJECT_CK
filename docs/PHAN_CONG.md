@@ -70,8 +70,8 @@ Tóm tắt các việc mà 3 bạn kia **phải chờ**, nên Thọ làm sớm:
 | M4.6 | Dữ liệu mẫu dùng chung `seed-data.sql` | Xong |
 | M4.7 | CI tự động chạy test trên mỗi Pull Request | Xong, đã chạy xanh trên PR #1 |
 | M4.8 | Database dùng chung trên cloud (MonsterASP.NET) | Xong, đã nạp schema + dữ liệu mẫu |
-| M4.9 | Test luồng đặt vé end-to-end | Chờ M1, M2, M3 |
-| M4.10 | Tài liệu kiểm thử + báo cáo tổng hợp | Tuần 4 |
+| M4.9 | Test luồng đặt vé end-to-end | Xong, xem `BookingFlowEndToEndTest` |
+| M4.10 | Tài liệu kiểm thử | Xong, xem [`KE_HOACH_KIEM_THU.md`](KE_HOACH_KIEM_THU.md) |
 
 ---
 

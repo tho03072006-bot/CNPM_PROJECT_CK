@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout" layout:decorate="~{layout/base}">
+<head><title>Thống kê doanh thu</title></head>
+<body><div layout:fragment="content">
+
+    <section class="module1-section-head" aria-labelledby="stats-title">
+        <div>
+            <span class="module1-kicker">QUẢN TRỊ</span>
+            <h1 id="stats-title">Thống kê doanh thu</h1>
+            <p class="text-muted" th:text="|Tính trên vé đã thanh toán trong ${days} ngày gần nhất.|">
+                Khoảng thống kê</p>
+        </div>
+        <nav class="schedule-dates" aria-label="Chọn khoảng thống kê">
+            <a class="schedule-date" th:each="mucNgay : ${ {7, 30, 90} }"
+               th:href="@{/admin/thong-ke(ngay=${mucNgay})}"
+               th:classappend="${mucNgay == days} ? ' is-selected' : ''">
+                <span class="schedule-date-day" th:text="${mucNgay}">7</span>
+                <span class="schedule-date-month">ngày</span>
+            </a>
+        </nav>
+    </section>
+
+    <div class="account-stat-grid">
+        <div class="card account-stat">
+            <span class="account-stat-label">Tổng doanh thu</span>
+            <strong class="account-stat-value"
+                    th:text="|${#numbers.formatDecimal(totalRevenue, 0, 'POINT', 0, 'COMMA')} đ|">0 đ</strong>
+        </div>
+        <div class="card account-stat">
+            <span class="account-stat-label">Số vé bán ra</span>
+            <strong class="account-stat-value" th:text="${totalTickets}">0</strong>
+        </div>
+        <div class="card account-stat">
+            <span class="account-stat-label">Trung bình mỗi vé</span>
+            <strong class="account-stat-value"
+                    th:text="${totalTickets > 0}
+                             ? |${#numbers.formatDecimal(totalRevenue / totalTickets, 0, 'POINT', 0, 'COMMA')} đ|
+                             : '0 đ'">0 đ</strong>
+        </div>
+    </div>
+
+    <section class="pricing-block" aria-labelledby="by-day-title">
+        <h2 id="by-day-title" class="pricing-block-title">Doanh thu theo ngày</h2>
+        <div class="pricing-table-wrap">
+            <table class="admin-table pricing-table">
+                <thead><tr>
+                    <th scope="col">Ngày</th>
+                    <th scope="col">Số vé</th>
+                    <th scope="col">Doanh thu</th>
+                </tr></thead>
+                <tbody>
+                <tr th:each="row : ${revenueByDay}">
+                    <th scope="row" th:text="${row.label}">21/09/2026</th>
+                    <td th:text="${row.ticketCount}">0</td>
+                    <td class="pricing-amount"
+                        th:text="|${#numbers.formatDecimal(row.revenue, 0, 'POINT', 0, 'COMMA')} đ|">0 đ</td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+    </section>
+
+    <section class="pricing-block" aria-labelledby="top-movie-title">
+        <h2 id="top-movie-title" class="pricing-block-title">Phim bán chạy</h2>
+
+        <div class="module1-empty" th:if="${#lists.isEmpty(topMovies)}">
+            <span class="module1-empty-icon" aria-hidden="true">◷</span>
+            <h3>Chưa bán được vé nào</h3>
+            <p>Khoảng thời gian này chưa có vé nào được thanh toán.</p>
+        </div>
+
+        <div class="pricing-table-wrap" th:unless="${#lists.isEmpty(topMovies)}">
+            <table class="admin-table pricing-table">
+                <thead><tr>
+                    <th scope="col">Phim</th>
+                    <th scope="col">Số vé</th>
+                    <th scope="col">Doanh thu</th>
+                </tr></thead>
+                <tbody>
+                <tr th:each="row : ${topMovies}">
+                    <th scope="row" th:text="${row.label}">Tên phim</th>
+                    <td th:text="${row.ticketCount}">0</td>
+                    <td class="pricing-amount"
+                        th:text="|${#numbers.formatDecimal(row.revenue, 0, 'POINT', 0, 'COMMA')} đ|">0 đ</td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+    </section>
+
+</div></body></html>

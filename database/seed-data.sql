@@ -24,7 +24,8 @@
 -- cột poster_url, không ảnh hưởng gì tới chương trình.
 --
 -- Tài khoản, phòng chiếu và suất chiếu vẫn là dữ liệu tự đặt để chạy thử.
--- Mật khẩu trong này chưa hash, phải thay bằng BCrypt khi Module 3 làm xong đăng nhập.
+-- Mật khẩu của cả 3 tài khoản mẫu đều là 123456, đã băm sẵn bằng BCrypt nên đăng nhập
+-- được ngay. Xem docs/KE_HOACH_KIEM_THU.md nếu muốn biết phần đăng nhập được test thế nào.
 -- ================================================================
 SET NOCOUNT ON;
 
@@ -33,11 +34,11 @@ SET NOCOUNT ON;
 -- ---------------------------------------------------------------
 IF NOT EXISTS (SELECT 1 FROM users WHERE email = 'khachhang@utecinema.local')
     INSERT INTO users (full_name, email, phone, password_hash, role)
-    VALUES (N'Nguyễn Văn Khách', 'khachhang@utecinema.local', '0901234567', N'chua_hash_123456', 'CUSTOMER');
+    VALUES (N'Nguyễn Văn Khách', 'khachhang@utecinema.local', '0901234567', N'$2a$10$0hP214zsHpy5UeMXorB1bOze53HL8258/nZV3SGW9qh7HqNWm/jqu', 'CUSTOMER');
 
 IF NOT EXISTS (SELECT 1 FROM users WHERE email = 'nhanvien@utecinema.local')
     INSERT INTO users (full_name, email, phone, password_hash, role)
-    VALUES (N'Trần Thị Nhân Viên', 'nhanvien@utecinema.local', '0907654321', N'chua_hash_123456', 'STAFF');
+    VALUES (N'Trần Thị Nhân Viên', 'nhanvien@utecinema.local', '0907654321', N'$2a$10$0hP214zsHpy5UeMXorB1bOze53HL8258/nZV3SGW9qh7HqNWm/jqu', 'STAFF');
 
 -- ---------------------------------------------------------------
 -- 2. Phim

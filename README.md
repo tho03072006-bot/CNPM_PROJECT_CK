@@ -256,3 +256,4 @@ Cách dùng cụ thể: Mục 5 của [`CONTRIBUTING.md`](CONTRIBUTING.md).
 | [`CONTRIBUTING.md`](CONTRIBUTING.md) | Quy ước đặt tên, cấu trúc, xử lý lỗi, viết test, quy trình Pull Request |
 | [`docs/PHAN_CONG.md`](docs/PHAN_CONG.md) | Bảng phân công 29 đầu việc + timeline 4 tuần |
 | [`docs/DATABASE.md`](docs/DATABASE.md) | Ba database của dự án, cách dùng từng cái, các lỗi hay gặp |
+| [`docs/KE_HOACH_KIEM_THU.md`](docs/KE_HOACH_KIEM_THU.md) | Kiểm thử những gì, bằng cách nào, và quy tắc nghiệp vụ nào được test nào bảo vệ |
