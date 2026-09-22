@@ -3,7 +3,7 @@
 Tài liệu này mô tả nhóm kiểm thử phần mềm thế nào, kiểm thử những gì, và vì sao chọn cách đó.
 Số liệu trong đây lấy từ lần chạy `mvn test` thật, không phải ước lượng.
 
-**Hiện trạng: 119 test, 119 đạt, 0 hỏng.**
+**Hiện trạng: 125 test, 125 đạt, 0 hỏng.**
 
 ---
 
@@ -32,7 +32,7 @@ thúc bằng `_test` trước khi làm bất cứ việc gì. Nếu ai đó sử
 
 | Tầng | Dùng khi | Cần database? | Số test |
 |---|---|---|---|
-| Unit test | Kiểm tra logic tính toán và kiểm tra dữ liệu đầu vào | Không | 34 |
+| Unit test | Kiểm tra logic tính toán và kiểm tra dữ liệu đầu vào | Không | 40 |
 | Test MVC | Kiểm tra Controller, template và mã HTTP trả về | Không | 7 |
 | Test tích hợp | Kiểm tra nghiệp vụ chạy thật trên database | Có | 78 |
 
@@ -56,13 +56,14 @@ Phần chặn trùng giờ chiếu được phủ đủ bốn kiểu chồng l�
 giữa suất cũ, bao trọn suất cũ, và nằm gọn trong suất cũ. Cộng thêm ca sát nút (bắt đầu đúng sau
 15 phút dọn phòng thì phải cho qua) và ca hai phòng khác nhau chiếu cùng giờ thì không được chặn.
 
-### Module 2 — Ghế và vé (54 test)
+### Module 2 — Ghế và vé (60 test)
 
 | Lớp test | Số test | Kiểm tra điều gì |
 |---|---|---|
 | `SeatBookingServiceTest` | 12 | Kiểm tra dữ liệu đầu vào khi giữ ghế |
 | `SeatServiceTest` | 11 | Dựng sơ đồ ghế kèm trạng thái từng ghế |
 | `SeatPricingServiceTest` | 11 | Tính giá theo loại ghế |
+| `SeatSelectionPolicyTest` | 6 | Quy tắc chọn ghế: tối đa 8 chỗ, cùng hàng, liền nhau, không để ghế lẻ |
 | `BookingControllerTest` | 7 | API giữ ghế: chỉ nhận JSON, lấy danh tính từ session |
 | `SeatHoldServiceIntegrationTest` | 6 | **Trả ghế về trạng thái trống** khi hết hạn hoặc khách huỷ |
 | `SeatBookingConcurrencyIntegrationTest` | 4 | **Chống đặt trùng ghế — ADR-1** |
@@ -196,3 +197,51 @@ Nói thẳng để không ai tưởng bộ test phủ hết mọi thứ:
   quan trọng nằm ở phía máy chủ và đã có test: vé quá hạn thì không thanh toán được.
 - **Chịu tải.** Đồ án không đặt mục tiêu này. Test tranh chấp chỉ dùng 10 luồng, đủ để chứng minh
   tính đúng đắn chứ không phải đo hiệu năng.
+
+---
+
+## 8. Kết quả kiểm thử tay ngày 22/09
+
+Mục 7 nói bộ test tự động không phủ được giao diện trên trình duyệt. Lần chạy tay này chứng
+minh đó không phải lo xa: **ba lỗi lọt qua cả 125 test xanh lẫn CI xanh**, vì cả ba đều nằm ở
+tầng cấu hình và CSS chứ không phải ở logic nghiệp vụ.
+
+### Ba lỗi đã tìm ra và đã sửa
+
+| Lỗi | Hậu quả nếu không sửa | Sửa ở đâu |
+|---|---|---|
+| Tomcat viết `;jsessionid=...` vào URL ở lần chuyển hướng đầu tiên, Spring Boot 3 không cắt path parameter nên không khớp route nào | **Đăng nhập xong ra thẳng trang 404** trên trình duyệt sạch — đúng tình huống buổi bảo vệ | `server.servlet.session.tracking-modes=cookie` |
+| Luật `[hidden] { display: none }` của trình duyệt có độ ưu tiên (0,1,0), bị class `.seat-hold-timer { display: flex }` cùng độ ưu tiên đè lên | Mở trang chọn ghế là thấy ngay khung "Ghế đang được giữ cho bạn — 05:00" kèm nút Thanh toán trỏ `#`, trong khi chưa giữ ghế nào | Thêm `[hidden] { display: none !important; }` vào phần nền tảng của `style.css` |
+| Chưa khai báo icon cho tab trình duyệt | Console báo lỗi 404 `/favicon.ico` trên mọi trang | Thêm `static/images/favicon.svg` và `<link rel="icon">` trong `layout/base.html` |
+
+Bài học rút ra: **test xanh không thay được việc mở trình duyệt lên xem**. Hai lỗi đầu đều đủ
+nghiêm trọng để hỏng buổi demo, mà không một test nào trong 125 test bắt được — test MVC chỉ
+kiểm tra mã HTTP và tên template chứ không chạy CSS, còn test tích hợp thì gọi thẳng Service
+chứ không đi qua vòng chuyển hướng của trình duyệt.
+
+### Những gì đã kiểm tra tay
+
+Chạy trên máy cá nhân (`localhost:8082`) và trên database dùng chung của nhóm
+(`localhost:8083`, profile `cloud`). Cả hai đều đi hết luồng sau:
+
+- Đăng nhập bằng `khachhang@utecinema.local` trên trình duyệt đã xoá cookie → vào thẳng trang chủ.
+- Chọn hai ghế cách nhau một ghế → hiện cảnh báo sẽ để ghế ở giữa trống một mình, nút Giữ ghế bị khoá.
+- Chọn hai ghế liền nhau → giữ ghế thành công, khung đếm ngược mới hiện ra và chạy thật, nút Thanh toán trỏ đúng suất chiếu.
+- Thanh toán → vé chuyển sang ĐÃ THANH TOÁN kèm giờ thanh toán.
+- Mở trang Vé của tôi → thấy đủ vé.
+- Mở lại sơ đồ ghế → hai ghế vừa mua đã sang trạng thái đã bán.
+- Gọi thẳng `/admin/**` khi chưa đăng nhập → trả 403, không lọt vào được.
+
+Kiểm tra giao diện:
+
+- Khổ điện thoại 375px: trang không tràn ngang, sơ đồ ghế cuộn ngang trong khung riêng, ghế 32×32px đúng mức vùng chạm tối thiểu.
+- Chế độ sáng và chế độ tối: đều hiển thị đúng.
+- Đi bằng phím Tab: viền focus rõ, `solid 2.86px #f0a828` kèm offset.
+- Console trình duyệt: sạch, không còn lỗi nào.
+
+### Vẫn chưa kiểm thử
+
+- **Gửi email thật.** Chưa cấu hình SMTP nên `TicketMailService` không gửi gì. Muốn demo phần
+  này thì phải điền `spring.mail.username` và App Password vào `application-secrets.properties`
+  rồi thử gửi tay.
+- **Chịu tải.** Vẫn nằm ngoài mục tiêu của đồ án.
