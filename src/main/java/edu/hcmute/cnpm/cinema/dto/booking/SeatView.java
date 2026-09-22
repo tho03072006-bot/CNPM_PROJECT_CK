@@ -28,6 +28,7 @@ public class SeatView {
     public BigDecimal getPrice() { return price; }
     public String getStatus() { return status; }
     public boolean isAvailable() { return "AVAILABLE".equals(status); }
+    public int getCapacity() { return "COUPLE".equals(seatType) ? 2 : 1; }
 
     public String getSeatTypeLabel() {
         return switch (seatType) {

@@ -36,6 +36,7 @@ public class BookingController {
     @GetMapping("/showtime/{showtimeId}")
     public String showSeatMap(@PathVariable Long showtimeId, Model model) {
         model.addAttribute("seatMap", seatService.findSeatMap(showtimeId));
+        model.addAttribute("maximumAdmissions", seatBookingService.getMaximumAdmissionsPerBooking());
         return "booking/seat-map";
     }
 

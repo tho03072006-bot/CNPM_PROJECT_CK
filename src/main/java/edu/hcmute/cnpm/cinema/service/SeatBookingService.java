@@ -23,20 +23,25 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 @Service
 public class SeatBookingService {
     private final SeatService seatService;
     private final SeatPricingService seatPricingService;
+    private final SeatSelectionPolicy seatSelectionPolicy;
     private final SeatRepository seatRepository;
     private final TicketRepository ticketRepository;
     private final UserRepository userRepository;
 
     public SeatBookingService(SeatService seatService, SeatPricingService seatPricingService,
+                              SeatSelectionPolicy seatSelectionPolicy,
                               SeatRepository seatRepository, TicketRepository ticketRepository,
                               UserRepository userRepository) {
         this.seatService = seatService;
         this.seatPricingService = seatPricingService;
+        this.seatSelectionPolicy = seatSelectionPolicy;
         this.seatRepository = seatRepository;
         this.ticketRepository = ticketRepository;
         this.userRepository = userRepository;
@@ -61,6 +66,19 @@ public class SeatBookingService {
             seats.add(seat);
             prices.add(seatPricingService.calculateSeatPrice(showtime.getBasePrice(), seat.getSeatType()));
         }
+
+        List<Ticket> unavailableTickets = ticketRepository.findByShowtimeIdAndStatusIn(
+                showtimeId, List.of(TicketStatus.values()));
+        Set<Long> unavailableSeatIds = unavailableTickets.stream()
+                .map(ticket -> ticket.getSeat().getId())
+                .collect(Collectors.toSet());
+        for (Seat seat : seats) {
+            if (unavailableSeatIds.contains(seat.getId())) {
+                throw new SeatAlreadyTakenException(showtimeId, seat.getId());
+            }
+        }
+        List<Seat> roomSeats = seatRepository.findByRoomId(showtime.getRoom().getId());
+        seatSelectionPolicy.validateSelection(roomSeats, seats, unavailableSeatIds);
 
         LocalDateTime heldAt = LocalDateTime.now();
         if (!showtime.getStartTime().isAfter(heldAt)) {
@@ -87,6 +105,10 @@ public class SeatBookingService {
         }
         return new HoldSeatsResponse(ticketIds, totalPrice,
                 heldAt.plusMinutes(Constants.SEAT_HOLD_MINUTES));
+    }
+
+    public int getMaximumAdmissionsPerBooking() {
+        return seatSelectionPolicy.getMaximumAdmissionsPerBooking();
     }
 
     private User findCurrentCustomer(User currentUser) {
