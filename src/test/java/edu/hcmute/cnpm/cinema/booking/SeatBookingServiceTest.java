@@ -27,6 +27,8 @@ import java.util.concurrent.atomic.AtomicLong;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyList;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
@@ -41,6 +43,9 @@ class SeatBookingServiceTest {
         when(fixture.userRepository.findById(1L)).thenReturn(Optional.of(fixture.customer));
         when(fixture.showtimeRepository.findById(1L)).thenReturn(Optional.of(fixture.showtime));
         when(fixture.seatRepository.findById(1L)).thenReturn(Optional.of(fixture.seat));
+        when(fixture.seatRepository.findByRoomId(1L)).thenReturn(List.of(fixture.seat));
+        when(fixture.ticketRepository.findByShowtimeIdAndStatusIn(eq(1L), anyList()))
+                .thenReturn(List.of());
     }
 
     @Test
@@ -119,10 +124,11 @@ class SeatBookingServiceTest {
     @Test
     @DisplayName("Giữ nhiều ghế đúng giá, cùng thời điểm và đúng người dùng trong session")
     void shouldCreateHeldTickets_whenAllSeatsAreValid() {
-        Seat vipSeat = fixture.testDataFactory.createSeat(fixture.room, "B", 1);
+        Seat vipSeat = fixture.testDataFactory.createSeat(fixture.room, "A", 2);
         vipSeat.setId(2L);
         vipSeat.setSeatType("VIP");
         when(fixture.seatRepository.findById(2L)).thenReturn(Optional.of(vipSeat));
+        when(fixture.seatRepository.findByRoomId(1L)).thenReturn(List.of(fixture.seat, vipSeat));
         AtomicLong nextTicketId = new AtomicLong();
         when(fixture.ticketRepository.saveAndFlush(any(Ticket.class))).thenAnswer(invocation -> {
             Ticket ticket = invocation.getArgument(0);
