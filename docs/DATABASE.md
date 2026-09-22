@@ -167,6 +167,20 @@ nào có cam kết thời gian hoạt động. Vì vậy:
 - **Hôm bảo vệ nên demo từ máy cá nhân** cho nhanh và không phụ thuộc mạng trường, cloud chỉ
   mở ra chứng minh nhóm có database dùng chung thật.
 - Chạy thử trước buổi demo ít nhất một ngày.
+- **Kiểm tra lịch chiếu còn hạn không.** Đây là cái dễ quên nhất và hỏng demo nặng nhất: dữ
+  liệu mẫu sinh suất chiếu cho 5 ngày *kể từ ngày chạy `seed-data.sql`*, nên để lâu là lịch
+  chiếu nằm hết trong quá khứ, mở app ra thấy trang lịch trống và không đặt vé được câu nào.
+  Chạy lại `seed-data.sql` trước hôm bảo vệ một ngày là xong — file này chạy lại được nhiều
+  lần, chỉ thêm suất chiếu mới chứ không xoá gì, cũng không nhân đôi dữ liệu cũ.
+
+  Câu kiểm tra nhanh còn bao nhiêu ngày lịch chiếu:
+
+  ```sql
+  SELECT COUNT(*) AS suat_con_o_tuong_lai,
+         COUNT(DISTINCT CAST(start_time AS DATE)) AS so_ngay_con_lich,
+         MAX(start_time) AS suat_cuoi_cung
+  FROM showtimes WHERE start_time > GETDATE();
+  ```
 - Dự phòng: `schema-cloud.sql` + `seed-data.sql` dựng lại toàn bộ database trong 30 giây ở bất
   kỳ đâu.
 
