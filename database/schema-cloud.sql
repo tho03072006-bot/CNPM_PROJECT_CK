@@ -89,7 +89,10 @@ CREATE TABLE tickets (
 GO
 
 -- Tai khoan admin mac dinh
+-- Mat khau cua ca 3 tai khoan mau deu la: 123456
+-- Chuoi duoi day la ban da bam bang BCrypt (Module 3 dung BCryptPasswordEncoder
+-- de kiem tra dang nhap). Tuyet doi khong luu mat khau tho vao cot nay.
 IF NOT EXISTS (SELECT 1 FROM users WHERE email = 'admin@utecinema.local')
     INSERT INTO users (full_name, email, password_hash, role)
-    VALUES (N'Quản trị viên', 'admin@utecinema.local', '123456', 'ADMIN');
+    VALUES (N'Quản trị viên', 'admin@utecinema.local', '$2a$10$0hP214zsHpy5UeMXorB1bOze53HL8258/nZV3SGW9qh7HqNWm/jqu', 'ADMIN');
 GO
