@@ -1,5 +1,6 @@
 package edu.hcmute.cnpm.cinema.service;
 
+import edu.hcmute.cnpm.cinema.constants.Constants;
 import edu.hcmute.cnpm.cinema.exception.InvalidBookingException;
 import org.springframework.stereotype.Service;
 
@@ -10,9 +11,6 @@ import java.math.RoundingMode;
 @Service
 public class SeatPricingService {
 
-    private static final BigDecimal VIP_PRICE_MULTIPLIER = new BigDecimal("1.5");
-    private static final BigDecimal COUPLE_PRICE_MULTIPLIER = new BigDecimal("2");
-
     public BigDecimal calculateSeatPrice(BigDecimal basePrice, String seatType) {
         if (basePrice == null || basePrice.signum() <= 0) {
             throw new InvalidBookingException("Giá vé của suất chiếu chưa hợp lệ.");
@@ -21,9 +19,9 @@ public class SeatPricingService {
             throw new InvalidBookingException("Loại ghế chưa hợp lệ.");
         }
         BigDecimal multiplier = switch (seatType) {
-            case "NORMAL" -> BigDecimal.ONE;
-            case "VIP" -> VIP_PRICE_MULTIPLIER;
-            case "COUPLE" -> COUPLE_PRICE_MULTIPLIER;
+            case "NORMAL" -> new BigDecimal(Constants.SEAT_PRICE_MULTIPLIER_NORMAL);
+            case "VIP" -> new BigDecimal(Constants.SEAT_PRICE_MULTIPLIER_VIP);
+            case "COUPLE" -> new BigDecimal(Constants.SEAT_PRICE_MULTIPLIER_COUPLE);
             default -> throw new InvalidBookingException("Loại ghế chưa được hỗ trợ.");
         };
         return basePrice.multiply(multiplier).setScale(2, RoundingMode.HALF_UP);
