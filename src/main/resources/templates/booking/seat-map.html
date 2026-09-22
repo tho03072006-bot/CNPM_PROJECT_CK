@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout/base}">
+<head>
+    <title>Chọn ghế</title>
+</head>
+<body>
+<div layout:fragment="content">
+    <section class="animate-in">
+        <h1>Chọn ghế xem phim</h1>
+        <h2 th:text="${seatMap.movieTitle}">Tên phim</h2>
+        <p class="text-muted">
+            <span th:text="${seatMap.roomName}">Phòng chiếu</span> ·
+            <time th:text="${#temporals.format(seatMap.startTime, 'HH:mm dd/MM/yyyy')}">Giờ chiếu</time>
+        </p>
+        <p th:if="${session.LOGGED_IN_USER == null}" class="alert alert-error" role="status">
+            Bạn cần đăng nhập trước khi giữ ghế.
+        </p>
+        <noscript><p class="alert alert-error">Vui lòng bật JavaScript để chọn và giữ ghế.</p></noscript>
+
+        <form id="booking-form" th:attr="data-hold-url=@{/booking/showtime/{id}/hold(id=${seatMap.showtimeId})}">
+            <div class="card">
+                <div class="screen">Màn hình</div>
+                <p th:if="${#lists.isEmpty(seatMap.seats)}" class="text-muted">
+                    Phòng chiếu chưa có ghế để đặt.
+                </p>
+                <div class="seat-map-scroll">
+                    <div class="seat-map" th:style="|grid-template-columns: repeat(${seatMap.totalColumns}, 34px);|"
+                         role="group" aria-label="Sơ đồ ghế">
+                        <button th:each="seat : ${seatMap.seats}" type="button" class="seat"
+                                th:classappend="${seat.available ? 'available' : (seat.status == 'PAID' ? 'booked' : 'held')}"
+                                th:disabled="${!seat.available}"
+                                th:attr="data-seat-id=${seat.id},data-price=${seat.price},data-seat-label=|Ghế ${seat.seatRow}${seat.seatColumn}, ${seat.seatTypeLabel}, ${seat.price} đồng|,aria-label=|Ghế ${seat.seatRow}${seat.seatColumn}, ${seat.seatTypeLabel}, ${seat.price} đồng, ${seat.statusLabel}|"
+                                th:title="|${seat.seatTypeLabel} · ${seat.price} đồng · ${seat.statusLabel}|"
+                                aria-pressed="false" th:text="|${seat.seatRow}${seat.seatColumn}|">A1</button>
+                    </div>
+                </div>
+                <div class="seat-legend">
+                    <span><i class="legend-available"></i>Còn trống</span>
+                    <span><i class="legend-selected"></i>Bạn đang chọn</span>
+                    <span><i class="legend-held"></i>Đang giữ / chưa mở lại</span>
+                    <span><i class="legend-booked"></i>Đã bán</span>
+                </div>
+            </div>
+
+            <div class="card">
+                <h2 class="section-title">Ghế đã chọn</h2>
+                <p id="selected-seats" aria-live="polite">Bạn chưa chọn ghế.</p>
+                <p>Tổng tiền dự kiến: <strong id="total-price">0 ₫</strong></p>
+                <p class="form-hint">Ghế thường: giá gốc · VIP: cộng 50% · Ghế đôi: gấp đôi.</p>
+                <button id="hold-button" class="btn" type="submit" disabled
+                        th:attr="data-can-hold=${session.LOGGED_IN_USER != null}">Giữ ghế</button>
+                <a class="btn btn-ghost" th:href="@{/booking/showtime/{id}(id=${seatMap.showtimeId})}">Cập nhật sơ đồ ghế</a>
+                <p id="booking-message" role="status" aria-live="polite" hidden></p>
+            </div>
+        </form>
+    </section>
+
+    <!-- JavaScript chỉ dùng tại trang đặt ghế, không sửa tài nguyên dùng chung. -->
+    <script th:inline="none">
+        (() => {
+            const bookingForm = document.getElementById('booking-form');
+            const holdButton = document.getElementById('hold-button');
+            const bookingMessage = document.getElementById('booking-message');
+            const seatButtons = [...bookingForm.querySelectorAll('[data-seat-id]')];
+            const selectedSeats = new Set();
+            const currencyFormatter = new Intl.NumberFormat('vi-VN', {style: 'currency', currency: 'VND'});
+            let isSubmitting = false;
+
+            function updateSelection() {
+                const selectedButtons = seatButtons.filter(button => selectedSeats.has(button.dataset.seatId));
+                const totalPrice = selectedButtons.reduce((total, button) => total + Number(button.dataset.price), 0);
+                document.getElementById('selected-seats').textContent = selectedButtons.length
+                    ? selectedButtons.map(button => button.textContent).join(', ') : 'Bạn chưa chọn ghế.';
+                document.getElementById('total-price').textContent = currencyFormatter.format(totalPrice);
+                holdButton.disabled = isSubmitting || selectedSeats.size === 0 || holdButton.dataset.canHold !== 'true';
+            }
+
+            function showMessage(message, isSuccess) {
+                bookingMessage.textContent = message;
+                bookingMessage.className = isSuccess ? 'alert alert-success' : 'alert alert-error';
+                bookingMessage.hidden = false;
+            }
+
+            seatButtons.forEach(button => button.addEventListener('click', () => {
+                if (isSubmitting || button.disabled) return;
+                const seatId = button.dataset.seatId;
+                if (selectedSeats.has(seatId)) selectedSeats.delete(seatId);
+                else selectedSeats.add(seatId);
+                const isSelected = selectedSeats.has(seatId);
+                button.classList.toggle('selected', isSelected);
+                button.setAttribute('aria-pressed', String(isSelected));
+                updateSelection();
+            }));
+
+            bookingForm.addEventListener('submit', async event => {
+                event.preventDefault();
+                if (isSubmitting || holdButton.disabled) return;
+                isSubmitting = true;
+                updateSelection();
+                holdButton.textContent = 'Đang giữ ghế…';
+                try {
+                    const response = await fetch(bookingForm.dataset.holdUrl, {
+                        method: 'POST',
+                        credentials: 'same-origin',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Accept': 'application/json',
+                            'X-Requested-With': 'XMLHttpRequest'
+                        },
+                        body: JSON.stringify({seatIds: [...selectedSeats].map(Number)})
+                    });
+                    const result = await response.json();
+                    if (!response.ok || !result.success) {
+                        showMessage(result.message || 'Không thể giữ ghế. Vui lòng cập nhật sơ đồ ghế và thử lại.', false);
+                        return;
+                    }
+                    showMessage(result.message + ' Tổng tiền: ' + currencyFormatter.format(result.totalPrice)
+                        + '. Mã vé: ' + result.ticketIds.join(', ') + '.', true);
+                    seatButtons.filter(button => selectedSeats.has(button.dataset.seatId)).forEach(button => {
+                        button.classList.remove('selected', 'available');
+                        button.classList.add('held');
+                        button.disabled = true;
+                        button.title = 'Đang giữ';
+                        button.setAttribute('aria-label', button.dataset.seatLabel + ', Đang giữ');
+                        button.setAttribute('aria-pressed', 'false');
+                    });
+                    selectedSeats.clear();
+                } catch (error) {
+                    showMessage('Chưa xác nhận được kết quả giữ ghế. Vui lòng cập nhật sơ đồ ghế trước khi thử lại.', false);
+                } finally {
+                    isSubmitting = false;
+                    holdButton.textContent = 'Giữ ghế';
+                    updateSelection();
+                }
+            });
+        })();
+    </script>
+</div>
+</body>
+</html>
