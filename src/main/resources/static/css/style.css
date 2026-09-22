@@ -214,6 +214,13 @@
    ===================================================================== */
 * { box-sizing: border-box; }
 
+/* Thuộc tính hidden phải luôn thắng. Trình duyệt chỉ ẩn phần tử bằng luật mặc định
+   [hidden] { display: none } có độ ưu tiên (0,1,0); bất kỳ class nào của mình đặt
+   display cũng có độ ưu tiên bằng đúng như vậy mà lại nằm trong bảng style của trang
+   nên sẽ đè lên. Đã dính đúng lỗi này: .seat-hold-timer { display: flex } làm khung
+   đếm ngược giữ ghế hiện ra ngay khi mở trang, lúc chưa giữ ghế nào. */
+[hidden] { display: none !important; }
+
 html { scroll-behavior: smooth; }
 
 body {
