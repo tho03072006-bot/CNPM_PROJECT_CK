@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  Icon hiển thị trên tab trình duyệt. Vẽ lại đúng hình bánh răng của logo ở header
+  (fragments/header.html): bánh răng lấy ý tưởng từ logo trường, giữa là lỗ phim.
+  File rời nên không dùng được biến CSS, phải ghi thẳng mã màu theo bảng màu đã chốt:
+  bánh răng --brand-500 #1b5fd0, nền lỗ --brand-900 #0a1a3c, chấm giữa --accent-500 #f0a828.
+-->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" width="48" height="48">
+    <g fill="#1b5fd0">
+        <rect x="21" y="1" width="6" height="11" rx="2"/>
+        <rect x="21" y="36" width="6" height="11" rx="2"/>
+        <rect x="1" y="21" width="11" height="6" rx="2"/>
+        <rect x="36" y="21" width="11" height="6" rx="2"/>
+        <g transform="rotate(45 24 24)">
+            <rect x="21" y="1" width="6" height="11" rx="2"/>
+            <rect x="21" y="36" width="6" height="11" rx="2"/>
+            <rect x="1" y="21" width="11" height="6" rx="2"/>
+            <rect x="36" y="21" width="11" height="6" rx="2"/>
+        </g>
+    </g>
+    <circle cx="24" cy="24" r="15" fill="#1b5fd0"/>
+    <circle cx="24" cy="24" r="9.5" fill="#0a1a3c"/>
+    <circle cx="24" cy="24" r="3.2" fill="#f0a828"/>
+</svg>
