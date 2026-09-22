@@ -19,7 +19,21 @@
         </p>
         <noscript><p class="alert alert-error">Vui lòng bật JavaScript để chọn và giữ ghế.</p></noscript>
 
-        <form id="booking-form" th:attr="data-hold-url=@{/booking/showtime/{id}/hold(id=${seatMap.showtimeId})}">
+        <div class="card-grid animate-in animate-in-delay-1">
+            <article class="card">
+                <span class="badge badge-brand">Chọn liền nhau</span>
+                <h3>Giữ chỗ đẹp cho cả phòng</h3>
+                <p class="text-muted">Các ghế trong một lượt phải cùng hàng, liền nhau và không tạo thêm một ghế trống đơn độc.</p>
+            </article>
+            <article class="card">
+                <span class="badge badge-accent" th:text="|Tối đa ${maximumAdmissions} chỗ|">Tối đa 8 chỗ</span>
+                <h3>Chọn đúng nhu cầu</h3>
+                <p class="text-muted">Ghế đôi dành cho hai người nên được tính là hai chỗ trong giới hạn mỗi lượt.</p>
+            </article>
+        </div>
+
+        <form id="booking-form"
+              th:attr="data-hold-url=@{/booking/showtime/{id}/hold(id=${seatMap.showtimeId})},data-max-admissions=${maximumAdmissions}">
             <div class="card">
                 <div class="screen">Màn hình</div>
                 <p th:if="${#lists.isEmpty(seatMap.seats)}" class="text-muted">
@@ -31,7 +45,7 @@
                         <button th:each="seat : ${seatMap.seats}" type="button" class="seat"
                                 th:classappend="${seat.available ? 'available' : (seat.status == 'PAID' ? 'booked' : 'held')}"
                                 th:disabled="${!seat.available}"
-                                th:attr="data-seat-id=${seat.id},data-price=${seat.price},data-seat-label=|Ghế ${seat.seatRow}${seat.seatColumn}, ${seat.seatTypeLabel}, ${seat.price} đồng|,aria-label=|Ghế ${seat.seatRow}${seat.seatColumn}, ${seat.seatTypeLabel}, ${seat.price} đồng, ${seat.statusLabel}|"
+                                th:attr="data-seat-id=${seat.id},data-seat-row=${seat.seatRow},data-seat-column=${seat.seatColumn},data-seat-status=${seat.status},data-capacity=${seat.capacity},data-price=${seat.price},data-seat-label=|Ghế ${seat.seatRow}${seat.seatColumn}, ${seat.seatTypeLabel}, ${seat.price} đồng|,aria-label=|Ghế ${seat.seatRow}${seat.seatColumn}, ${seat.seatTypeLabel}, ${seat.price} đồng, ${seat.statusLabel}|"
                                 th:title="|${seat.seatTypeLabel} · ${seat.price} đồng · ${seat.statusLabel}|"
                                 aria-pressed="false" th:text="|${seat.seatRow}${seat.seatColumn}|">A1</button>
                     </div>
@@ -48,6 +62,9 @@
                 <h2 class="section-title">Ghế đã chọn</h2>
                 <p id="selected-seats" aria-live="polite">Bạn chưa chọn ghế.</p>
                 <p>Tổng tiền dự kiến: <strong id="total-price">0 ₫</strong></p>
+                <p id="selection-hint" class="form-hint" role="status" aria-live="polite">
+                    Chọn các ghế cạnh nhau trên cùng một hàng.
+                </p>
                 <p class="form-hint">Ghế thường: giá gốc · VIP: cộng 50% · Ghế đôi: gấp đôi.</p>
                 <button id="hold-button" class="btn" type="submit" disabled
                         th:attr="data-can-hold=${session.LOGGED_IN_USER != null}">Giữ ghế</button>
@@ -65,16 +82,84 @@
             const bookingMessage = document.getElementById('booking-message');
             const seatButtons = [...bookingForm.querySelectorAll('[data-seat-id]')];
             const selectedSeats = new Set();
+            const maximumAdmissions = Number(bookingForm.dataset.maxAdmissions);
             const currencyFormatter = new Intl.NumberFormat('vi-VN', {style: 'currency', currency: 'VND'});
             let isSubmitting = false;
+
+            function findSingleSeatGaps(blockedSeatIds) {
+                const seatsByRow = new Map();
+                seatButtons.forEach(button => {
+                    if (!seatsByRow.has(button.dataset.seatRow)) seatsByRow.set(button.dataset.seatRow, []);
+                    seatsByRow.get(button.dataset.seatRow).push(button);
+                });
+                const gaps = new Set();
+                seatsByRow.forEach(rowSeats => {
+                    rowSeats.sort((first, second) => Number(first.dataset.seatColumn) - Number(second.dataset.seatColumn));
+                    let index = 0;
+                    while (index < rowSeats.length) {
+                        const firstAvailableSeat = rowSeats[index];
+                        if (blockedSeatIds.has(firstAvailableSeat.dataset.seatId)) {
+                            index++;
+                            continue;
+                        }
+                        let runEnd = index;
+                        while (runEnd + 1 < rowSeats.length
+                            && Number(rowSeats[runEnd + 1].dataset.seatColumn)
+                                === Number(rowSeats[runEnd].dataset.seatColumn) + 1
+                            && !blockedSeatIds.has(rowSeats[runEnd + 1].dataset.seatId)) {
+                            runEnd++;
+                        }
+                        if (runEnd === index) gaps.add(firstAvailableSeat.dataset.seatId);
+                        index = runEnd + 1;
+                    }
+                });
+                return gaps;
+            }
+
+            function validateSelection(selectedButtons) {
+                if (!selectedButtons.length) return null;
+                const admissionCount = selectedButtons.reduce(
+                    (total, button) => total + Number(button.dataset.capacity), 0);
+                if (admissionCount > maximumAdmissions) {
+                    return `Mỗi lượt chỉ được đặt tối đa ${maximumAdmissions} chỗ. Ghế đôi tính là hai chỗ.`;
+                }
+                const selectedRows = new Set(selectedButtons.map(button => button.dataset.seatRow));
+                if (selectedRows.size > 1) return 'Các ghế trong cùng lượt phải nằm trên cùng một hàng.';
+
+                const orderedColumns = selectedButtons.map(button => Number(button.dataset.seatColumn)).sort((a, b) => a - b);
+                for (let index = 1; index < orderedColumns.length; index++) {
+                    if (orderedColumns[index] !== orderedColumns[index - 1] + 1) {
+                        return 'Các ghế phải liền nhau, không được bỏ trống ghế ở giữa.';
+                    }
+                }
+
+                const originallyBlocked = new Set(seatButtons
+                    .filter(button => button.dataset.seatStatus !== 'AVAILABLE')
+                    .map(button => button.dataset.seatId));
+                const gapsBeforeSelection = findSingleSeatGaps(originallyBlocked);
+                const seatsAfterSelection = new Set([...originallyBlocked, ...selectedSeats]);
+                const newGapId = [...findSingleSeatGaps(seatsAfterSelection)]
+                    .find(seatId => !gapsBeforeSelection.has(seatId));
+                if (newGapId) {
+                    const gapSeat = seatButtons.find(button => button.dataset.seatId === newGapId);
+                    return `Lựa chọn này sẽ để ghế ${gapSeat.textContent} trống một mình. Hãy chọn thêm ghế đó hoặc đổi vị trí.`;
+                }
+                return null;
+            }
 
             function updateSelection() {
                 const selectedButtons = seatButtons.filter(button => selectedSeats.has(button.dataset.seatId));
                 const totalPrice = selectedButtons.reduce((total, button) => total + Number(button.dataset.price), 0);
+                const validationMessage = validateSelection(selectedButtons);
                 document.getElementById('selected-seats').textContent = selectedButtons.length
                     ? selectedButtons.map(button => button.textContent).join(', ') : 'Bạn chưa chọn ghế.';
                 document.getElementById('total-price').textContent = currencyFormatter.format(totalPrice);
-                holdButton.disabled = isSubmitting || selectedSeats.size === 0 || holdButton.dataset.canHold !== 'true';
+                const selectionHint = document.getElementById('selection-hint');
+                selectionHint.textContent = validationMessage || (selectedButtons.length
+                    ? 'Lựa chọn hợp lệ. Bạn có thể giữ ghế.' : 'Chọn các ghế cạnh nhau trên cùng một hàng.');
+                selectionHint.className = validationMessage ? 'form-error' : 'form-hint';
+                holdButton.disabled = isSubmitting || selectedSeats.size === 0
+                    || validationMessage !== null || holdButton.dataset.canHold !== 'true';
             }
 
             function showMessage(message, isSuccess) {
@@ -96,6 +181,12 @@
 
             bookingForm.addEventListener('submit', async event => {
                 event.preventDefault();
+                const validationMessage = validateSelection(
+                    seatButtons.filter(button => selectedSeats.has(button.dataset.seatId)));
+                if (validationMessage) {
+                    showMessage(validationMessage, false);
+                    return;
+                }
                 if (isSubmitting || holdButton.disabled) return;
                 isSubmitting = true;
                 updateSelection();
@@ -123,6 +214,7 @@
                         button.classList.add('held');
                         button.disabled = true;
                         button.title = 'Đang giữ';
+                        button.dataset.seatStatus = 'HELD';
                         button.setAttribute('aria-label', button.dataset.seatLabel + ', Đang giữ');
                         button.setAttribute('aria-pressed', 'false');
                     });

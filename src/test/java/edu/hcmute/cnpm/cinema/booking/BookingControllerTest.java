@@ -51,6 +51,7 @@ class BookingControllerTest {
     @Test
     @DisplayName("Trang chọn ghế dùng layout và thành phần giao diện chung")
     void shouldRenderSeatMap_whenShowtimeIsAvailable() throws Exception {
+        when(seatBookingService.getMaximumAdmissionsPerBooking()).thenReturn(8);
         when(seatService.findSeatMap(1L)).thenReturn(new SeatMapView(1L, "Phim kiểm thử", "Phòng 1",
                 LocalDateTime.now().plusDays(1), 8,
                 List.of(new SeatView(1L, "A", 1, "NORMAL", new BigDecimal("75000.00"), "AVAILABLE"))));
@@ -61,6 +62,8 @@ class BookingControllerTest {
                 .andExpect(content().string(containsString("/css/style.css")))
                 .andExpect(content().string(containsString("seat-map-scroll")))
                 .andExpect(content().string(containsString("Bạn cần đăng nhập")))
+                .andExpect(content().string(containsString("Tối đa 8 chỗ")))
+                .andExpect(content().string(containsString("không tạo thêm một ghế trống đơn độc")))
                 .andExpect(content().string(containsString("/booking/showtime/1/hold")));
     }
 
