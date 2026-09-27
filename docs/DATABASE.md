@@ -98,8 +98,17 @@ sqlcmd -S localhost,1433 -U sa -C -f 65001 -d cinema_booking_test -Q "SELECT t.n
 ```
 
 Đối chiếu danh sách đó với các trường có `@Nationalized` trong `entity/`. Trường nào có annotation
-mà cột vẫn `varchar` thì phải `ALTER`. Các cột không có annotation (`users`, `seats`, `tickets`)
-để `varchar` là đúng, đừng đổi bừa.
+mà cột vẫn `varchar` thì phải `ALTER`. Các cột không có annotation (email, mật khẩu băm, vai trò,
+`seats`, `tickets`) chỉ chứa chữ không dấu nên để `varchar` là đúng, đừng đổi bừa.
+
+Ngày 27/09/2026 dính lần hai: `User.fullName` bị sót `@Nationalized`, nên database test lưu
+"Trần Văn Mới" thành "Tr?n Van M?i". Database dev và cloud không sao vì dựng từ `schema.sql`
+(đã là `NVARCHAR`), chỉ database test và CI do Hibernate tự sinh bảng mới bị. Đã thêm annotation;
+máy nào đã có sẵn `cinema_booking_test` thì chạy thêm:
+
+```bash
+sqlcmd -S localhost,1433 -U sa -C -f 65001 -d cinema_booking_test -Q "ALTER TABLE users ALTER COLUMN full_name NVARCHAR(150) NOT NULL;"
+```
 
 ---
 
