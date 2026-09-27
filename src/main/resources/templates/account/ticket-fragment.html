@@ -24,6 +24,11 @@
     </div>
 
     <dl class="account-ticket-grid">
+        <!-- Mã vé để khách đưa nhân viên soát ở cửa phòng chiếu (/nhan-vien/soat-ve). -->
+        <div>
+            <dt>Mã vé</dt>
+            <dd class="account-ticket-code" th:text="|#${ticket.id}|">#12</dd>
+        </div>
         <div>
             <dt>Ghế</dt>
             <dd th:text="|${ticket.seat.seatRow}${ticket.seat.seatColumn}|">A1</dd>

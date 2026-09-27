@@ -1655,3 +1655,38 @@ main.container {
     .movie-search { grid-template-columns: minmax(0, 2fr) minmax(0, 1fr) auto; align-items: end; }
     .movie-search:not(:has(.movie-search-genre)) { grid-template-columns: minmax(0, 1fr) auto; }
 }
+
+/* ---- Mã vé trên thẻ vé: chữ số cách đều cho nhân viên đọc nhanh ---- */
+.account-ticket-code { font-weight: 800; font-variant-numeric: tabular-nums; letter-spacing: .5px; }
+
+/* ---- Trang soát vé ---- */
+.staff-search-grid {
+    display: grid;
+    gap: var(--space-4);
+    margin-bottom: var(--space-6);
+}
+@media (min-width: 900px) {
+    .staff-search-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+.staff-search-title { margin: 0; font-size: var(--text-lg); }
+
+.staff-result { margin-bottom: var(--space-6); }
+.staff-verdict {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: var(--space-2) var(--space-4);
+    font-size: var(--text-lg);
+}
+.staff-verdict-label { font-size: var(--text-xl); letter-spacing: 1px; }
+.staff-customer { margin: 0 0 var(--space-4); color: var(--text-muted); }
+
+.staff-email-item { display: grid; gap: var(--space-2); }
+.staff-email-verdict {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--space-2);
+    margin: 0;
+    font-size: var(--text-sm);
+}
