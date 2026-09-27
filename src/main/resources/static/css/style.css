@@ -1635,3 +1635,23 @@ main.container {
     .account-ticket-grid { grid-template-columns: 1fr; }
     .account-actions .btn { flex: 1; }
 }
+
+/* =====================================================================
+   Bổ sung: tìm phim, soát vé, quản lý người dùng
+   ===================================================================== */
+
+/* ---- Ô tìm kiếm dạng một hàng (trang Phim và trang Người dùng) ----
+   Trên điện thoại các ô xếp chồng lên nhau, từ 640px trở lên thì nằm một hàng. */
+.movie-search {
+    display: grid;
+    gap: var(--space-4);
+    padding: var(--space-5);
+    margin-bottom: var(--space-6);
+}
+.movie-search .form-field { margin: 0; }
+.movie-search-actions { display: flex; flex-wrap: wrap; gap: var(--space-2); align-items: flex-end; }
+
+@media (min-width: 640px) {
+    .movie-search { grid-template-columns: minmax(0, 2fr) minmax(0, 1fr) auto; align-items: end; }
+    .movie-search:not(:has(.movie-search-genre)) { grid-template-columns: minmax(0, 1fr) auto; }
+}

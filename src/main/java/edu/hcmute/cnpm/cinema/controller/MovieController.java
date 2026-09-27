@@ -8,6 +8,7 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 
 import java.time.LocalDate;
 import java.util.LinkedHashMap;
@@ -28,8 +29,16 @@ public class MovieController {
     }
 
     @GetMapping
-    public String list(Model model) {
-        model.addAttribute("movies", movieService.findActiveMovies());
+    public String list(@RequestParam(name = "q", required = false) String keyword,
+                       @RequestParam(name = "theLoai", required = false) String genre,
+                       Model model) {
+        boolean isFiltering = (keyword != null && !keyword.isBlank()) || (genre != null && !genre.isBlank());
+        model.addAttribute("movies", movieService.searchActiveMovies(keyword, genre));
+        model.addAttribute("activeMovieCount", movieService.findActiveMovies().size());
+        model.addAttribute("genres", movieService.findActiveGenres());
+        model.addAttribute("keyword", keyword);
+        model.addAttribute("selectedGenre", genre);
+        model.addAttribute("isFiltering", isFiltering);
         return "movie/movie-list";
     }
 

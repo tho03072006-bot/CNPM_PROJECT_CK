@@ -41,6 +41,9 @@
                 <form th:if="${movie.active}" th:action="@{/admin/movies/{id}/deactivate(id=${movie.id})}" method="post">
                     <button class="btn btn-ghost btn-sm" type="submit">Ngừng chiếu</button>
                 </form>
+                <form th:unless="${movie.active}" th:action="@{/admin/movies/{id}/activate(id=${movie.id})}" method="post">
+                    <button class="btn btn-ghost btn-sm" type="submit">Mở bán lại</button>
+                </form>
             </div></td>
         </tr></tbody></table>
     </div>

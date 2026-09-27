@@ -8,7 +8,10 @@ import edu.hcmute.cnpm.cinema.repository.ShowtimeRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.text.Collator;
+import java.util.Arrays;
 import java.util.List;
+import java.util.Locale;
 
 @Service
 public class MovieService {
@@ -69,6 +72,54 @@ public class MovieService {
     @Transactional
     public void deactivateMovie(Long movieId) {
         findById(movieId).setActive(false);
+    }
+
+    /** Mở bán lại phim đã ngừng chiếu - trước đây bấm nhầm "Ngừng chiếu" là không có đường quay lại. */
+    @Transactional
+    public void activateMovie(Long movieId) {
+        findById(movieId).setActive(true);
+    }
+
+    /**
+     * Tìm phim đang chiếu theo tên và lọc theo thể loại. Bỏ trống cả hai thì trả về tất cả.
+     * So khớp không phân biệt dấu và hoa thường, xem {@link VietnameseText#fold(String)}.
+     */
+    @Transactional(readOnly = true)
+    public List<Movie> searchActiveMovies(String keyword, String genre) {
+        String foldedKeyword = VietnameseText.fold(keyword);
+        String foldedGenre = VietnameseText.fold(genre);
+        return findActiveMovies().stream()
+                .filter(movie -> foldedKeyword.isEmpty()
+                        || VietnameseText.fold(movie.getTitle()).contains(foldedKeyword))
+                .filter(movie -> foldedGenre.isEmpty()
+                        || splitGenres(movie.getGenre()).stream()
+                                .anyMatch(item -> VietnameseText.fold(item).equals(foldedGenre)))
+                .toList();
+    }
+
+    /**
+     * Danh sách thể loại của các phim đang chiếu, dùng cho ô lọc.
+     *
+     * Cột genre lưu kiểu "Hoạt hình, Hài, Phiêu lưu" nên phải tách theo dấu phẩy.
+     */
+    @Transactional(readOnly = true)
+    public List<String> findActiveGenres() {
+        Collator vietnameseOrder = Collator.getInstance(Locale.forLanguageTag("vi"));
+        return findActiveMovies().stream()
+                .flatMap(movie -> splitGenres(movie.getGenre()).stream())
+                .distinct()
+                .sorted(vietnameseOrder)
+                .toList();
+    }
+
+    private List<String> splitGenres(String genre) {
+        if (genre == null || genre.isBlank()) {
+            return List.of();
+        }
+        return Arrays.stream(genre.split(","))
+                .map(String::trim)
+                .filter(item -> !item.isEmpty())
+                .toList();
     }
 
     private void validate(Movie movie) {

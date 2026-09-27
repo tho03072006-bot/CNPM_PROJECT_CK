@@ -10,21 +10,51 @@
             <p>Khám phá phim đang chiếu, xem lịch chiếu và chọn buổi xem phù hợp với bạn.</p>
         </div>
         <div class="module1-hero-count" aria-label="Số phim đang chiếu">
-            <strong th:text="${#lists.size(movies)}">5</strong>
+            <strong th:text="${activeMovieCount}">5</strong>
             <span>phim đang chiếu</span>
         </div>
     </section>
 
+    <!-- Tìm theo tên và lọc theo thể loại. Dùng GET để gửi link kết quả cho bạn bè được. -->
+    <form class="card movie-search" th:action="@{/movies}" method="get" role="search"
+          aria-label="Tìm phim">
+        <div class="form-field movie-search-keyword">
+            <label for="q">Tên phim</label>
+            <input class="form-control" id="q" name="q" type="search" th:value="${keyword}"
+                   maxlength="100" placeholder="Ví dụ: bong ma" autocomplete="off">
+        </div>
+        <div class="form-field movie-search-genre">
+            <label for="theLoai">Thể loại</label>
+            <select class="form-control" id="theLoai" name="theLoai">
+                <option value="">Tất cả thể loại</option>
+                <option th:each="genre : ${genres}" th:value="${genre}" th:text="${genre}"
+                        th:selected="${genre == selectedGenre}">Hài</option>
+            </select>
+        </div>
+        <div class="movie-search-actions">
+            <button class="btn" type="submit">Tìm phim</button>
+            <a class="btn btn-ghost" th:if="${isFiltering}" th:href="@{/movies}">Bỏ lọc</a>
+        </div>
+    </form>
+
     <div class="module1-section-head">
         <div>
             <span class="module1-kicker">TRÊN MÀN ẢNH</span>
-            <h2>Chọn phim của bạn</h2>
+            <h2 th:text="${isFiltering} ? 'Kết quả tìm kiếm' : 'Chọn phim của bạn'">Chọn phim của bạn</h2>
         </div>
-        <p class="text-muted" th:unless="${#lists.isEmpty(movies)}"
-           th:text="|${#lists.size(movies)} lựa chọn đang chờ bạn|">5 lựa chọn đang chờ bạn</p>
+        <p class="text-muted" role="status" th:unless="${#lists.isEmpty(movies)}"
+           th:text="${isFiltering} ? |Tìm thấy ${#lists.size(movies)} phim phù hợp|
+                                   : |${#lists.size(movies)} lựa chọn đang chờ bạn|">5 lựa chọn đang chờ bạn</p>
     </div>
 
-    <div class="module1-empty" th:if="${#lists.isEmpty(movies)}">
+    <div class="module1-empty" th:if="${#lists.isEmpty(movies) and isFiltering}" role="status">
+        <span class="module1-empty-icon" aria-hidden="true">✦</span>
+        <h3>Không có phim nào khớp</h3>
+        <p>Thử gõ ít chữ hơn hoặc chọn thể loại khác.</p>
+        <a class="btn btn-ghost" th:href="@{/movies}">Xem tất cả phim</a>
+    </div>
+
+    <div class="module1-empty" th:if="${#lists.isEmpty(movies) and !isFiltering}">
         <span class="module1-empty-icon" aria-hidden="true">✦</span>
         <h3>Chưa có phim đang chiếu</h3>
         <p>Lịch phim mới sẽ sớm được cập nhật. Hãy quay lại sau nhé.</p>
