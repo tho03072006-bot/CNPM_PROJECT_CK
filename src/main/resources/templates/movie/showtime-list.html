@@ -11,11 +11,7 @@
         </div>
         <a class="btn" th:href="@{/admin/showtimes/new}">+ Thêm suất chiếu</a>
     </div>
-    <nav class="module1-admin-nav" aria-label="Quản lý lịch chiếu">
-        <a th:href="@{/admin/movies}">Phim</a>
-        <a th:href="@{/admin/rooms}">Phòng chiếu</a>
-        <a th:href="@{/admin/showtimes}" aria-current="page">Suất chiếu</a>
-    </nav>
+    <nav th:replace="~{fragments/admin-nav :: adminNav('showtimes')}"></nav>
     <div class="module1-admin-summary">
         <span class="module1-summary-number" th:text="${#lists.size(showtimes)}">10</span>
         <div><strong>Suất chiếu trong hệ thống</strong><span>Giờ kết thúc đã bao gồm 15 phút dọn phòng.</span></div>

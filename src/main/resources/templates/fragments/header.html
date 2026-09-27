@@ -45,6 +45,15 @@
               (xem Constants.SESSION_USER). Chưa đăng nhập thì hiện nút đăng nhập,
               đăng nhập rồi thì hiện tên và lối vào trang tài khoản.
             -->
+            <!--
+              Lối vào theo vai trò. Ẩn nút ở đây chỉ để giao diện gọn - quyền thật do
+              AdminAccessInterceptor và StaffAccessInterceptor chặn ở phía máy chủ.
+            -->
+            <a th:if="${session.LOGGED_IN_USER != null and session.LOGGED_IN_USER.role.name() != 'CUSTOMER'}"
+               th:href="@{/nhan-vien/soat-ve}">Soát vé</a>
+            <a th:if="${session.LOGGED_IN_USER != null and session.LOGGED_IN_USER.role.name() == 'ADMIN'}"
+               th:href="@{/admin}">Quản trị</a>
+
             <a th:if="${session.LOGGED_IN_USER == null}" th:href="@{/dang-nhap}">Đăng nhập</a>
             <a th:if="${session.LOGGED_IN_USER != null}" th:href="@{/tai-khoan}"
                th:text="${session.LOGGED_IN_USER.fullName}">Tài khoản</a>
