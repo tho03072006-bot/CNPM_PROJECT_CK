@@ -48,10 +48,17 @@
                 <span th:case="'VALID'">CHO VÀO</span>
                 <span th:case="'NOT_PAID'">CHƯA THANH TOÁN</span>
                 <span th:case="'WRONG_DAY'">SAI NGÀY</span>
+                <span th:case="'CHECKED_IN'">ĐÃ VÀO PHÒNG</span>
                 <span th:case="*">ĐÃ HẾT SUẤT</span>
             </strong>
             <span th:text="${result.message}">Lời giải thích</span>
         </div>
+
+        <!-- Vé hợp lệ: bấm để ghi giờ vào phòng, từ đó vé không dùng lại được. -->
+        <form class="staff-checkin" th:if="${result.valid}"
+              th:action="@{/nhan-vien/soat-ve/{id}/vao-phong(id=${result.ticket.id})}" method="post">
+            <button class="btn btn-accent" type="submit" th:text="|Cho vào phòng · vé #${result.ticket.id}|">Cho vào phòng</button>
+        </form>
 
         <p class="staff-customer"
            th:text="|Khách: ${result.ticket.user.fullName} · ${result.ticket.user.email}${result.ticket.user.phone != null and !#strings.isEmpty(result.ticket.user.phone) ? ' · ' + result.ticket.user.phone : ''}|">
@@ -80,6 +87,12 @@
                           th:text="${item.valid} ? 'Cho vào' : 'Chưa cho vào'">Cho vào</span>
                     <span th:text="${item.message}">Lời giải thích</span>
                 </p>
+                <form class="staff-checkin" th:if="${item.valid}"
+                      th:action="@{/nhan-vien/soat-ve/{id}/vao-phong(id=${item.ticket.id})}" method="post">
+                    <input type="hidden" name="email" th:value="${email}">
+                    <button class="btn btn-accent btn-sm" type="submit"
+                            th:text="|Cho vào phòng · vé #${item.ticket.id}|">Cho vào phòng</button>
+                </form>
                 <div th:replace="~{account/ticket-fragment :: ticketCard(${item.ticket})}"></div>
             </div>
         </div>

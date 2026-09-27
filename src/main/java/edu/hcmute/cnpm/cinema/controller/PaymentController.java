@@ -5,6 +5,7 @@ import edu.hcmute.cnpm.cinema.entity.Ticket;
 import edu.hcmute.cnpm.cinema.entity.User;
 import edu.hcmute.cnpm.cinema.exception.BusinessException;
 import edu.hcmute.cnpm.cinema.repository.TicketRepository;
+import edu.hcmute.cnpm.cinema.service.MomoPaymentService;
 import edu.hcmute.cnpm.cinema.service.PaymentService;
 import edu.hcmute.cnpm.cinema.service.TicketMailService;
 import jakarta.servlet.http.HttpSession;
@@ -28,12 +29,14 @@ public class PaymentController {
     private final PaymentService paymentService;
     private final TicketMailService ticketMailService;
     private final TicketRepository ticketRepository;
+    private final MomoPaymentService momoPaymentService;
 
     public PaymentController(PaymentService paymentService, TicketMailService ticketMailService,
-                             TicketRepository ticketRepository) {
+                             TicketRepository ticketRepository, MomoPaymentService momoPaymentService) {
         this.paymentService = paymentService;
         this.ticketMailService = ticketMailService;
         this.ticketRepository = ticketRepository;
+        this.momoPaymentService = momoPaymentService;
     }
 
     @GetMapping("/{showtimeId}")
@@ -47,6 +50,7 @@ public class PaymentController {
         model.addAttribute("tickets", tickets);
         model.addAttribute("total", paymentService.sumPrice(tickets));
         model.addAttribute("showtimeId", showtimeId);
+        model.addAttribute("momoEnabled", momoPaymentService.isEnabled());
         return "account/payment";
     }
 

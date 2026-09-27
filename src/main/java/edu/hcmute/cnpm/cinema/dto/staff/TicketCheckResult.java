@@ -15,6 +15,8 @@ public class TicketCheckResult {
         VALID,
         /** Khách mới giữ ghế, chưa trả tiền. */
         NOT_PAID,
+        /** Vé đã được soát vào phòng rồi, không dùng lại được. */
+        CHECKED_IN,
         /** Vé của suất chiếu ngày khác, chưa tới ngày. */
         WRONG_DAY,
         /** Suất chiếu đã kết thúc. */

@@ -1,13 +1,17 @@
 package edu.hcmute.cnpm.cinema.controller;
 
 import edu.hcmute.cnpm.cinema.constants.Constants;
+import edu.hcmute.cnpm.cinema.dto.staff.TicketCheckResult;
 import edu.hcmute.cnpm.cinema.exception.BusinessException;
 import edu.hcmute.cnpm.cinema.service.TicketLookupService;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 /**
  * Khu vực nhân viên: soát vé ở cửa phòng chiếu.
@@ -52,5 +56,28 @@ public class StaffController {
             model.addAttribute(Constants.MODEL_ERROR_MESSAGE, exception.getMessage());
         }
         return "staff/ticket-check";
+    }
+
+    /**
+     * Nhân viên bấm "Cho vào": ghi giờ vào phòng rồi quay lại đúng kết quả tra lúc nãy,
+     * để thấy ngay vé đã chuyển sang "đã vào phòng".
+     */
+    @PostMapping("/soat-ve/{ticketId}/vao-phong")
+    public String checkIn(@PathVariable Long ticketId,
+                          @RequestParam(name = "email", required = false) String email,
+                          RedirectAttributes redirectAttributes) {
+        try {
+            TicketCheckResult result = ticketLookupService.checkIn(ticketId);
+            redirectAttributes.addFlashAttribute(Constants.MODEL_SUCCESS_MESSAGE,
+                    "Đã cho vé #" + ticketId + " vào phòng. " + result.getMessage());
+        } catch (BusinessException exception) {
+            redirectAttributes.addFlashAttribute(Constants.MODEL_ERROR_MESSAGE, exception.getMessage());
+        }
+        if (email != null && !email.isBlank()) {
+            redirectAttributes.addAttribute("email", email);
+        } else {
+            redirectAttributes.addAttribute("ma", ticketId);
+        }
+        return "redirect:/nhan-vien/soat-ve";
     }
 }

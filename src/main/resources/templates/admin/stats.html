@@ -40,7 +40,16 @@
                              ? |${#numbers.formatDecimal(totalRevenue / totalTickets, 0, 'POINT', 0, 'COMMA')} đ|
                              : '0 đ'">0 đ</strong>
         </div>
+        <div class="card account-stat">
+            <span class="account-stat-label" th:text="|Đã hoàn tiền (${refundSummary.ticketCount} vé)|">Đã hoàn tiền</span>
+            <strong class="account-stat-value"
+                    th:text="|${#numbers.formatDecimal(refundSummary.revenue, 0, 'POINT', 0, 'COMMA')} đ|">0 đ</strong>
+        </div>
     </div>
+    <p class="text-muted stats-note">
+        Doanh thu đã trừ tiền hoàn: vé khách huỷ không tính là vé bán ra, chỉ còn phần phí
+        rạp giữ lại được cộng vào ngày bán.
+    </p>
 
     <section class="pricing-block" aria-labelledby="by-day-title">
         <h2 id="by-day-title" class="pricing-block-title">Doanh thu theo ngày</h2>

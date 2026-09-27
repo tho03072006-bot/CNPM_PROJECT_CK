@@ -5,12 +5,14 @@ import edu.hcmute.cnpm.cinema.entity.TicketStatus;
 import edu.hcmute.cnpm.cinema.entity.User;
 import edu.hcmute.cnpm.cinema.service.AuthService;
 import edu.hcmute.cnpm.cinema.service.PaymentService;
+import edu.hcmute.cnpm.cinema.service.TicketRefundService;
 import jakarta.servlet.http.HttpSession;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import java.util.List;
 
 /** Trang tài khoản cá nhân và lịch sử vé đã đặt. */
@@ -19,10 +21,13 @@ public class AccountController {
 
     private final AuthService authService;
     private final PaymentService paymentService;
+    private final TicketRefundService ticketRefundService;
 
-    public AccountController(AuthService authService, PaymentService paymentService) {
+    public AccountController(AuthService authService, PaymentService paymentService,
+                             TicketRefundService ticketRefundService) {
         this.authService = authService;
         this.paymentService = paymentService;
+        this.ticketRefundService = ticketRefundService;
     }
 
     @GetMapping("/tai-khoan")
@@ -53,6 +58,9 @@ public class AccountController {
         List<Ticket> tickets = paymentService.findTicketHistory(sessionUser.getId());
         model.addAttribute("tickets", tickets);
         model.addAttribute("total", sumPaid(tickets));
+        model.addAttribute("refundQuotes",
+                ticketRefundService.quoteCancellableTickets(sessionUser.getId(), LocalDateTime.now()));
+        model.addAttribute("refunds", ticketRefundService.findRefundHistory(sessionUser.getId()));
         return "account/my-tickets";
     }
 

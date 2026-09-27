@@ -4,14 +4,17 @@ import edu.hcmute.cnpm.cinema.repository.MovieRepository;
 import edu.hcmute.cnpm.cinema.repository.RoomRepository;
 import edu.hcmute.cnpm.cinema.repository.SeatRepository;
 import edu.hcmute.cnpm.cinema.repository.ShowtimeRepository;
+import edu.hcmute.cnpm.cinema.repository.TicketRefundRepository;
 import edu.hcmute.cnpm.cinema.repository.TicketRepository;
 import edu.hcmute.cnpm.cinema.repository.UserRepository;
+import edu.hcmute.cnpm.cinema.service.MomoApiClient;
 import org.junit.jupiter.api.BeforeEach;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.Import;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -51,6 +54,16 @@ public abstract class IntegrationTestBase {
     protected MovieRepository movieRepository;
     @Autowired
     protected UserRepository userRepository;
+    @Autowired
+    protected TicketRefundRepository ticketRefundRepository;
+
+    /**
+     * Ban GIA cua lop goi API MoMo, dung chung cho MOI test tich hop: khong test nao duoc
+     * goi MoMo that. De o lop cha (thay vi tung test tu khai bao) de ca bo test dung chung
+     * mot Spring context, khong phai dung lai context cho tung lop test.
+     */
+    @MockitoBean
+    protected MomoApiClient momoApiClient;
 
     @Autowired
     protected JdbcTemplate jdbcTemplate;
@@ -74,8 +87,9 @@ public abstract class IntegrationTestBase {
                 .endsWith(TEST_DATABASE_SUFFIX);
     }
 
-    /** Xoa du lieu theo dung thu tu khoa ngoai: ticket -> showtime -> seat -> room -> movie -> user. */
+    /** Xoa du lieu theo dung thu tu khoa ngoai: refund -> ticket -> showtime -> seat -> room -> movie -> user. */
     protected void cleanDatabase() {
+        ticketRefundRepository.deleteAllInBatch();
         ticketRepository.deleteAllInBatch();
         showtimeRepository.deleteAllInBatch();
         seatRepository.deleteAllInBatch();

@@ -1694,3 +1694,23 @@ main.container {
 /* ---- Ô đổi vai trò trong bảng người dùng ---- */
 .user-role-form { display: flex; gap: var(--space-2); align-items: center; }
 .user-role-form .form-control { width: auto; min-width: 9rem; padding: var(--space-2) var(--space-3); }
+
+/* =====================================================================
+   Bổ sung: thanh toán MoMo, huỷ vé, soát vé vào phòng, quên mật khẩu
+   ===================================================================== */
+
+/* Hai lựa chọn trả tiền xếp dọc, mỗi lựa chọn kèm một dòng giải thích ngay dưới. */
+.payment-options { display: grid; gap: var(--space-2); }
+.payment-options form + .account-summary-note { margin-bottom: var(--space-3); }
+
+/* Nút huỷ vé nằm sát ngay dưới thẻ vé tương ứng. */
+.ticket-cancel-row { margin: calc(var(--space-2) * -1) 0 var(--space-3); display: flex; justify-content: flex-end; }
+
+.refund-policy { font-size: var(--text-sm); color: var(--text-muted); }
+.refund-policy summary { cursor: pointer; font-weight: 700; color: var(--text); }
+.refund-policy ul { margin: var(--space-2) 0 0; padding-left: var(--space-5); }
+
+/* Nút "Cho vào phòng" to rõ, nhân viên bấm nhanh ở cửa. */
+.staff-checkin { margin: 0 0 var(--space-4); }
+
+.stats-note { margin: calc(var(--space-4) * -1) 0 var(--space-6); font-size: var(--text-sm); }

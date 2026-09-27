@@ -22,9 +22,8 @@ import java.util.Locale;
  * Soát vé ở cửa phòng chiếu: tra một tấm vé theo mã, hoặc tra mọi vé của một khách
  * theo email khi khách quên mã vé.
  *
- * Chỉ đọc, không ghi gì xuống database. Chưa lưu trạng thái "đã vào phòng" vì như vậy
- * phải thêm cột vào bảng tickets, mà database dùng chung trên cloud chạy
- * ddl-auto=validate - thêm cột là phải cả nhóm thống nhất và sửa schema-cloud.sql trước.
+ * Vé hợp lệ thì nhân viên bấm "Cho vào" để ghi lại giờ vào phòng ({@link #checkIn}). Từ đó
+ * soát lại cùng mã vé sẽ báo "đã vào phòng", chặn một vé dùng hai lần.
  */
 @Service
 public class TicketLookupService {
@@ -86,6 +85,31 @@ public class TicketLookupService {
                 .toList();
     }
 
+    @Transactional
+    public TicketCheckResult checkIn(Long ticketId) {
+        return checkIn(ticketId, LocalDateTime.now());
+    }
+
+    /**
+     * Ghi nhận khách đã vào phòng. Chỉ vé đang hợp lệ mới vào được.
+     *
+     * Câu UPDATE có điều kiện "chưa vào phòng" nằm ngay trong database, nên hai nhân viên
+     * soát cùng một vé ở hai cửa cùng lúc thì chỉ một người được - người kia nhận báo lỗi.
+     */
+    @Transactional
+    public TicketCheckResult checkIn(Long ticketId, LocalDateTime now) {
+        Ticket ticket = ticketRepository.findById(ticketId)
+                .orElseThrow(() -> new BusinessException("Không tìm thấy vé có mã #" + ticketId + "."));
+        TicketCheckResult current = assess(ticket, now);
+        if (!current.isValid()) {
+            throw new BusinessException(current.getMessage());
+        }
+        if (ticketRepository.markCheckedIn(ticketId, now, TicketStatus.PAID) == 0) {
+            throw new BusinessException("Vé #" + ticketId + " vừa được soát ở cửa khác, không cho vào lần hai.");
+        }
+        return current;
+    }
+
     /** Đưa ra kết luận cho một tấm vé tại thời điểm {@code now}. */
     TicketCheckResult assess(Ticket ticket, LocalDateTime now) {
         Showtime showtime = ticket.getShowtime();
@@ -95,6 +119,11 @@ public class TicketLookupService {
                     ? "Vé chưa thanh toán. Khách cần thanh toán xong mới được vào phòng."
                     : "Vé không còn hiệu lực.";
             return new TicketCheckResult(ticket, Verdict.NOT_PAID, message);
+        }
+        if (ticket.getCheckedInAt() != null) {
+            return new TicketCheckResult(ticket, Verdict.CHECKED_IN,
+                    "Vé đã được soát vào phòng lúc " + ticket.getCheckedInAt().format(TIME_FORMAT)
+                            + " ngày " + ticket.getCheckedInAt().format(DATE_FORMAT) + ", không dùng lại được.");
         }
         if (!showtime.getEndTime().isAfter(now)) {
             return new TicketCheckResult(ticket, Verdict.ENDED,

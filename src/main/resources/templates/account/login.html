@@ -30,6 +30,7 @@
                 <input class="form-control" id="password" type="password" th:field="*{password}"
                        autocomplete="current-password" required>
                 <span class="form-error" th:if="${#fields.hasErrors('password')}" th:errors="*{password}"></span>
+                <a class="form-hint" th:href="@{/quen-mat-khau}">Quên mật khẩu?</a>
             </div>
 
             <button class="btn account-submit" type="submit">Đăng nhập</button>
