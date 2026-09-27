@@ -3,7 +3,7 @@
 Tài liệu này mô tả nhóm kiểm thử phần mềm thế nào, kiểm thử những gì, và vì sao chọn cách đó.
 Số liệu trong đây lấy từ lần chạy `mvn test` thật, không phải ước lượng.
 
-**Hiện trạng: 125 test, 125 đạt, 0 hỏng.**
+**Hiện trạng: 160 test, 160 đạt, 0 hỏng.**
 
 ---
 
@@ -34,7 +34,7 @@ thúc bằng `_test` trước khi làm bất cứ việc gì. Nếu ai đó sử
 |---|---|---|---|
 | Unit test | Kiểm tra logic tính toán và kiểm tra dữ liệu đầu vào | Không | 40 |
 | Test MVC | Kiểm tra Controller, template và mã HTTP trả về | Không | 7 |
-| Test tích hợp | Kiểm tra nghiệp vụ chạy thật trên database | Có | 78 |
+| Test tích hợp | Kiểm tra nghiệp vụ chạy thật trên database | Có | 113 |
 
 Unit test chạy trong mili giây nên viết được nhiều và chạy liên tục lúc code. Test tích hợp chậm
 hơn nhưng là thứ duy nhất chứng minh được ràng buộc database có hoạt động thật hay không.
@@ -121,6 +121,20 @@ như trình duyệt gọi:
 Test thứ hai kiểm tra chiều ngược lại: chưa đăng nhập thì không giữ ghế được, và **không được
 tạo ra dòng vé nào** trong database.
 
+### Tính năng bổ sung ngày 27/09 (35 test)
+
+| Lớp test | Số test | Kiểm tra điều gì |
+|---|---|---|
+| `AccountSettingsIntegrationTest` | 9 | Sửa hồ sơ, đổi mật khẩu, **không in lại mật khẩu vừa gõ vào HTML** khi form báo lỗi |
+| `TicketLookupServiceIntegrationTest` | 8 | Soát vé: cho vào, chưa thanh toán, sai ngày, đã hết suất, tra theo email |
+| `MovieSearchIntegrationTest` | 6 | Tìm phim không dấu, lọc theo thể loại, mở bán lại phim đã ngừng chiếu |
+| `StaffAccessIntegrationTest` | 6 | **Phân quyền khu vực nhân viên** và trang quản lý người dùng |
+| `UserManagementIntegrationTest` | 6 | Cấp vai trò, **chặn tự đổi vai trò của chính mình** |
+
+Test soát vé truyền "bây giờ" vào tay thay vì đọc đồng hồ máy, nên chạy lúc 23 giờ 59 hay lúc
+nào cũng ra cùng một kết quả — kiểm tra "đúng ngày chiếu" mà dựa vào giờ thật thì sớm muộn cũng
+có ngày test đỏ không rõ lý do.
+
 ---
 
 ## 4. Ma trận: quy tắc nghiệp vụ ↔ test bảo vệ nó
@@ -132,6 +146,10 @@ tạo ra dòng vé nào** trong database.
 | Một phòng không thể chiếu hai phim cùng lúc | `ShowtimeServiceIntegrationTest` |
 | Mật khẩu không bao giờ lưu dạng thô | `AuthServiceIntegrationTest` |
 | Khách hàng không vào được khu vực quản trị | `AdminAccessIntegrationTest` |
+| Chỉ nhân viên và quản trị viên soát được vé | `StaffAccessIntegrationTest` |
+| Vé chưa thanh toán, sai ngày hoặc hết suất thì không cho vào | `TicketLookupServiceIntegrationTest` |
+| Đổi mật khẩu phải nhập đúng mật khẩu hiện tại | `AccountSettingsIntegrationTest` |
+| Quản trị viên không tự khoá mình ra khỏi hệ thống | `UserManagementIntegrationTest` |
 | Vé quá hạn giữ thì không thanh toán được | `PaymentServiceIntegrationTest` |
 | Không trả tiền hộ vé của người khác | `PaymentServiceIntegrationTest` |
 | Chưa đăng nhập thì không giữ ghế được | `BookingFlowEndToEndTest` |
