@@ -73,6 +73,20 @@ class MovieServiceIntegrationTest extends IntegrationTestBase {
     }
 
     @Test
+    @DisplayName("Quản trị lọc riêng phim đã ngừng chiếu")
+    void shouldFilterInactiveMovies_whenAdminSelectsInactiveStatus() {
+        testDataFactory.createMovie("Phim đang chiếu");
+        Movie inactive = testDataFactory.createMovie("Phim lưu kho");
+        inactive.setGenre("Tâm Lý");
+        inactive.setActive(false);
+        movieRepository.save(inactive);
+
+        assertThat(movieService.findMovies("luu kho", "Tâm Lý", false))
+                .extracting(Movie::getId)
+                .containsExactly(inactive.getId());
+    }
+
+    @Test
     @DisplayName("Từ chối phim thiếu tên hoặc có thời lượng bằng không")
     void shouldRejectEmptyTitleAndZeroDuration_whenCreating() {
         Movie movie = new Movie();

@@ -15,10 +15,35 @@
             Số phim trong ngày</p>
     </section>
 
+    <form class="card module1-filter-panel module1-schedule-filter" method="get" th:action="@{/lich-chieu}"
+          aria-label="Lọc lịch chiếu">
+        <input type="hidden" name="ngay" th:value="${selectedDate}">
+        <div class="form-field">
+            <label for="schedule-movie">Phim</label>
+            <select class="form-control" id="schedule-movie" name="movieId">
+                <option value="">Tất cả phim</option>
+                <option th:each="movie : ${movies}" th:value="${movie.id}" th:text="${movie.title}"
+                        th:selected="${selectedMovieId != null and selectedMovieId.equals(movie.id)}"></option>
+            </select>
+        </div>
+        <div class="form-field">
+            <label for="schedule-room">Phòng chiếu</label>
+            <select class="form-control" id="schedule-room" name="roomId">
+                <option value="">Tất cả phòng</option>
+                <option th:each="room : ${rooms}" th:value="${room.id}" th:text="${room.name}"
+                        th:selected="${selectedRoomId != null and selectedRoomId.equals(room.id)}"></option>
+            </select>
+        </div>
+        <div class="module1-filter-actions">
+            <button class="btn" type="submit">Áp dụng</button>
+            <a class="btn btn-ghost" th:if="${filtering}" th:href="@{/lich-chieu}">Xoá bộ lọc</a>
+        </div>
+    </form>
+
     <!-- Dải chọn ngày. Chỉ liệt kê ngày thật sự còn suất chiếu chưa bắt đầu. -->
     <nav class="schedule-dates" aria-label="Chọn ngày chiếu" th:if="${!scheduleDates.isEmpty()}">
         <a class="schedule-date" th:each="item : ${scheduleDates}"
-           th:href="@{/lich-chieu(ngay=${item.date})}"
+           th:href="@{/lich-chieu(ngay=${item.date},movieId=${selectedMovieId},roomId=${selectedRoomId})}"
            th:classappend="${item.date.equals(selectedDate)} ? ' is-selected' : ''"
            th:aria-current="${item.date.equals(selectedDate)} ? 'page' : null">
             <span class="schedule-date-dow" th:text="${item.dayLabel}">Thứ 2</span>
@@ -29,9 +54,10 @@
 
     <div class="module1-empty" th:if="${#lists.isEmpty(schedule)}">
         <span class="module1-empty-icon" aria-hidden="true">◷</span>
-        <h2>Chưa có suất chiếu</h2>
-        <p>Hiện chưa có lịch chiếu cho ngày này. Bạn thử chọn ngày khác trên dải ngày phía trên nhé.</p>
-        <a class="btn" th:href="@{/movies}">Xem danh sách phim</a>
+        <h2 th:text="${filtering} ? 'Không tìm thấy suất chiếu phù hợp' : 'Chưa có suất chiếu'">Chưa có suất chiếu</h2>
+        <p th:text="${filtering} ? 'Hãy thử chọn phim, phòng khác hoặc xoá bộ lọc.' : 'Hiện chưa có lịch chiếu cho ngày này. Bạn thử chọn ngày khác trên dải ngày phía trên nhé.'">Thông báo lịch chiếu</p>
+        <a class="btn" th:if="${filtering}" th:href="@{/lich-chieu}">Xem toàn bộ lịch</a>
+        <a class="btn" th:unless="${filtering}" th:href="@{/movies}">Xem danh sách phim</a>
     </div>
 
     <section class="schedule-list" th:unless="${#lists.isEmpty(schedule)}">

@@ -142,4 +142,29 @@ class ScheduleServiceIntegrationTest extends IntegrationTestBase {
     void shouldReturnEmptySchedule_whenDateHasNoShowtime() {
         assertThat(scheduleService.findScheduleFor(LocalDate.now().plusDays(5))).isEmpty();
     }
+
+    @Test
+    @DisplayName("Lọc lịch và dải ngày theo phim, phòng đã chọn")
+    void shouldFilterScheduleAndDates_whenMovieAndRoomAreSelected() {
+        Movie selectedMovie = testDataFactory.createMovie("Phim cần tìm");
+        Movie otherMovie = testDataFactory.createMovie("Phim khác");
+        Room selectedRoom = testDataFactory.createRoom("Phòng cần tìm", 5, 5);
+        Room otherRoom = testDataFactory.createRoom("Phòng khác", 5, 5);
+        LocalDate tomorrow = LocalDate.now().plusDays(1);
+        LocalDate later = LocalDate.now().plusDays(2);
+        testDataFactory.createShowtime(selectedMovie, selectedRoom, tomorrow.atTime(10, 0));
+        testDataFactory.createShowtime(selectedMovie, otherRoom, tomorrow.atTime(13, 0));
+        testDataFactory.createShowtime(otherMovie, selectedRoom, tomorrow.atTime(16, 0));
+        testDataFactory.createShowtime(otherMovie, otherRoom, later.atTime(10, 0));
+
+        assertThat(scheduleService.findScheduleDates(selectedMovie.getId(), selectedRoom.getId()))
+                .extracting(ScheduleDate::getDate)
+                .containsExactly(tomorrow);
+        assertThat(scheduleService.findScheduleFor(tomorrow, selectedMovie.getId(), selectedRoom.getId()))
+                .singleElement()
+                .satisfies(entry -> {
+                    assertThat(entry.getMovie().getId()).isEqualTo(selectedMovie.getId());
+                    assertThat(entry.getTotalShowtimes()).isEqualTo(1);
+                });
+    }
 }

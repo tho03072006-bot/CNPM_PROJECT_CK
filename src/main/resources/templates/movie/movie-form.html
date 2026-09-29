@@ -38,9 +38,18 @@
                        placeholder="P, C13, C16, C18">
                 <span class="form-error" th:if="${#fields.hasErrors('ageRating')}" th:errors="*{ageRating}"></span></div>
         </div>
+        <aside class="module1-live-preview" data-movie-preview>
+            <div class="module1-preview-poster">
+                <img data-poster-image alt="Xem trước poster" hidden>
+                <span data-poster-fallback th:text="${movieForm.title != null and !#strings.isEmpty(movieForm.title) ? #strings.substring(movieForm.title, 0, 1) : 'P'}">P</span>
+            </div>
+            <div><span class="module1-kicker">XEM TRƯỚC</span><strong data-preview-title th:text="${movieForm.title ?: 'Tên phim'}">Tên phim</strong>
+                <small data-preview-meta>Poster hiển thị trên trang khách hàng</small></div>
+        </aside>
         <div class="module1-form-actions">
             <button class="btn" type="submit">Lưu phim</button>
             <a class="btn btn-ghost" th:href="@{/admin/movies}">Huỷ</a>
         </div>
     </form>
+    <script th:src="@{/js/module1-forms.js}" defer></script>
 </div></body></html>

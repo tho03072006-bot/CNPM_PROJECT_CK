@@ -63,7 +63,8 @@
             <td th:text="|${#numbers.formatDecimal(showtime.basePrice, 0, 'POINT', 0, 'COMMA')} đ|">Giá</td>
             <td><div class="module1-row-actions">
                 <a class="btn btn-ghost btn-sm" th:href="@{/admin/showtimes/{id}/edit(id=${showtime.id})}">Sửa</a>
-                <form th:action="@{/admin/showtimes/{id}/delete(id=${showtime.id})}" method="post">
+                <form th:action="@{/admin/showtimes/{id}/delete(id=${showtime.id})}" method="post"
+                      onsubmit="return confirm('Xoá suất chiếu này?');">
                     <button class="btn btn-ghost btn-sm" type="submit">Xoá</button>
                 </form>
             </div></td>

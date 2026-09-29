@@ -247,4 +247,22 @@ class MoviePagesIntegrationTest extends IntegrationTestBase {
                 .andExpect(content().string(containsString("A1")))
                 .andExpect(content().string(containsString("Ghế VIP")));
     }
+
+    @Test
+    @DisplayName("Trang quản trị phim lọc được trạng thái đã ngừng")
+    void shouldFilterInactiveMovies_whenOpeningAdminMovieList() throws Exception {
+        User admin = new User();
+        admin.setRole(Role.ADMIN);
+        testDataFactory.createMovie("Phim còn chiếu");
+        Movie inactive = testDataFactory.createMovie("Phim cần khôi phục");
+        inactive.setActive(false);
+        movieRepository.save(inactive);
+
+        mockMvc.perform(MockMvcRequestBuilders.get("/admin/movies")
+                        .sessionAttr(Constants.SESSION_USER, admin)
+                        .param("active", "false"))
+                .andExpect(status().isOk())
+                .andExpect(content().string(containsString("Phim cần khôi phục")))
+                .andExpect(content().string(not(containsString("Phim còn chiếu"))));
+    }
 }

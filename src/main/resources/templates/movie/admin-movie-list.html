@@ -16,12 +16,42 @@
         <a th:href="@{/admin/rooms}">Phòng chiếu</a>
         <a th:href="@{/admin/showtimes}">Suất chiếu</a>
     </nav>
-    <div class="module1-admin-summary">
-        <span class="module1-summary-number" th:text="${#lists.size(movies)}">6</span>
-        <div><strong>Phim trong hệ thống</strong><span>Bao gồm phim đang chiếu và đã ngừng chiếu.</span></div>
+    <div class="module1-stats-grid" aria-label="Thống kê kho phim">
+        <div class="module1-stat-card"><span>Tất cả phim</span><strong th:text="${totalMovies}">6</strong></div>
+        <div class="module1-stat-card is-active"><span>Đang chiếu</span><strong th:text="${activeMovies}">5</strong></div>
+        <div class="module1-stat-card is-inactive"><span>Đã ngừng</span><strong th:text="${inactiveMovies}">1</strong></div>
     </div>
+    <form class="card module1-filter-panel module1-admin-movie-filter" method="get" th:action="@{/admin/movies}"
+          aria-label="Tìm và lọc kho phim">
+        <div class="form-field">
+            <label for="admin-movie-search">Tên phim</label>
+            <input class="form-control" id="admin-movie-search" name="q" type="search"
+                   th:value="${keyword}" placeholder="Nhập tên phim" autocomplete="off">
+        </div>
+        <div class="form-field">
+            <label for="admin-movie-genre">Thể loại</label>
+            <select class="form-control" id="admin-movie-genre" name="genre">
+                <option value="">Tất cả thể loại</option>
+                <option th:each="genre : ${genres}" th:value="${genre}" th:text="${genre}"
+                        th:selected="${genre.equals(selectedGenre)}"></option>
+            </select>
+        </div>
+        <div class="form-field">
+            <label for="admin-movie-status">Trạng thái</label>
+            <select class="form-control" id="admin-movie-status" name="active">
+                <option value="">Tất cả trạng thái</option>
+                <option value="true" th:selected="${selectedActive != null and selectedActive}">Đang chiếu</option>
+                <option value="false" th:selected="${selectedActive != null and !selectedActive}">Đã ngừng</option>
+            </select>
+        </div>
+        <div class="module1-filter-actions">
+            <button class="btn" type="submit">Lọc phim</button>
+            <a class="btn btn-ghost" th:if="${filtering}" th:href="@{/admin/movies}">Xoá lọc</a>
+        </div>
+    </form>
     <div class="module1-empty" th:if="${#lists.isEmpty(movies)}">
-        <h2>Chưa có phim nào</h2><p>Thêm bộ phim đầu tiên để bắt đầu lên lịch chiếu.</p>
+        <h2 th:text="${filtering} ? 'Không có phim phù hợp' : 'Chưa có phim nào'">Chưa có phim nào</h2>
+        <p th:text="${filtering} ? 'Hãy đổi điều kiện hoặc xoá bộ lọc để xem toàn bộ kho phim.' : 'Thêm bộ phim đầu tiên để bắt đầu lên lịch chiếu.'">Thông báo</p>
     </div>
     <div class="table-wrap" th:unless="${#lists.isEmpty(movies)}">
         <table class="admin-table module1-table"><thead><tr>
@@ -38,7 +68,8 @@
                       th:text="${movie.active} ? 'Đang chiếu' : 'Đã ngừng'">Trạng thái</span></td>
             <td><div class="module1-row-actions">
                 <a class="btn btn-ghost btn-sm" th:href="@{/admin/movies/{id}/edit(id=${movie.id})}">Sửa</a>
-                <form th:if="${movie.active}" th:action="@{/admin/movies/{id}/deactivate(id=${movie.id})}" method="post">
+                <form th:if="${movie.active}" th:action="@{/admin/movies/{id}/deactivate(id=${movie.id})}" method="post"
+                      onsubmit="return confirm('Ngừng chiếu phim này? Phim sẽ ẩn khỏi trang khách hàng.');">
                     <button class="btn btn-ghost btn-sm" type="submit">Ngừng chiếu</button>
                 </form>
                 <form th:unless="${movie.active}" th:action="@{/admin/movies/{id}/reactivate(id=${movie.id})}" method="post">

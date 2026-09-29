@@ -35,9 +35,32 @@ public class MovieService {
      */
     @Transactional(readOnly = true)
     public List<Movie> findActiveMovies(String keyword, String genre) {
+        return filterMovies(findActiveMovies(), keyword, genre, null);
+    }
+
+    /** Danh sách thể loại thật sự đang có để dựng bộ lọc, không hardcode trên giao diện. */
+    @Transactional(readOnly = true)
+    public List<String> findActiveGenres() {
+        return extractGenres(findActiveMovies());
+    }
+
+    /** Tìm trong toàn bộ kho phim cho trang quản trị, gồm cả phim đã ngừng. */
+    @Transactional(readOnly = true)
+    public List<Movie> findMovies(String keyword, String genre, Boolean active) {
+        return filterMovies(findAllMovies(), keyword, genre, active);
+    }
+
+    /** Danh sách thể loại của toàn bộ kho phim cho bộ lọc quản trị. */
+    @Transactional(readOnly = true)
+    public List<String> findAllGenres() {
+        return extractGenres(findAllMovies());
+    }
+
+    private List<Movie> filterMovies(List<Movie> movies, String keyword, String genre, Boolean active) {
         String normalizedKeyword = normalizeForSearch(keyword);
         String normalizedGenre = normalizeForSearch(genre);
-        return findActiveMovies().stream()
+        return movies.stream()
+                .filter(movie -> active == null || active.equals(movie.getActive()))
                 .filter(movie -> normalizedKeyword.isEmpty()
                         || normalizeForSearch(movie.getTitle()).contains(normalizedKeyword))
                 .filter(movie -> normalizedGenre.isEmpty()
@@ -47,10 +70,8 @@ public class MovieService {
                 .toList();
     }
 
-    /** Danh sách thể loại thật sự đang có để dựng bộ lọc, không hardcode trên giao diện. */
-    @Transactional(readOnly = true)
-    public List<String> findActiveGenres() {
-        return findActiveMovies().stream()
+    private List<String> extractGenres(List<Movie> movies) {
+        return movies.stream()
                 .flatMap(movie -> splitGenres(movie.getGenre()).stream())
                 .distinct()
                 .sorted(Comparator.comparing(MovieService::normalizeForSearch))

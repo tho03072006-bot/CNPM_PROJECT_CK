@@ -51,6 +51,12 @@ public class ScheduleService {
      */
     @Transactional(readOnly = true)
     public List<ScheduleDate> findScheduleDates() {
+        return findScheduleDates(null, null);
+    }
+
+    /** Các ngày còn suất chiếu sau khi lọc theo phim và phòng. */
+    @Transactional(readOnly = true)
+    public List<ScheduleDate> findScheduleDates(Long movieId, Long roomId) {
         LocalDateTime now = LocalDateTime.now();
         LocalDate today = now.toLocalDate();
         LocalDateTime until = today.plusDays(SCHEDULE_DAYS).atStartOfDay();
@@ -60,7 +66,7 @@ public class ScheduleService {
         // Một rạp chỉ có vài trăm suất trong một tuần nên lọc trong Java cho dễ
         // đọc, không cần viết thêm câu truy vấn gom nhóm riêng.
         for (Showtime showtime : showtimeRepository.findByStartTimeGreaterThanEqualAndStartTimeLessThanOrderByStartTimeAsc(now, until)) {
-            if (!isVisible(showtime)) {
+            if (!isVisible(showtime) || !matchesFilters(showtime, movieId, roomId)) {
                 continue;
             }
             LocalDate date = showtime.getStartTime().toLocalDate();
@@ -79,6 +85,12 @@ public class ScheduleService {
      */
     @Transactional(readOnly = true)
     public List<MovieSchedule> findScheduleFor(LocalDate date) {
+        return findScheduleFor(date, null, null);
+    }
+
+    /** Lịch của một ngày sau khi lọc chính xác theo phim và phòng. */
+    @Transactional(readOnly = true)
+    public List<MovieSchedule> findScheduleFor(LocalDate date, Long movieId, Long roomId) {
         LocalDateTime now = LocalDateTime.now();
         LocalDateTime startOfDay = date.atStartOfDay();
         LocalDateTime from = startOfDay.isBefore(now) ? now : startOfDay;
@@ -89,7 +101,7 @@ public class ScheduleService {
 
         List<Showtime> showtimes = new ArrayList<>();
         for (Showtime showtime : showtimeRepository.findByStartTimeGreaterThanEqualAndStartTimeLessThanOrderByStartTimeAsc(from, until)) {
-            if (isVisible(showtime)) {
+            if (isVisible(showtime) && matchesFilters(showtime, movieId, roomId)) {
                 showtimes.add(showtime);
             }
         }
@@ -102,9 +114,9 @@ public class ScheduleService {
         Map<Long, Movie> moviesById = new LinkedHashMap<>();
         Map<Long, Map<String, List<Showtime>>> grouped = new LinkedHashMap<>();
         for (Showtime showtime : showtimes) {
-            Long movieId = showtime.getMovie().getId();
-            moviesById.putIfAbsent(movieId, showtime.getMovie());
-            grouped.computeIfAbsent(movieId, key -> new LinkedHashMap<>())
+            Long groupedMovieId = showtime.getMovie().getId();
+            moviesById.putIfAbsent(groupedMovieId, showtime.getMovie());
+            grouped.computeIfAbsent(groupedMovieId, key -> new LinkedHashMap<>())
                     .computeIfAbsent(resolveRoomType(showtime.getRoom().getName()), key -> new ArrayList<>())
                     .add(showtime);
         }
@@ -148,5 +160,10 @@ public class ScheduleService {
     private boolean isVisible(Showtime showtime) {
         Movie movie = showtime.getMovie();
         return movie != null && Boolean.TRUE.equals(movie.getActive());
+    }
+
+    private boolean matchesFilters(Showtime showtime, Long movieId, Long roomId) {
+        return (movieId == null || movieId.equals(showtime.getMovie().getId()))
+                && (roomId == null || roomId.equals(showtime.getRoom().getId()));
     }
 }

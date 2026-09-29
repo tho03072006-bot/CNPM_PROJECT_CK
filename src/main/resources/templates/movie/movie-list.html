@@ -72,8 +72,12 @@
                 <h3 class="movie-title" th:text="${movie.title}">Tên phim</h3>
                 <p class="movie-meta" th:text="|${movie.durationMin} phút · ${movie.ageRating ?: 'Chưa phân loại'}|">Thời lượng</p>
                 <p class="module1-card-description" th:text="${movie.description ?: 'Xem thông tin phim và các suất chiếu sắp tới.'}">Mô tả phim</p>
-                <a class="module1-card-link" th:href="@{/movies/{id}(id=${movie.id})}"
-                   th:aria-label="|Xem lịch chiếu phim ${movie.title}|">Xem lịch chiếu <span aria-hidden="true">→</span></a>
+                <div class="module1-card-actions">
+                    <a class="btn btn-sm" th:href="@{/movies/{id}(id=${movie.id})}"
+                       th:aria-label="|Đặt vé phim ${movie.title}|">Đặt vé</a>
+                    <a class="module1-card-link" th:href="@{/movies/{id}(id=${movie.id})}"
+                       th:aria-label="|Xem chi tiết phim ${movie.title}|">Chi tiết <span aria-hidden="true">→</span></a>
+                </div>
             </div>
         </article>
     </div>

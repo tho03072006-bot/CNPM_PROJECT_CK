@@ -1,6 +1,8 @@
 package edu.hcmute.cnpm.cinema.controller;
 
 import edu.hcmute.cnpm.cinema.dto.schedule.ScheduleDate;
+import edu.hcmute.cnpm.cinema.service.MovieService;
+import edu.hcmute.cnpm.cinema.service.RoomService;
 import edu.hcmute.cnpm.cinema.service.ScheduleService;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -21,21 +23,32 @@ import java.util.List;
 public class ScheduleController {
 
     private final ScheduleService scheduleService;
+    private final MovieService movieService;
+    private final RoomService roomService;
 
-    public ScheduleController(ScheduleService scheduleService) {
+    public ScheduleController(ScheduleService scheduleService, MovieService movieService, RoomService roomService) {
         this.scheduleService = scheduleService;
+        this.movieService = movieService;
+        this.roomService = roomService;
     }
 
     @GetMapping
     public String showSchedule(@RequestParam(name = "ngay", required = false) String requestedDate,
+                               @RequestParam(required = false) Long movieId,
+                               @RequestParam(required = false) Long roomId,
                                Model model) {
-        List<ScheduleDate> scheduleDates = scheduleService.findScheduleDates();
+        List<ScheduleDate> scheduleDates = scheduleService.findScheduleDates(movieId, roomId);
         LocalDate selectedDate = resolveSelectedDate(requestedDate, scheduleDates);
 
         model.addAttribute("scheduleDates", scheduleDates);
         model.addAttribute("selectedDate", selectedDate);
+        model.addAttribute("movies", movieService.findActiveMovies());
+        model.addAttribute("rooms", roomService.findAllRooms());
+        model.addAttribute("selectedMovieId", movieId);
+        model.addAttribute("selectedRoomId", roomId);
+        model.addAttribute("filtering", movieId != null || roomId != null);
         model.addAttribute("schedule",
-                selectedDate == null ? List.of() : scheduleService.findScheduleFor(selectedDate));
+                selectedDate == null ? List.of() : scheduleService.findScheduleFor(selectedDate, movieId, roomId));
         return "movie/schedule";
     }
 

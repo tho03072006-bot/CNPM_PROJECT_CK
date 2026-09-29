@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 @Controller
@@ -24,8 +25,21 @@ public class AdminMovieController {
     }
 
     @GetMapping
-    public String list(Model model) {
-        model.addAttribute("movies", movieService.findAllMovies());
+    public String list(@RequestParam(required = false) String q,
+                       @RequestParam(required = false) String genre,
+                       @RequestParam(required = false) Boolean active,
+                       Model model) {
+        var allMovies = movieService.findAllMovies();
+        model.addAttribute("movies", movieService.findMovies(q, genre, active));
+        model.addAttribute("genres", movieService.findAllGenres());
+        model.addAttribute("keyword", q == null ? "" : q.trim());
+        model.addAttribute("selectedGenre", genre == null ? "" : genre);
+        model.addAttribute("selectedActive", active);
+        model.addAttribute("filtering", (q != null && !q.isBlank())
+                || (genre != null && !genre.isBlank()) || active != null);
+        model.addAttribute("totalMovies", allMovies.size());
+        model.addAttribute("activeMovies", allMovies.stream().filter(movie -> Boolean.TRUE.equals(movie.getActive())).count());
+        model.addAttribute("inactiveMovies", allMovies.stream().filter(movie -> !Boolean.TRUE.equals(movie.getActive())).count());
         return "movie/admin-movie-list";
     }
 
