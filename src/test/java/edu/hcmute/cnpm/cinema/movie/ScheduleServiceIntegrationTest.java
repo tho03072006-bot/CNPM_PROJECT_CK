@@ -153,18 +153,24 @@ class ScheduleServiceIntegrationTest extends IntegrationTestBase {
         LocalDate tomorrow = LocalDate.now().plusDays(1);
         LocalDate later = LocalDate.now().plusDays(2);
         testDataFactory.createShowtime(selectedMovie, selectedRoom, tomorrow.atTime(10, 0));
+        testDataFactory.createShowtime(selectedMovie, selectedRoom, tomorrow.atTime(20, 0));
         testDataFactory.createShowtime(selectedMovie, otherRoom, tomorrow.atTime(13, 0));
         testDataFactory.createShowtime(otherMovie, selectedRoom, tomorrow.atTime(16, 0));
         testDataFactory.createShowtime(otherMovie, otherRoom, later.atTime(10, 0));
 
-        assertThat(scheduleService.findScheduleDates(selectedMovie.getId(), selectedRoom.getId()))
+        assertThat(scheduleService.findScheduleDates(selectedMovie.getId(), selectedRoom.getId(), "morning"))
                 .extracting(ScheduleDate::getDate)
                 .containsExactly(tomorrow);
-        assertThat(scheduleService.findScheduleFor(tomorrow, selectedMovie.getId(), selectedRoom.getId()))
+        assertThat(scheduleService.findScheduleFor(tomorrow, selectedMovie.getId(), selectedRoom.getId(), "morning"))
                 .singleElement()
                 .satisfies(entry -> {
                     assertThat(entry.getMovie().getId()).isEqualTo(selectedMovie.getId());
                     assertThat(entry.getTotalShowtimes()).isEqualTo(1);
                 });
+        assertThat(scheduleService.findScheduleFor(tomorrow, selectedMovie.getId(), selectedRoom.getId(), "evening"))
+                .singleElement()
+                .satisfies(entry -> assertThat(entry.getShowtimesByRoomType().values())
+                        .flatExtracting(showtimes -> showtimes)
+                        .allSatisfy(showtime -> assertThat(showtime.getStartTime().getHour()).isGreaterThanOrEqualTo(18)));
     }
 }

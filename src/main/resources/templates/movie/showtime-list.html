@@ -53,7 +53,7 @@
     </div>
     <div class="table-wrap" th:unless="${#lists.isEmpty(showtimes)}">
         <table class="admin-table module1-table"><thead><tr>
-            <th>Phim / phòng</th><th>Bắt đầu</th><th>Kết thúc</th><th>Giá cơ bản</th><th>Thao tác</th>
+            <th>Phim / phòng</th><th>Bắt đầu</th><th>Kết thúc</th><th>Giá cơ bản</th><th>Lấp đầy</th><th>Thao tác</th>
         </tr></thead><tbody><tr th:each="showtime : ${showtimes}">
             <td><div class="module1-table-title"><span class="module1-table-mark" aria-hidden="true">▸</span>
                 <span><strong th:text="${showtime.movie.title}">Tên phim</strong>
@@ -61,6 +61,13 @@
             <td th:text="${#temporals.format(showtime.startTime, 'dd/MM/yyyy HH:mm')}">Bắt đầu</td>
             <td th:text="${#temporals.format(showtime.endTime, 'dd/MM/yyyy HH:mm')}">Kết thúc</td>
             <td th:text="|${#numbers.formatDecimal(showtime.basePrice, 0, 'POINT', 0, 'COMMA')} đ|">Giá</td>
+            <td th:with="availability=${availabilityByShowtimeId[showtime.id]}">
+                <div class="module1-admin-occupancy">
+                    <strong th:text="|${availability.occupancyPercent}%|">0%</strong>
+                    <span th:text="|${availability.reservedSeats}/${availability.totalSeats} ghế|">0/80 ghế</span>
+                    <span class="module1-occupancy-track" aria-hidden="true"><i th:style="|width: ${availability.occupancyPercent}%|"></i></span>
+                </div>
+            </td>
             <td><div class="module1-row-actions">
                 <a class="btn btn-ghost btn-sm" th:href="@{/admin/showtimes/{id}/edit(id=${showtime.id})}">Sửa</a>
                 <form th:action="@{/admin/showtimes/{id}/delete(id=${showtime.id})}" method="post"

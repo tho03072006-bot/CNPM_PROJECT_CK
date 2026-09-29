@@ -34,6 +34,15 @@
                         th:selected="${selectedRoomId != null and selectedRoomId.equals(room.id)}"></option>
             </select>
         </div>
+        <div class="form-field">
+            <label for="schedule-time">Khung giờ</label>
+            <select class="form-control" id="schedule-time" name="time">
+                <option value="">Cả ngày</option>
+                <option value="morning" th:selected="${selectedTime == 'morning'}">Buổi sáng · trước 12:00</option>
+                <option value="afternoon" th:selected="${selectedTime == 'afternoon'}">Buổi chiều · 12:00–17:59</option>
+                <option value="evening" th:selected="${selectedTime == 'evening'}">Buổi tối · từ 18:00</option>
+            </select>
+        </div>
         <div class="module1-filter-actions">
             <button class="btn" type="submit">Áp dụng</button>
             <a class="btn btn-ghost" th:if="${filtering}" th:href="@{/lich-chieu}">Xoá bộ lọc</a>
@@ -43,7 +52,7 @@
     <!-- Dải chọn ngày. Chỉ liệt kê ngày thật sự còn suất chiếu chưa bắt đầu. -->
     <nav class="schedule-dates" aria-label="Chọn ngày chiếu" th:if="${!scheduleDates.isEmpty()}">
         <a class="schedule-date" th:each="item : ${scheduleDates}"
-           th:href="@{/lich-chieu(ngay=${item.date},movieId=${selectedMovieId},roomId=${selectedRoomId})}"
+           th:href="@{/lich-chieu(ngay=${item.date},movieId=${selectedMovieId},roomId=${selectedRoomId},time=${selectedTime})}"
            th:classappend="${item.date.equals(selectedDate)} ? ' is-selected' : ''"
            th:aria-current="${item.date.equals(selectedDate)} ? 'page' : null">
             <span class="schedule-date-dow" th:text="${item.dayLabel}">Thứ 2</span>
@@ -95,13 +104,19 @@
                     <span class="schedule-room-label" th:text="${group.key}">Phòng thường</span>
                     <div class="schedule-times">
                         <a class="schedule-time" th:each="showtime : ${group.value}"
-                           th:href="@{/booking/showtime/{id}(id=${showtime.id})}"
-                           th:classappend="${group.key == 'Gold Class'} ? ' is-gold' :
-                                           (${group.key == 'Premium'} ? ' is-premium' : '')"
+                           th:with="availability=${availabilityByShowtimeId[showtime.id]}"
+                           th:href="${availability.soldOut} ? null : @{/booking/showtime/{id}(id=${showtime.id})}"
+                           th:classappend="(${group.key == 'Gold Class'} ? ' is-gold' :
+                                           (${group.key == 'Premium'} ? ' is-premium' : '')) +
+                                           (${availability.soldOut} ? ' is-soldout' : '')"
+                           th:attr="aria-disabled=${availability.soldOut}"
                            th:aria-label="|Đặt vé suất ${#temporals.format(showtime.startTime, 'HH:mm')} phim ${entry.movie.title} tại ${showtime.room.name}, giá ${#numbers.formatDecimal(showtime.basePrice, 0, 'POINT', 0, 'COMMA')} đồng|">
                             <span class="schedule-time-hour"
                                   th:text="${#temporals.format(showtime.startTime, 'HH:mm')}">18:00</span>
                             <span class="schedule-time-room" th:text="${showtime.room.name}">Cinema 1</span>
+                            <span class="schedule-time-seats"
+                                  th:classappend="${availability.almostFull} ? ' is-low' : ''"
+                                  th:text="${availability.label}">Còn ghế</span>
                         </a>
                     </div>
                 </div>

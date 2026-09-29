@@ -120,6 +120,21 @@ class MoviePagesIntegrationTest extends IntegrationTestBase {
     }
 
     @Test
+    @DisplayName("Form phim từ chối đường dẫn poster không hợp lệ")
+    void shouldShowFieldError_whenPosterUrlIsInvalid() throws Exception {
+        User admin = new User();
+        admin.setRole(Role.ADMIN);
+
+        mockMvc.perform(MockMvcRequestBuilders.post("/admin/movies")
+                        .sessionAttr(Constants.SESSION_USER, admin)
+                        .param("title", "Phim có poster lỗi")
+                        .param("durationMin", "100")
+                        .param("posterUrl", "khong-phai-url"))
+                .andExpect(status().isOk())
+                .andExpect(model().attributeHasFieldErrors("movieForm", "posterUrl"));
+    }
+
+    @Test
     @DisplayName("Trang chi tiết và trang quản trị hiển thị suất chiếu sắp tới")
     void shouldRenderUpcomingShowtime_whenOpeningMovieAndAdminPages() throws Exception {
         Movie movie = testDataFactory.createMovie("Phim cuối tuần");

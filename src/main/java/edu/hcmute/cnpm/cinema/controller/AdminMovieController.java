@@ -2,6 +2,7 @@ package edu.hcmute.cnpm.cinema.controller;
 
 import edu.hcmute.cnpm.cinema.constants.Constants;
 import edu.hcmute.cnpm.cinema.controller.form.MovieForm;
+import edu.hcmute.cnpm.cinema.entity.Movie;
 import edu.hcmute.cnpm.cinema.service.MovieService;
 import jakarta.validation.Valid;
 import org.springframework.stereotype.Controller;
@@ -40,7 +41,15 @@ public class AdminMovieController {
         model.addAttribute("totalMovies", allMovies.size());
         model.addAttribute("activeMovies", allMovies.stream().filter(movie -> Boolean.TRUE.equals(movie.getActive())).count());
         model.addAttribute("inactiveMovies", allMovies.stream().filter(movie -> !Boolean.TRUE.equals(movie.getActive())).count());
+        model.addAttribute("incompleteMovies", allMovies.stream().filter(this::isIncomplete).count());
         return "movie/admin-movie-list";
+    }
+
+    private boolean isIncomplete(Movie movie) {
+        return movie.getPosterUrl() == null || movie.getPosterUrl().isBlank()
+                || movie.getDescription() == null || movie.getDescription().isBlank()
+                || movie.getGenre() == null || movie.getGenre().isBlank()
+                || movie.getAgeRating() == null || movie.getAgeRating().isBlank();
     }
 
     @GetMapping("/new")

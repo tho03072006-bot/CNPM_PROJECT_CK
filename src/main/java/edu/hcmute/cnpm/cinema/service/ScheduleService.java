@@ -57,6 +57,12 @@ public class ScheduleService {
     /** Các ngày còn suất chiếu sau khi lọc theo phim và phòng. */
     @Transactional(readOnly = true)
     public List<ScheduleDate> findScheduleDates(Long movieId, Long roomId) {
+        return findScheduleDates(movieId, roomId, null);
+    }
+
+    /** Các ngày còn suất chiếu sau khi lọc thêm theo khung giờ trong ngày. */
+    @Transactional(readOnly = true)
+    public List<ScheduleDate> findScheduleDates(Long movieId, Long roomId, String timePeriod) {
         LocalDateTime now = LocalDateTime.now();
         LocalDate today = now.toLocalDate();
         LocalDateTime until = today.plusDays(SCHEDULE_DAYS).atStartOfDay();
@@ -66,7 +72,7 @@ public class ScheduleService {
         // Một rạp chỉ có vài trăm suất trong một tuần nên lọc trong Java cho dễ
         // đọc, không cần viết thêm câu truy vấn gom nhóm riêng.
         for (Showtime showtime : showtimeRepository.findByStartTimeGreaterThanEqualAndStartTimeLessThanOrderByStartTimeAsc(now, until)) {
-            if (!isVisible(showtime) || !matchesFilters(showtime, movieId, roomId)) {
+            if (!isVisible(showtime) || !matchesFilters(showtime, movieId, roomId, timePeriod)) {
                 continue;
             }
             LocalDate date = showtime.getStartTime().toLocalDate();
@@ -91,6 +97,12 @@ public class ScheduleService {
     /** Lịch của một ngày sau khi lọc chính xác theo phim và phòng. */
     @Transactional(readOnly = true)
     public List<MovieSchedule> findScheduleFor(LocalDate date, Long movieId, Long roomId) {
+        return findScheduleFor(date, movieId, roomId, null);
+    }
+
+    /** Lịch của một ngày sau khi lọc thêm theo buổi sáng, chiều hoặc tối. */
+    @Transactional(readOnly = true)
+    public List<MovieSchedule> findScheduleFor(LocalDate date, Long movieId, Long roomId, String timePeriod) {
         LocalDateTime now = LocalDateTime.now();
         LocalDateTime startOfDay = date.atStartOfDay();
         LocalDateTime from = startOfDay.isBefore(now) ? now : startOfDay;
@@ -101,7 +113,7 @@ public class ScheduleService {
 
         List<Showtime> showtimes = new ArrayList<>();
         for (Showtime showtime : showtimeRepository.findByStartTimeGreaterThanEqualAndStartTimeLessThanOrderByStartTimeAsc(from, until)) {
-            if (isVisible(showtime) && matchesFilters(showtime, movieId, roomId)) {
+            if (isVisible(showtime) && matchesFilters(showtime, movieId, roomId, timePeriod)) {
                 showtimes.add(showtime);
             }
         }
@@ -162,8 +174,22 @@ public class ScheduleService {
         return movie != null && Boolean.TRUE.equals(movie.getActive());
     }
 
-    private boolean matchesFilters(Showtime showtime, Long movieId, Long roomId) {
+    private boolean matchesFilters(Showtime showtime, Long movieId, Long roomId, String timePeriod) {
         return (movieId == null || movieId.equals(showtime.getMovie().getId()))
-                && (roomId == null || roomId.equals(showtime.getRoom().getId()));
+                && (roomId == null || roomId.equals(showtime.getRoom().getId()))
+                && matchesTimePeriod(showtime, timePeriod);
+    }
+
+    private boolean matchesTimePeriod(Showtime showtime, String timePeriod) {
+        if (timePeriod == null || timePeriod.isBlank()) {
+            return true;
+        }
+        int hour = showtime.getStartTime().getHour();
+        return switch (timePeriod) {
+            case "morning" -> hour < 12;
+            case "afternoon" -> hour >= 12 && hour < 18;
+            case "evening" -> hour >= 18;
+            default -> true;
+        };
     }
 }

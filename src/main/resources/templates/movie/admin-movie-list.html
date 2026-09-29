@@ -20,6 +20,7 @@
         <div class="module1-stat-card"><span>Tất cả phim</span><strong th:text="${totalMovies}">6</strong></div>
         <div class="module1-stat-card is-active"><span>Đang chiếu</span><strong th:text="${activeMovies}">5</strong></div>
         <div class="module1-stat-card is-inactive"><span>Đã ngừng</span><strong th:text="${inactiveMovies}">1</strong></div>
+        <div class="module1-stat-card is-warning"><span>Cần bổ sung</span><strong th:text="${incompleteMovies}">1</strong></div>
     </div>
     <form class="card module1-filter-panel module1-admin-movie-filter" method="get" th:action="@{/admin/movies}"
           aria-label="Tìm và lọc kho phim">
@@ -61,7 +62,9 @@
                 <span class="module1-table-mark" aria-hidden="true"
                       th:text="${#strings.substring(movie.title, 0, 1)}">B</span>
                 <span><strong th:text="${movie.title}">Tên phim</strong>
-                      <small th:text="${movie.genre ?: 'Chưa phân loại'}">Thể loại</small></span>
+                      <small th:text="${movie.genre ?: 'Chưa phân loại'}">Thể loại</small>
+                      <small class="module1-data-warning"
+                             th:if="${movie.posterUrl == null or #strings.isEmpty(movie.posterUrl) or movie.description == null or #strings.isEmpty(movie.description) or movie.ageRating == null or #strings.isEmpty(movie.ageRating)}">⚠ Nội dung công khai chưa đầy đủ</small></span>
             </div></td>
             <td th:text="|${movie.durationMin} phút|">120 phút</td>
             <td><span th:class="${movie.active} ? 'badge badge-brand' : 'badge badge-danger'"

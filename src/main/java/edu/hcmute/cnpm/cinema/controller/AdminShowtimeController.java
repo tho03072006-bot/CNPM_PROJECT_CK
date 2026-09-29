@@ -6,6 +6,7 @@ import edu.hcmute.cnpm.cinema.exception.InvalidBookingException;
 import edu.hcmute.cnpm.cinema.service.MovieService;
 import edu.hcmute.cnpm.cinema.service.RoomService;
 import edu.hcmute.cnpm.cinema.service.ShowtimeService;
+import edu.hcmute.cnpm.cinema.service.ShowtimeAvailabilityService;
 import jakarta.validation.Valid;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -27,12 +28,14 @@ public class AdminShowtimeController {
     private final ShowtimeService showtimeService;
     private final MovieService movieService;
     private final RoomService roomService;
+    private final ShowtimeAvailabilityService availabilityService;
 
     public AdminShowtimeController(ShowtimeService showtimeService, MovieService movieService,
-                                   RoomService roomService) {
+                                   RoomService roomService, ShowtimeAvailabilityService availabilityService) {
         this.showtimeService = showtimeService;
         this.movieService = movieService;
         this.roomService = roomService;
+        this.availabilityService = availabilityService;
     }
 
     @GetMapping
@@ -41,7 +44,9 @@ public class AdminShowtimeController {
                        @RequestParam(name = "movieId", required = false) Long movieId,
                        @RequestParam(name = "roomId", required = false) Long roomId,
                        Model model) {
-        model.addAttribute("showtimes", showtimeService.findShowtimes(date, movieId, roomId));
+        var showtimes = showtimeService.findShowtimes(date, movieId, roomId);
+        model.addAttribute("showtimes", showtimes);
+        model.addAttribute("availabilityByShowtimeId", availabilityService.findForShowtimes(showtimes));
         model.addAttribute("selectedDate", date);
         model.addAttribute("selectedMovieId", movieId);
         model.addAttribute("selectedRoomId", roomId);

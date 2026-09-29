@@ -3,8 +3,11 @@ package edu.hcmute.cnpm.cinema.repository;
 import edu.hcmute.cnpm.cinema.entity.Ticket;
 import edu.hcmute.cnpm.cinema.entity.TicketStatus;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 
 import java.time.LocalDateTime;
+import java.util.Collection;
 import java.util.List;
 
 public interface TicketRepository extends JpaRepository<Ticket, Long> {
@@ -12,6 +15,15 @@ public interface TicketRepository extends JpaRepository<Ticket, Long> {
     List<Ticket> findByShowtimeIdAndStatusIn(Long showtimeId, List<TicketStatus> statuses);
 
     boolean existsByShowtimeId(Long showtimeId);
+
+    /** Đếm ghế đang bị chiếm cho nhiều suất trong một truy vấn, tránh N+1 ở trang lịch chiếu. */
+    @Query("""
+            select ticket.showtime.id, count(ticket.id)
+            from Ticket ticket
+            where ticket.showtime.id in :showtimeIds
+            group by ticket.showtime.id
+            """)
+    List<Object[]> countReservedSeatsByShowtimeIds(@Param("showtimeIds") Collection<Long> showtimeIds);
 
     // ===== Module 3 them: thanh toan, lich su ve, thong ke =====
 

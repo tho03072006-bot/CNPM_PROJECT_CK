@@ -3,7 +3,11 @@ document.addEventListener("DOMContentLoaded", () => {
     if (moviePreview) {
         const titleInput = document.querySelector("#title");
         const posterInput = document.querySelector("#posterUrl");
+        const genreInput = document.querySelector("#genre");
+        const durationInput = document.querySelector("#durationMin");
+        const ratingInput = document.querySelector("#ageRating");
         const title = moviePreview.querySelector("[data-preview-title]");
+        const meta = moviePreview.querySelector("[data-preview-meta]");
         const image = moviePreview.querySelector("[data-poster-image]");
         const fallback = moviePreview.querySelector("[data-poster-fallback]");
 
@@ -11,6 +15,10 @@ document.addEventListener("DOMContentLoaded", () => {
             const movieTitle = titleInput.value.trim();
             const posterUrl = posterInput.value.trim();
             title.textContent = movieTitle || "Tên phim";
+            const genre = genreInput.value.trim() || "Chưa phân loại";
+            const duration = durationInput.value ? `${durationInput.value} phút` : "Chưa có thời lượng";
+            const rating = ratingInput.value.trim() || "Chưa xếp hạng";
+            meta.textContent = `${genre} · ${duration} · ${rating}`;
             fallback.textContent = movieTitle ? movieTitle.charAt(0).toUpperCase() : "P";
             if (posterUrl) {
                 image.hidden = false;
@@ -23,6 +31,9 @@ document.addEventListener("DOMContentLoaded", () => {
         image.addEventListener("error", () => { image.hidden = true; });
         titleInput.addEventListener("input", renderMovie);
         posterInput.addEventListener("input", renderMovie);
+        genreInput.addEventListener("input", renderMovie);
+        durationInput.addEventListener("input", renderMovie);
+        ratingInput.addEventListener("input", renderMovie);
         renderMovie();
     }
 
@@ -58,7 +69,9 @@ document.addEventListener("DOMContentLoaded", () => {
                 return;
             }
             const end = new Date(start.getTime() + (duration + 15) * 60 * 1000);
-            range.textContent = `${twoDigits(start.getHours())}:${twoDigits(start.getMinutes())} – ${twoDigits(end.getHours())}:${twoDigits(end.getMinutes())}, ${twoDigits(start.getDate())}/${twoDigits(start.getMonth() + 1)}`;
+            const endsNextDay = end.getFullYear() !== start.getFullYear()
+                || end.getMonth() !== start.getMonth() || end.getDate() !== start.getDate();
+            range.textContent = `${twoDigits(start.getHours())}:${twoDigits(start.getMinutes())} – ${twoDigits(end.getHours())}:${twoDigits(end.getMinutes())}${endsNextDay ? " (+1 ngày)" : ""}, ${twoDigits(start.getDate())}/${twoDigits(start.getMonth() + 1)}`;
         };
         movieSelect.addEventListener("change", renderShowtime);
         startInput.addEventListener("input", renderShowtime);

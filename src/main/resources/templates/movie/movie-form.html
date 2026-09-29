@@ -34,8 +34,9 @@
                 <span class="form-hint">Để trống sẽ dùng ảnh bìa chữ của rạp.</span>
                 <span class="form-error" th:if="${#fields.hasErrors('posterUrl')}" th:errors="*{posterUrl}"></span></div>
             <div class="form-field"><label for="ageRating">Nhãn độ tuổi</label>
-                <input class="form-control" id="ageRating" type="text" th:field="*{ageRating}" maxlength="10"
-                       placeholder="P, C13, C16, C18">
+                <input class="form-control" id="ageRating" type="text" th:field="*{ageRating}" maxlength="10" list="age-ratings"
+                       placeholder="P, K, T13, T16, T18">
+                <datalist id="age-ratings"><option value="K"><option value="P"><option value="T13"><option value="T16"><option value="T18"></datalist>
                 <span class="form-error" th:if="${#fields.hasErrors('ageRating')}" th:errors="*{ageRating}"></span></div>
         </div>
         <aside class="module1-live-preview" data-movie-preview>
