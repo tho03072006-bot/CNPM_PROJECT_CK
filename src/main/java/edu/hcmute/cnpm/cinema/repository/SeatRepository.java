@@ -7,4 +7,6 @@ import java.util.List;
 
 public interface SeatRepository extends JpaRepository<Seat, Long> {
     List<Seat> findByRoomId(Long roomId);
+
+    List<Seat> findByRoomIdOrderBySeatRowAscSeatColumnAsc(Long roomId);
 }

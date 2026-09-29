@@ -80,6 +80,22 @@ class ShowtimeServiceIntegrationTest extends IntegrationTestBase {
     }
 
     @Test
+    @DisplayName("Lọc suất chiếu đồng thời theo ngày, phim và phòng")
+    void shouldFilterShowtimesByDateMovieAndRoom() {
+        Movie otherMovie = testDataFactory.createMovie("Phim khác");
+        Room otherRoom = testDataFactory.createRoom("Phòng B", 5, 8);
+        showtimeService.createShowtime(otherMovie.getId(), otherRoom.getId(), start.plusDays(1), PRICE);
+
+        assertThat(showtimeService.findShowtimes(start.toLocalDate(), movie.getId(), room.getId()))
+                .singleElement()
+                .satisfies(showtime -> {
+                    assertThat(showtime.getMovie().getId()).isEqualTo(movie.getId());
+                    assertThat(showtime.getRoom().getId()).isEqualTo(room.getId());
+                });
+        assertThat(showtimeService.findShowtimes(start.toLocalDate(), otherMovie.getId(), null)).isEmpty();
+    }
+
+    @Test
     @DisplayName("Từ chối suất chiếu bắt đầu trong quá khứ")
     void shouldReject_whenNewShowtimeStartsInPast() {
         assertThatThrownBy(() -> showtimeService.createShowtime(movie.getId(), room.getId(),

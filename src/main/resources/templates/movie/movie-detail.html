@@ -8,8 +8,9 @@
     <section class="module1-detail-hero" aria-labelledby="movie-title">
         <div class="movie-poster module1-poster module1-detail-poster">
             <img th:if="${movie.posterUrl != null and !#strings.isEmpty(movie.posterUrl)}"
-                 th:src="${movie.posterUrl}" th:alt="|Poster phim ${movie.title}|">
-            <div class="module1-poster-art" th:unless="${movie.posterUrl != null and !#strings.isEmpty(movie.posterUrl)}">
+                 th:src="${movie.posterUrl}" th:alt="|Poster phim ${movie.title}|"
+                 onerror="this.hidden=true">
+            <div class="module1-poster-art">
                 <span class="module1-poster-index">UTE</span>
                 <span class="module1-poster-letter" aria-hidden="true"
                       th:text="${#strings.substring(movie.title, 0, 1)}">B</span>
@@ -26,6 +27,7 @@
                 <span th:text="|${movie.durationMin} phút|">120 phút</span>
                 <span th:text="${movie.ageRating ?: 'Chưa phân loại độ tuổi'}">C13</span>
             </div>
+            <p class="module1-age-notice"><span aria-hidden="true">ⓘ</span> <span th:text="${ageNotice}">Quy định độ tuổi</span></p>
             <h2>Nội dung phim</h2>
             <p th:text="${movie.description ?: 'Thông tin nội dung phim đang được cập nhật.'}">Mô tả phim</p>
             <a class="btn btn-accent" href="#showtimes">Xem suất chiếu <span aria-hidden="true">↓</span></a>
@@ -52,14 +54,21 @@
                 <span th:text="|${#lists.size(entry.value)} suất chiếu|">2 suất chiếu</span>
             </div>
             <div class="module1-slot-list">
-                <article class="module1-slot" th:each="showtime : ${entry.value}">
+                <article class="module1-slot" th:each="showtime : ${entry.value}"
+                         th:with="availability=${availabilityByShowtimeId[showtime.id]}"
+                         th:classappend="${availability.soldOut} ? ' is-soldout' : ''">
                     <div class="module1-slot-time" th:text="${#temporals.format(showtime.startTime, 'HH:mm')}">18:00</div>
                     <div class="module1-slot-meta">
                         <strong th:text="${showtime.room.name}">Phòng chiếu</strong>
-                        <span th:text="|Giá từ ${#numbers.formatDecimal(showtime.basePrice, 0, 'POINT', 0, 'COMMA')} đ|">Giá vé</span>
+                        <span th:text="|Kết thúc ${#temporals.format(showtime.endTime, 'HH:mm')}${showtime.endTime.toLocalDate().isAfter(showtime.startTime.toLocalDate()) ? ' (+1 ngày)' : ''} · Giá từ ${#numbers.formatDecimal(showtime.basePrice, 0, 'POINT', 0, 'COMMA')} đ|">Giờ kết thúc và giá vé</span>
+                        <span class="module1-seat-status"
+                              th:classappend="${availability.soldOut} ? ' is-soldout' : (${availability.almostFull} ? ' is-low' : '')"
+                              th:text="${availability.label}">Còn ghế</span>
                     </div>
-                    <a class="btn btn-sm" th:href="@{/booking/showtime/{id}(id=${showtime.id})}"
+                    <a class="btn btn-sm" th:unless="${availability.soldOut}"
+                       th:href="@{/booking/showtime/{id}(id=${showtime.id})}"
                        th:aria-label="|Chọn ghế suất chiếu ${#temporals.format(showtime.startTime, 'HH:mm')} tại ${showtime.room.name}|">Chọn ghế</a>
+                    <span class="badge badge-danger" th:if="${availability.soldOut}">Hết vé</span>
                 </article>
             </div>
         </div>

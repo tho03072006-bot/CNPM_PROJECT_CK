@@ -2,19 +2,25 @@ package edu.hcmute.cnpm.cinema.controller;
 
 import edu.hcmute.cnpm.cinema.constants.Constants;
 import edu.hcmute.cnpm.cinema.controller.form.ShowtimeForm;
+import edu.hcmute.cnpm.cinema.exception.InvalidBookingException;
 import edu.hcmute.cnpm.cinema.service.MovieService;
 import edu.hcmute.cnpm.cinema.service.RoomService;
 import edu.hcmute.cnpm.cinema.service.ShowtimeService;
+import edu.hcmute.cnpm.cinema.service.ShowtimeAvailabilityService;
 import jakarta.validation.Valid;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
+
+import java.time.LocalDate;
 
 @Controller
 @RequestMapping("/admin/showtimes")
@@ -22,17 +28,30 @@ public class AdminShowtimeController {
     private final ShowtimeService showtimeService;
     private final MovieService movieService;
     private final RoomService roomService;
+    private final ShowtimeAvailabilityService availabilityService;
 
     public AdminShowtimeController(ShowtimeService showtimeService, MovieService movieService,
-                                   RoomService roomService) {
+                                   RoomService roomService, ShowtimeAvailabilityService availabilityService) {
         this.showtimeService = showtimeService;
         this.movieService = movieService;
         this.roomService = roomService;
+        this.availabilityService = availabilityService;
     }
 
     @GetMapping
-    public String list(Model model) {
-        model.addAttribute("showtimes", showtimeService.findAllShowtimes());
+    public String list(@RequestParam(name = "date", required = false)
+                       @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date,
+                       @RequestParam(name = "movieId", required = false) Long movieId,
+                       @RequestParam(name = "roomId", required = false) Long roomId,
+                       Model model) {
+        var showtimes = showtimeService.findShowtimes(date, movieId, roomId);
+        model.addAttribute("showtimes", showtimes);
+        model.addAttribute("availabilityByShowtimeId", availabilityService.findForShowtimes(showtimes));
+        model.addAttribute("selectedDate", date);
+        model.addAttribute("selectedMovieId", movieId);
+        model.addAttribute("selectedRoomId", roomId);
+        model.addAttribute("movies", movieService.findAllMovies());
+        model.addAttribute("rooms", roomService.findAllRooms());
         return "movie/showtime-list";
     }
 
@@ -50,8 +69,14 @@ public class AdminShowtimeController {
             addChoices(model);
             return "movie/showtime-form";
         }
-        showtimeService.createShowtime(form.getMovieId(), form.getRoomId(),
-                form.getStartTime(), form.getBasePrice());
+        try {
+            showtimeService.createShowtime(form.getMovieId(), form.getRoomId(),
+                    form.getStartTime(), form.getBasePrice());
+        } catch (InvalidBookingException exception) {
+            errors.rejectValue("startTime", "showtime.schedule", exception.getMessage());
+            addChoices(model);
+            return "movie/showtime-form";
+        }
         redirectAttributes.addFlashAttribute(Constants.MODEL_SUCCESS_MESSAGE, "Đã thêm suất chiếu.");
         return "redirect:/admin/showtimes";
     }
@@ -72,8 +97,15 @@ public class AdminShowtimeController {
             addChoices(model);
             return "movie/showtime-form";
         }
-        showtimeService.updateShowtime(id, form.getMovieId(), form.getRoomId(),
-                form.getStartTime(), form.getBasePrice());
+        try {
+            showtimeService.updateShowtime(id, form.getMovieId(), form.getRoomId(),
+                    form.getStartTime(), form.getBasePrice());
+        } catch (InvalidBookingException exception) {
+            errors.rejectValue("startTime", "showtime.schedule", exception.getMessage());
+            model.addAttribute("showtimeId", id);
+            addChoices(model);
+            return "movie/showtime-form";
+        }
         redirectAttributes.addFlashAttribute(Constants.MODEL_SUCCESS_MESSAGE, "Đã cập nhật suất chiếu.");
         return "redirect:/admin/showtimes";
     }

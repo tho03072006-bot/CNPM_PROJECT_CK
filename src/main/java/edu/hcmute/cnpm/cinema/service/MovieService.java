@@ -8,7 +8,11 @@ import edu.hcmute.cnpm.cinema.repository.ShowtimeRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.text.Normalizer;
+import java.util.Arrays;
+import java.util.Comparator;
 import java.util.List;
+import java.util.Locale;
 
 @Service
 public class MovieService {
@@ -23,6 +27,55 @@ public class MovieService {
     @Transactional(readOnly = true)
     public List<Movie> findActiveMovies() {
         return movieRepository.findByActiveTrueOrderByTitleAsc();
+    }
+
+    /**
+     * Tìm phim đang chiếu theo tên và thể loại. Chuỗi tìm kiếm được bỏ dấu để
+     * khách gõ "hanh dong" vẫn tìm thấy "Hành Động".
+     */
+    @Transactional(readOnly = true)
+    public List<Movie> findActiveMovies(String keyword, String genre) {
+        return filterMovies(findActiveMovies(), keyword, genre, null);
+    }
+
+    /** Danh sách thể loại thật sự đang có để dựng bộ lọc, không hardcode trên giao diện. */
+    @Transactional(readOnly = true)
+    public List<String> findActiveGenres() {
+        return extractGenres(findActiveMovies());
+    }
+
+    /** Tìm trong toàn bộ kho phim cho trang quản trị, gồm cả phim đã ngừng. */
+    @Transactional(readOnly = true)
+    public List<Movie> findMovies(String keyword, String genre, Boolean active) {
+        return filterMovies(findAllMovies(), keyword, genre, active);
+    }
+
+    /** Danh sách thể loại của toàn bộ kho phim cho bộ lọc quản trị. */
+    @Transactional(readOnly = true)
+    public List<String> findAllGenres() {
+        return extractGenres(findAllMovies());
+    }
+
+    private List<Movie> filterMovies(List<Movie> movies, String keyword, String genre, Boolean active) {
+        String normalizedKeyword = normalizeForSearch(keyword);
+        String normalizedGenre = normalizeForSearch(genre);
+        return movies.stream()
+                .filter(movie -> active == null || active.equals(movie.getActive()))
+                .filter(movie -> normalizedKeyword.isEmpty()
+                        || normalizeForSearch(movie.getTitle()).contains(normalizedKeyword))
+                .filter(movie -> normalizedGenre.isEmpty()
+                        || splitGenres(movie.getGenre()).stream()
+                        .map(MovieService::normalizeForSearch)
+                        .anyMatch(normalizedGenre::equals))
+                .toList();
+    }
+
+    private List<String> extractGenres(List<Movie> movies) {
+        return movies.stream()
+                .flatMap(movie -> splitGenres(movie.getGenre()).stream())
+                .distinct()
+                .sorted(Comparator.comparing(MovieService::normalizeForSearch))
+                .toList();
     }
 
     @Transactional(readOnly = true)
@@ -71,6 +124,11 @@ public class MovieService {
         findById(movieId).setActive(false);
     }
 
+    @Transactional
+    public void reactivateMovie(Long movieId) {
+        findById(movieId).setActive(true);
+    }
+
     private void validate(Movie movie) {
         if (movie == null || movie.getTitle() == null || movie.getTitle().isBlank()) {
             throw new BusinessException("Tên phim không được để trống.");
@@ -90,5 +148,24 @@ public class MovieService {
         target.setDescription(source.getDescription());
         target.setPosterUrl(source.getPosterUrl());
         target.setAgeRating(source.getAgeRating());
+    }
+
+    private static List<String> splitGenres(String genres) {
+        if (genres == null || genres.isBlank()) {
+            return List.of();
+        }
+        return Arrays.stream(genres.split("[,;/]"))
+                .map(String::trim)
+                .filter(value -> !value.isEmpty())
+                .toList();
+    }
+
+    private static String normalizeForSearch(String value) {
+        if (value == null || value.isBlank()) {
+            return "";
+        }
+        return Normalizer.normalize(value.trim().toLowerCase(Locale.ROOT), Normalizer.Form.NFD)
+                .replaceAll("\\p{M}+", "")
+                .replace('đ', 'd');
     }
 }

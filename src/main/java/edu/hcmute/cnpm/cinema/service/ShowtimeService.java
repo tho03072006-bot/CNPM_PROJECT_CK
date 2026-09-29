@@ -14,6 +14,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
@@ -39,6 +40,15 @@ public class ShowtimeService {
     @Transactional(readOnly = true)
     public List<Showtime> findAllShowtimes() {
         return showtimeRepository.findAllByOrderByStartTimeAsc();
+    }
+
+    @Transactional(readOnly = true)
+    public List<Showtime> findShowtimes(LocalDate date, Long movieId, Long roomId) {
+        return findAllShowtimes().stream()
+                .filter(showtime -> date == null || showtime.getStartTime().toLocalDate().equals(date))
+                .filter(showtime -> movieId == null || showtime.getMovie().getId().equals(movieId))
+                .filter(showtime -> roomId == null || showtime.getRoom().getId().equals(roomId))
+                .toList();
     }
 
     @Transactional(readOnly = true)

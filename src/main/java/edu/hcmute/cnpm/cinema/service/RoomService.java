@@ -39,6 +39,12 @@ public class RoomService {
                 .orElseThrow(() -> new ResourceNotFoundException("phòng chiếu", roomId));
     }
 
+    @Transactional(readOnly = true)
+    public List<Seat> findSeatsByRoom(Long roomId) {
+        findById(roomId);
+        return seatRepository.findByRoomIdOrderBySeatRowAscSeatColumnAsc(roomId);
+    }
+
     @Transactional
     public Room createRoom(String name, Integer totalRows, Integer totalColumns) {
         validate(name, totalRows, totalColumns);
