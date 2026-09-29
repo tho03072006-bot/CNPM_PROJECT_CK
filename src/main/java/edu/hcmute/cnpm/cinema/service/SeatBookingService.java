@@ -31,17 +31,19 @@ public class SeatBookingService {
     private final SeatService seatService;
     private final SeatPricingService seatPricingService;
     private final SeatSelectionPolicy seatSelectionPolicy;
+    private final SeatHoldService seatHoldService;
     private final SeatRepository seatRepository;
     private final TicketRepository ticketRepository;
     private final UserRepository userRepository;
 
     public SeatBookingService(SeatService seatService, SeatPricingService seatPricingService,
-                              SeatSelectionPolicy seatSelectionPolicy,
+                              SeatSelectionPolicy seatSelectionPolicy, SeatHoldService seatHoldService,
                               SeatRepository seatRepository, TicketRepository ticketRepository,
                               UserRepository userRepository) {
         this.seatService = seatService;
         this.seatPricingService = seatPricingService;
         this.seatSelectionPolicy = seatSelectionPolicy;
+        this.seatHoldService = seatHoldService;
         this.seatRepository = seatRepository;
         this.ticketRepository = ticketRepository;
         this.userRepository = userRepository;
@@ -65,6 +67,11 @@ public class SeatBookingService {
             }
             seats.add(seat);
             prices.add(seatPricingService.calculateSeatPrice(showtime.getBasePrice(), seat.getSeatType()));
+        }
+
+        if (seatHoldService.findActiveHold(customer.getId(), showtimeId).isPresent()) {
+            throw new InvalidBookingException("Bạn đang có một lượt giữ ghế cho suất chiếu này. "
+                    + "Vui lòng thanh toán hoặc huỷ lượt giữ hiện tại trước khi chọn lại.");
         }
 
         List<Ticket> unavailableTickets = ticketRepository.findByShowtimeIdAndStatusIn(
@@ -115,7 +122,7 @@ public class SeatBookingService {
         if (currentUser == null || currentUser.getId() == null || currentUser.getId() <= 0) {
             throw new InvalidBookingException("Bạn cần đăng nhập trước khi giữ ghế.");
         }
-        return userRepository.findById(currentUser.getId())
+        return userRepository.findByIdForBookingUpdate(currentUser.getId())
                 .orElseThrow(() -> new InvalidBookingException(
                         "Tài khoản không còn tồn tại. Vui lòng đăng nhập lại."));
     }

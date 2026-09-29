@@ -8,6 +8,7 @@ import edu.hcmute.cnpm.cinema.entity.Showtime;
 import edu.hcmute.cnpm.cinema.entity.Ticket;
 import edu.hcmute.cnpm.cinema.entity.User;
 import edu.hcmute.cnpm.cinema.exception.SeatAlreadyTakenException;
+import edu.hcmute.cnpm.cinema.exception.InvalidBookingException;
 import edu.hcmute.cnpm.cinema.service.SeatBookingService;
 import edu.hcmute.cnpm.cinema.support.IntegrationTestBase;
 import org.junit.jupiter.api.BeforeEach;
@@ -35,6 +36,7 @@ class SeatBookingServiceIntegrationTest extends IntegrationTestBase {
     private Showtime showtime;
     private Seat firstSeat;
     private Seat secondSeat;
+    private Seat fourthSeat;
     private User firstCustomer;
     private User secondCustomer;
 
@@ -48,7 +50,7 @@ class SeatBookingServiceIntegrationTest extends IntegrationTestBase {
         firstSeat = testDataFactory.createSeat(room, "A", 1);
         secondSeat = testDataFactory.createSeat(room, "A", 2);
         testDataFactory.createSeat(room, "A", 3);
-        testDataFactory.createSeat(room, "A", 4);
+        fourthSeat = testDataFactory.createSeat(room, "A", 4);
         showtime = testDataFactory.createShowtime(movie, room, LocalDateTime.now().plusDays(1));
         firstCustomer = testDataFactory.createCustomer("module2.first@test.local");
         secondCustomer = testDataFactory.createCustomer("module2.second@test.local");
@@ -65,6 +67,31 @@ class SeatBookingServiceIntegrationTest extends IntegrationTestBase {
             Future<Boolean> secondResult = executor.submit(() -> holdSeatAfterSignal(secondCustomer, readySignal, startSignal));
             assertThat(readySignal.await(MAX_WAIT_SECONDS, TimeUnit.SECONDS)).isTrue();
             startSignal.countDown();
+            assertThat(List.of(firstResult.get(MAX_WAIT_SECONDS, TimeUnit.SECONDS),
+                    secondResult.get(MAX_WAIT_SECONDS, TimeUnit.SECONDS)))
+                    .containsExactlyInAnyOrder(true, false);
+            assertThat(ticketRepository.count()).isEqualTo(1);
+        } finally {
+            startSignal.countDown();
+            executor.shutdownNow();
+            assertThat(executor.awaitTermination(MAX_WAIT_SECONDS, TimeUnit.SECONDS)).isTrue();
+        }
+    }
+
+    @Test
+    @DisplayName("Một tài khoản gửi hai lượt giữ song song: chỉ một lượt được tạo")
+    void shouldCreateOnlyOneHold_whenSameCustomerSendsConcurrentRequests() throws Exception {
+        ExecutorService executor = Executors.newFixedThreadPool(2);
+        CountDownLatch readySignal = new CountDownLatch(2);
+        CountDownLatch startSignal = new CountDownLatch(1);
+        try {
+            Future<Boolean> firstResult = executor.submit(() ->
+                    holdDifferentSeatAfterSignal(firstCustomer, firstSeat, readySignal, startSignal));
+            Future<Boolean> secondResult = executor.submit(() ->
+                    holdDifferentSeatAfterSignal(firstCustomer, fourthSeat, readySignal, startSignal));
+            assertThat(readySignal.await(MAX_WAIT_SECONDS, TimeUnit.SECONDS)).isTrue();
+            startSignal.countDown();
+
             assertThat(List.of(firstResult.get(MAX_WAIT_SECONDS, TimeUnit.SECONDS),
                     secondResult.get(MAX_WAIT_SECONDS, TimeUnit.SECONDS)))
                     .containsExactlyInAnyOrder(true, false);
@@ -110,6 +137,26 @@ class SeatBookingServiceIntegrationTest extends IntegrationTestBase {
             return true;
         } catch (SeatAlreadyTakenException exception) {
             return false;
+        }
+    }
+
+    private boolean holdDifferentSeatAfterSignal(User customer, Seat seat,
+                                                  CountDownLatch readySignal,
+                                                  CountDownLatch startSignal)
+            throws InterruptedException {
+        readySignal.countDown();
+        if (!startSignal.await(MAX_WAIT_SECONDS, TimeUnit.SECONDS)) {
+            throw new IllegalStateException("Hết thời gian chờ bắt đầu kiểm thử tranh chấp.");
+        }
+        try {
+            seatBookingService.holdSeats(showtime.getId(), createRequest(List.of(seat.getId())), customer);
+            return true;
+        } catch (InvalidBookingException exception) {
+            if (exception.getMessage() != null
+                    && exception.getMessage().contains("đang có một lượt giữ ghế")) {
+                return false;
+            }
+            throw exception;
         }
     }
 

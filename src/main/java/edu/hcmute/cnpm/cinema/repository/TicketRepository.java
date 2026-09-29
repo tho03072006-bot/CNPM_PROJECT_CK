@@ -11,7 +11,7 @@ import java.util.Collection;
 import java.util.List;
 
 public interface TicketRepository extends JpaRepository<Ticket, Long> {
-    // Dung de ve seat-map: lay cac ghe da bi giu/dat cho 1 suat chieu
+    // Dùng để vẽ seat-map: lấy các ghế đã bị giữ/đặt cho một suất chiếu.
     List<Ticket> findByShowtimeIdAndStatusIn(Long showtimeId, List<TicketStatus> statuses);
 
     boolean existsByShowtimeId(Long showtimeId);
@@ -25,18 +25,18 @@ public interface TicketRepository extends JpaRepository<Ticket, Long> {
             """)
     List<Object[]> countReservedSeatsByShowtimeIds(@Param("showtimeIds") Collection<Long> showtimeIds);
 
-    // ===== Module 3 them: thanh toan, lich su ve, thong ke =====
+    // ===== Module 3: thanh toán, lịch sử vé, thống kê =====
 
-    /** Ve dang giu cua mot khach cho mot suat chieu - dung o buoc thanh toan. */
+    /** Vé đang giữ của một khách cho một suất chiếu - dùng ở bước thanh toán. */
     List<Ticket> findByUserIdAndShowtimeIdAndStatus(Long userId, Long showtimeId, TicketStatus status);
 
-    /** Toan bo ve cua mot khach, moi nhat len dau - dung cho trang lich su dat ve. */
+    /** Toàn bộ vé của một khách, mới nhất lên đầu - dùng cho trang lịch sử đặt vé. */
     List<Ticket> findByUserIdOrderByHeldAtDesc(Long userId);
 
-    /** Ve da thanh toan trong mot khoang thoi gian - dung cho trang thong ke doanh thu. */
+    /** Vé đã thanh toán trong một khoảng thời gian - dùng cho trang thống kê doanh thu. */
     List<Ticket> findByStatusAndPaidAtGreaterThanEqualAndPaidAtLessThan(
             TicketStatus status, LocalDateTime from, LocalDateTime until);
 
-    /** Ve dang giu qua han - dung cho tac vu don ve het han cua Module 2 (ADR-2). */
-    List<Ticket> findByStatusAndHeldAtLessThan(TicketStatus status, LocalDateTime heldBefore);
+    /** Vé đang giữ đã đến hạn - dùng cho tác vụ dọn vé hết hạn của Module 2 (ADR-2). */
+    List<Ticket> findByStatusAndHeldAtLessThanEqual(TicketStatus status, LocalDateTime heldBefore);
 }

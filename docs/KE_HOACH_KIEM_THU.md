@@ -3,7 +3,8 @@
 Tài liệu này mô tả nhóm kiểm thử phần mềm thế nào, kiểm thử những gì, và vì sao chọn cách đó.
 Số liệu trong đây lấy từ lần chạy `mvn test` thật, không phải ước lượng.
 
-**Hiện trạng: 125 test, 125 đạt, 0 hỏng.**
+**Danh mục hiện tại: 141 test. Lần chạy đầy đủ gần nhất ngày 22/09/2026 có 125/125 test đạt;
+16 test Module 2 bổ sung sau mốc đó cần chạy lại trên database `_test` trước khi mở Pull Request.**
 
 ---
 
@@ -32,9 +33,9 @@ thúc bằng `_test` trước khi làm bất cứ việc gì. Nếu ai đó sử
 
 | Tầng | Dùng khi | Cần database? | Số test |
 |---|---|---|---|
-| Unit test | Kiểm tra logic tính toán và kiểm tra dữ liệu đầu vào | Không | 40 |
-| Test MVC | Kiểm tra Controller, template và mã HTTP trả về | Không | 7 |
-| Test tích hợp | Kiểm tra nghiệp vụ chạy thật trên database | Có | 78 |
+| Unit test | Kiểm tra logic tính toán và kiểm tra dữ liệu đầu vào | Không | 46 |
+| Test MVC | Kiểm tra Controller, template và mã HTTP trả về | Không | 9 |
+| Test tích hợp | Kiểm tra nghiệp vụ chạy thật trên database | Có | 86 |
 
 Unit test chạy trong mili giây nên viết được nhiều và chạy liên tục lúc code. Test tích hợp chậm
 hơn nhưng là thứ duy nhất chứng minh được ràng buộc database có hoạt động thật hay không.
@@ -56,18 +57,19 @@ Phần chặn trùng giờ chiếu được phủ đủ bốn kiểu chồng l�
 giữa suất cũ, bao trọn suất cũ, và nằm gọn trong suất cũ. Cộng thêm ca sát nút (bắt đầu đúng sau
 15 phút dọn phòng thì phải cho qua) và ca hai phòng khác nhau chiếu cùng giờ thì không được chặn.
 
-### Module 2 — Ghế và vé (60 test)
+### Module 2 - Ghế và vé (76 test)
 
 | Lớp test | Số test | Kiểm tra điều gì |
 |---|---|---|
-| `SeatBookingServiceTest` | 12 | Kiểm tra dữ liệu đầu vào khi giữ ghế |
-| `SeatServiceTest` | 11 | Dựng sơ đồ ghế kèm trạng thái từng ghế |
+| `SeatBookingServiceTest` | 13 | Kiểm tra dữ liệu đầu vào và chặn nhiều lượt giữ cùng tài khoản |
+| `SeatServiceTest` | 13 | Dựng sơ đồ ghế và đóng bán trực tuyến trước giờ chiếu 5 phút |
 | `SeatPricingServiceTest` | 11 | Tính giá theo loại ghế |
 | `SeatSelectionPolicyTest` | 6 | Quy tắc chọn ghế: tối đa 8 chỗ, cùng hàng, liền nhau, không để ghế lẻ |
-| `BookingControllerTest` | 7 | API giữ ghế: chỉ nhận JSON, lấy danh tính từ session |
-| `SeatHoldServiceIntegrationTest` | 6 | **Trả ghế về trạng thái trống** khi hết hạn hoặc khách huỷ |
-| `SeatBookingConcurrencyIntegrationTest` | 4 | **Chống đặt trùng ghế — ADR-1** |
-| `SeatBookingServiceIntegrationTest` | 3 | Giữ nhiều ghế trong một giao dịch |
+| `SeatHoldServiceTest` | 3 | Khôi phục lượt giữ và xoá vé hết hạn khi tải lại trang |
+| `BookingControllerTest` | 9 | API giữ/huỷ ghế và khôi phục lượt giữ từ session |
+| `SeatHoldServiceIntegrationTest` | 8 | **Trả ghế về trạng thái trống** khi hết hạn hoặc khách huỷ |
+| `SeatBookingConcurrencyIntegrationTest` | 7 | **Chống đặt trùng ghế - ADR-1** |
+| `SeatBookingServiceIntegrationTest` | 6 | Giữ nhiều ghế, rollback và chặn hai lượt giữ đồng thời của một tài khoản |
 
 **Hai test quan trọng nhất của cả đồ án nằm ở đây.**
 
@@ -129,6 +131,8 @@ tạo ra dòng vé nào** trong database.
 |---|---|
 | Hai người không thể đặt trùng một ghế | `SeatBookingConcurrencyIntegrationTest` |
 | Hết giờ giữ ghế thì ghế phải trống lại cho người khác đặt | `SeatHoldServiceIntegrationTest` |
+| Tải lại trang không làm mất ghế hoặc đặt lại đồng hồ giữ | `SeatHoldServiceTest`, `BookingControllerTest` |
+| Một tài khoản không thể mở hai lượt giữ cho cùng suất chiếu | `SeatBookingServiceTest`, `SeatBookingServiceIntegrationTest` |
 | Một phòng không thể chiếu hai phim cùng lúc | `ShowtimeServiceIntegrationTest` |
 | Mật khẩu không bao giờ lưu dạng thô | `AuthServiceIntegrationTest` |
 | Khách hàng không vào được khu vực quản trị | `AdminAccessIntegrationTest` |
@@ -158,7 +162,7 @@ mvn test
 Chạy riêng phần không cần database, nhanh hơn nhiều lúc đang code:
 
 ```bash
-mvn -Dtest=SeatPricingServiceTest,SeatServiceTest,SeatBookingServiceTest,BookingControllerTest test
+mvn -Dtest=SeatPricingServiceTest,SeatSelectionPolicyTest,SeatServiceTest,SeatBookingServiceTest,SeatHoldServiceTest,BookingControllerTest test
 ```
 
 **Nhớ đặt `JAVA_HOME` trỏ vào JDK 21 trước khi chạy Maven**, vì máy của nhóm đang để mặc định

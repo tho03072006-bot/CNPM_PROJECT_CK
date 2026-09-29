@@ -24,6 +24,8 @@ import java.util.Map;
 @Service
 @Transactional(readOnly = true)
 public class SeatService {
+    private static final int ONLINE_BOOKING_CUTOFF_MINUTES = 5;
+
     private final ShowtimeRepository showtimeRepository;
     private final SeatRepository seatRepository;
     private final TicketRepository ticketRepository;
@@ -38,7 +40,20 @@ public class SeatService {
     }
 
     public SeatMapView findSeatMap(Long showtimeId) {
-        Showtime showtime = findBookableShowtime(showtimeId);
+        return buildSeatMap(findBookableShowtime(showtimeId));
+    }
+
+    /**
+     * Hiển thị lại sơ đồ cho khách đã có lượt giữ ghế còn hiệu lực.
+     * Khách vẫn được thanh toán hoặc huỷ trong thời gian giữ, nhưng không thể
+     * tạo lượt giữ mới sau mốc đóng bán trực tuyến.
+     */
+    public SeatMapView findSeatMapForActiveHold(Long showtimeId) {
+        return buildSeatMap(findFutureShowtime(showtimeId));
+    }
+
+    private SeatMapView buildSeatMap(Showtime showtime) {
+        Long showtimeId = showtime.getId();
         Map<Long, String> seatStatuses = new HashMap<>();
         LocalDateTime currentTime = LocalDateTime.now();
         List<Ticket> tickets = ticketRepository.findByShowtimeIdAndStatusIn(
@@ -59,6 +74,17 @@ public class SeatService {
     }
 
     public Showtime findBookableShowtime(Long showtimeId) {
+        Showtime showtime = findFutureShowtime(showtimeId);
+        LocalDateTime currentTime = LocalDateTime.now();
+        if (!showtime.getStartTime().minusMinutes(ONLINE_BOOKING_CUTOFF_MINUTES)
+                .isAfter(currentTime)) {
+            throw new InvalidBookingException("Đặt vé trực tuyến đã đóng trước giờ chiếu "
+                    + ONLINE_BOOKING_CUTOFF_MINUTES + " phút. Bạn vui lòng chọn suất chiếu khác.");
+        }
+        return showtime;
+    }
+
+    private Showtime findFutureShowtime(Long showtimeId) {
         if (showtimeId == null || showtimeId <= 0) {
             throw new InvalidBookingException("Mã suất chiếu phải là số nguyên dương.");
         }
@@ -77,6 +103,10 @@ public class SeatService {
         return showtime;
     }
 
+    public int getOnlineBookingCutoffMinutes() {
+        return ONLINE_BOOKING_CUTOFF_MINUTES;
+    }
+
     private String determineSeatStatus(Ticket ticket, LocalDateTime currentTime) {
         if (ticket.getStatus() == TicketStatus.PAID) {
             return "PAID";
@@ -85,8 +115,8 @@ public class SeatService {
                 && ticket.getHeldAt().plusMinutes(Constants.SEAT_HOLD_MINUTES).isAfter(currentTime)) {
             return "HELD";
         }
-        // UNIQUE hiện vẫn giữ chỗ cho vé cũ. Chờ thống nhất M2.6/M2.7 với Thọ,
-        // không hiển thị ghế trống khi database chưa cho phép tạo vé mới.
+        // Nếu tác vụ dọn vé chưa kịp chạy thì UNIQUE vẫn còn giữ chỗ cho dòng cũ;
+        // không hiển thị ghế trống trước khi database thật sự giải phóng ghế.
         return "UNAVAILABLE";
     }
 }

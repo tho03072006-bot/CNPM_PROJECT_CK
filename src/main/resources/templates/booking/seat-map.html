@@ -17,6 +17,10 @@
         <p th:if="${session.LOGGED_IN_USER == null}" class="alert alert-error" role="status">
             Bạn cần đăng nhập trước khi giữ ghế.
         </p>
+        <p class="form-hint">
+            Đặt vé trực tuyến đóng trước giờ chiếu
+            <strong th:text="|${bookingCutoffMinutes} phút|">5 phút</strong>.
+        </p>
         <noscript><p class="alert alert-error">Vui lòng bật JavaScript để chọn và giữ ghế.</p></noscript>
 
         <div class="card-grid animate-in animate-in-delay-1">
@@ -45,7 +49,7 @@
                         <button th:each="seat : ${seatMap.seats}" type="button" class="seat"
                                 th:classappend="${seat.available ? 'available' : (seat.status == 'PAID' ? 'booked' : 'held')}"
                                 th:disabled="${!seat.available}"
-                                th:attr="data-seat-id=${seat.id},data-seat-row=${seat.seatRow},data-seat-column=${seat.seatColumn},data-seat-status=${seat.status},data-capacity=${seat.capacity},data-price=${seat.price},data-seat-label=|Ghế ${seat.seatRow}${seat.seatColumn}, ${seat.seatTypeLabel}, ${seat.price} đồng|,aria-label=|Ghế ${seat.seatRow}${seat.seatColumn}, ${seat.seatTypeLabel}, ${seat.price} đồng, ${seat.statusLabel}|"
+                                th:attr="data-seat-id=${seat.id},data-seat-row=${seat.seatRow},data-seat-column=${seat.seatColumn},data-seat-status=${seat.status},data-capacity=${seat.capacity},data-price=${seat.price},data-seat-owned=${activeHold != null && activeHold.containsSeat(seat.id)},data-seat-label=|Ghế ${seat.seatRow}${seat.seatColumn}, ${seat.seatTypeLabel}, ${seat.price} đồng|,aria-label=|Ghế ${seat.seatRow}${seat.seatColumn}, ${seat.seatTypeLabel}, ${seat.price} đồng, ${seat.statusLabel}|"
                                 th:title="|${seat.seatTypeLabel} · ${seat.price} đồng · ${seat.statusLabel}|"
                                 aria-pressed="false" th:text="|${seat.seatRow}${seat.seatColumn}|">A1</button>
                     </div>
@@ -77,10 +81,16 @@
                   thì trình đọc màn hình sẽ đọc liên tục không cho người dùng làm gì.
                 -->
                 <div id="hold-timer" class="seat-hold-timer" hidden
-                     th:attr="data-cancel-url=@{/booking/showtime/{id}/cancel(id=${seatMap.showtimeId})},data-pay-url=@{/thanh-toan/{id}(id=${seatMap.showtimeId})}">
+                     th:attr="data-cancel-url=@{/booking/showtime/{id}/cancel(id=${seatMap.showtimeId})},data-pay-url=@{/thanh-toan/{id}(id=${seatMap.showtimeId})},data-expires-at=${activeHold != null ? activeHold.expiresAt : ''},data-held-seat-ids=${activeHold != null ? #strings.listJoin(activeHold.seatIds, ',') : ''}">
                     <div>
                         <p class="seat-hold-timer-label">Ghế đang được giữ cho bạn. Thời gian còn lại:</p>
                         <p class="seat-hold-timer-value" id="hold-timer-value" role="timer" aria-live="off">05:00</p>
+                        <p class="text-muted" id="held-seat-summary">
+                            Ghế: <strong id="held-seat-labels"
+                                         th:text="${activeHold != null ? #strings.listJoin(activeHold.seatLabels, ', ') : ''}"></strong>
+                            · Tổng tiền: <strong id="held-total-price"
+                                                 th:text="${activeHold != null ? #numbers.formatDecimal(activeHold.totalPrice, 0, 'POINT', 0, 'COMMA') + ' ₫' : ''}"></strong>
+                        </p>
                     </div>
                     <div class="seat-hold-timer-actions">
                         <a id="hold-pay-link" class="btn btn-accent" href="#">Thanh toán</a>
@@ -102,6 +112,8 @@
             const maximumAdmissions = Number(bookingForm.dataset.maxAdmissions);
             const currencyFormatter = new Intl.NumberFormat('vi-VN', {style: 'currency', currency: 'VND'});
             let isSubmitting = false;
+            let hasActiveHold = false;
+            let heldSeatIds = new Set();
 
             function findSingleSeatGaps(blockedSeatIds) {
                 const seatsByRow = new Map();
@@ -175,7 +187,7 @@
                 selectionHint.textContent = validationMessage || (selectedButtons.length
                     ? 'Lựa chọn hợp lệ. Bạn có thể giữ ghế.' : 'Chọn các ghế cạnh nhau trên cùng một hàng.');
                 selectionHint.className = validationMessage ? 'form-error' : 'form-hint';
-                holdButton.disabled = isSubmitting || selectedSeats.size === 0
+                holdButton.disabled = isSubmitting || hasActiveHold || selectedSeats.size === 0
                     || validationMessage !== null || holdButton.dataset.canHold !== 'true';
             }
 
@@ -201,7 +213,34 @@
             const holdTimerValue = document.getElementById('hold-timer-value');
             const holdPayLink = document.getElementById('hold-pay-link');
             const holdCancelButton = document.getElementById('hold-cancel-button');
+            const heldSeatLabels = document.getElementById('held-seat-labels');
+            const heldTotalPrice = document.getElementById('held-total-price');
             let countdownId = null;
+
+            function setSeatSelectionLocked(isLocked) {
+                seatButtons.forEach(button => {
+                    if (button.dataset.seatStatus === 'AVAILABLE') button.disabled = isLocked;
+                });
+            }
+
+            function updateHeldSummary(labels, totalPrice) {
+                heldSeatLabels.textContent = labels.join(', ');
+                heldTotalPrice.textContent = currencyFormatter.format(totalPrice);
+            }
+
+            function releaseHeldSeatsInView() {
+                seatButtons.filter(button => heldSeatIds.has(button.dataset.seatId)).forEach(button => {
+                    button.classList.remove('held', 'selected');
+                    button.classList.add('available');
+                    button.dataset.seatStatus = 'AVAILABLE';
+                    button.disabled = false;
+                    button.title = 'Còn trống';
+                    button.setAttribute('aria-label', button.dataset.seatLabel + ', Còn trống');
+                    button.setAttribute('aria-pressed', 'false');
+                });
+                heldSeatIds.clear();
+                setSeatSelectionLocked(false);
+            }
 
             function stopHoldCountdown() {
                 if (countdownId) {
@@ -217,12 +256,15 @@
 
                 holdPayLink.setAttribute('href', holdTimer.dataset.payUrl);
                 holdPayLink.removeAttribute('aria-disabled');
+                holdCancelButton.disabled = false;
                 holdTimer.classList.remove('is-over');
                 holdTimer.hidden = false;
+                hasActiveHold = true;
+                setSeatSelectionLocked(true);
                 stopHoldCountdown();
 
                 const tick = () => {
-                    const remainingSeconds = Math.max(0, Math.round((deadline - Date.now()) / 1000));
+                    const remainingSeconds = Math.max(0, Math.ceil((deadline - Date.now()) / 1000));
                     const minutes = String(Math.floor(remainingSeconds / 60)).padStart(2, '0');
                     const seconds = String(remainingSeconds % 60).padStart(2, '0');
                     holdTimerValue.textContent = minutes + ':' + seconds;
@@ -231,6 +273,10 @@
                         holdTimer.classList.add('is-over');
                         holdTimerValue.textContent = 'Đã hết giờ';
                         holdPayLink.setAttribute('aria-disabled', 'true');
+                        holdCancelButton.disabled = true;
+                        hasActiveHold = false;
+                        releaseHeldSeatsInView();
+                        updateSelection();
                         showMessage('Đã quá thời gian giữ ghế nên ghế được trả lại. '
                             + 'Bạn hãy cập nhật sơ đồ ghế và chọn lại.', false);
                     }
@@ -238,6 +284,10 @@
                 tick();
                 countdownId = setInterval(tick, 1000);
             }
+
+            holdPayLink.addEventListener('click', event => {
+                if (holdPayLink.getAttribute('aria-disabled') === 'true') event.preventDefault();
+            });
 
             // ===== Huỷ giữ ghế trước khi thanh toán (M2.7) =====
             if (holdCancelButton) {
@@ -259,8 +309,12 @@
                             return;
                         }
                         stopHoldCountdown();
+                        hasActiveHold = false;
+                        releaseHeldSeatsInView();
                         holdTimer.hidden = true;
-                        showMessage(result.message + ' Bạn cập nhật sơ đồ ghế để chọn lại.', true);
+                        updateHeldSummary([], 0);
+                        updateSelection();
+                        showMessage(result.message + ' Bạn có thể chọn lại ghế ngay bây giờ.', true);
                     } catch (error) {
                         showMessage('Chưa xác nhận được kết quả huỷ. Bạn cập nhật sơ đồ ghế để kiểm tra lại.', false);
                     } finally {
@@ -300,7 +354,11 @@
                     }
                     showMessage(result.message + ' Tổng tiền: ' + currencyFormatter.format(result.totalPrice)
                         + '. Mã vé: ' + result.ticketIds.join(', ') + '.', true);
-                    seatButtons.filter(button => selectedSeats.has(button.dataset.seatId)).forEach(button => {
+                    const newlyHeldButtons = seatButtons.filter(
+                        button => selectedSeats.has(button.dataset.seatId));
+                    heldSeatIds = new Set(newlyHeldButtons.map(button => button.dataset.seatId));
+                    updateHeldSummary(newlyHeldButtons.map(button => button.textContent), result.totalPrice);
+                    newlyHeldButtons.forEach(button => {
                         button.classList.remove('selected', 'available');
                         button.classList.add('held');
                         button.disabled = true;
@@ -319,6 +377,12 @@
                     updateSelection();
                 }
             });
+
+            if (holdTimer.dataset.expiresAt) {
+                heldSeatIds = new Set(holdTimer.dataset.heldSeatIds.split(',').filter(Boolean));
+                startHoldCountdown(holdTimer.dataset.expiresAt);
+            }
+            updateSelection();
         })();
     </script>
 </div>
