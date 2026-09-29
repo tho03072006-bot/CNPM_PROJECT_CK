@@ -46,6 +46,33 @@ class MovieServiceIntegrationTest extends IntegrationTestBase {
     }
 
     @Test
+    @DisplayName("Khôi phục phim đã ngừng chiếu")
+    void shouldReactivateMovie_whenRestoring() {
+        Movie movie = testDataFactory.createMovie("Phim trở lại");
+        movieService.deactivateMovie(movie.getId());
+
+        movieService.reactivateMovie(movie.getId());
+
+        assertThat(movieRepository.findById(movie.getId())).get().extracting(Movie::getActive).isEqualTo(true);
+    }
+
+    @Test
+    @DisplayName("Tìm phim không dấu và lọc theo một thể loại")
+    void shouldSearchWithoutAccentsAndFilterByGenre() {
+        Movie action = testDataFactory.createMovie("Bão Giữa Trời Quang");
+        action.setGenre("Hành Động, Phiêu Lưu");
+        movieRepository.save(action);
+        Movie comedy = testDataFactory.createMovie("Ngày Vui");
+        comedy.setGenre("Hài");
+        movieRepository.save(comedy);
+
+        assertThat(movieService.findActiveMovies("bao giua", "Hành Động"))
+                .extracting(Movie::getId).containsExactly(action.getId());
+        assertThat(movieService.findActiveGenres())
+                .contains("Hành Động", "Phiêu Lưu", "Hài");
+    }
+
+    @Test
     @DisplayName("Từ chối phim thiếu tên hoặc có thời lượng bằng không")
     void shouldRejectEmptyTitleAndZeroDuration_whenCreating() {
         Movie movie = new Movie();

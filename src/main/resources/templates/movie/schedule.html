@@ -40,9 +40,9 @@
             <a class="schedule-poster" th:href="@{/movies/{id}(id=${entry.movie.id})}"
                th:aria-label="|Xem chi tiết phim ${entry.movie.title}|">
                 <img th:if="${entry.movie.posterUrl != null and !#strings.isEmpty(entry.movie.posterUrl)}"
-                     th:src="${entry.movie.posterUrl}" th:alt="|Poster phim ${entry.movie.title}|" loading="lazy">
+                     th:src="${entry.movie.posterUrl}" th:alt="|Poster phim ${entry.movie.title}|"
+                     loading="lazy" onerror="this.hidden=true">
                 <span class="schedule-poster-fallback" aria-hidden="true"
-                      th:unless="${entry.movie.posterUrl != null and !#strings.isEmpty(entry.movie.posterUrl)}"
                       th:text="${#strings.substring(entry.movie.title, 0, 1)}">P</span>
             </a>
 

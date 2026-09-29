@@ -71,4 +71,11 @@ public class AdminMovieController {
         redirectAttributes.addFlashAttribute(Constants.MODEL_SUCCESS_MESSAGE, "Đã ngừng chiếu phim.");
         return "redirect:/admin/movies";
     }
+
+    @PostMapping("/{id}/reactivate")
+    public String reactivate(@PathVariable Long id, RedirectAttributes redirectAttributes) {
+        movieService.reactivateMovie(id);
+        redirectAttributes.addFlashAttribute(Constants.MODEL_SUCCESS_MESSAGE, "Đã khôi phục phim vào danh sách đang chiếu.");
+        return "redirect:/admin/movies";
+    }
 }

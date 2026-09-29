@@ -16,12 +16,40 @@
         <a th:href="@{/admin/rooms}">Phòng chiếu</a>
         <a th:href="@{/admin/showtimes}" aria-current="page">Suất chiếu</a>
     </nav>
+    <form class="card module1-filter-panel module1-showtime-filter" method="get"
+          th:action="@{/admin/showtimes}" aria-label="Lọc suất chiếu">
+        <div class="form-field">
+            <label for="showtime-date">Ngày chiếu</label>
+            <input class="form-control" id="showtime-date" name="date" type="date" th:value="${selectedDate}">
+        </div>
+        <div class="form-field">
+            <label for="showtime-movie">Phim</label>
+            <select class="form-control" id="showtime-movie" name="movieId">
+                <option value="">Tất cả phim</option>
+                <option th:each="movie : ${movies}" th:value="${movie.id}" th:text="${movie.title}"
+                        th:selected="${movie.id.equals(selectedMovieId)}"></option>
+            </select>
+        </div>
+        <div class="form-field">
+            <label for="showtime-room">Phòng</label>
+            <select class="form-control" id="showtime-room" name="roomId">
+                <option value="">Tất cả phòng</option>
+                <option th:each="room : ${rooms}" th:value="${room.id}" th:text="${room.name}"
+                        th:selected="${room.id.equals(selectedRoomId)}"></option>
+            </select>
+        </div>
+        <div class="module1-filter-actions">
+            <button class="btn" type="submit">Áp dụng</button>
+            <a class="btn btn-ghost" th:if="${selectedDate != null or selectedMovieId != null or selectedRoomId != null}"
+               th:href="@{/admin/showtimes}">Xoá lọc</a>
+        </div>
+    </form>
     <div class="module1-admin-summary">
         <span class="module1-summary-number" th:text="${#lists.size(showtimes)}">10</span>
-        <div><strong>Suất chiếu trong hệ thống</strong><span>Giờ kết thúc đã bao gồm 15 phút dọn phòng.</span></div>
+        <div><strong>Suất chiếu phù hợp</strong><span>Giờ kết thúc đã bao gồm 15 phút dọn phòng.</span></div>
     </div>
     <div class="module1-empty" th:if="${#lists.isEmpty(showtimes)}">
-        <h2>Chưa có suất chiếu</h2><p>Hãy chọn phim và phòng để lên lịch đầu tiên.</p>
+        <h2>Không có suất chiếu phù hợp</h2><p>Hãy đổi ngày, phim hoặc phòng rồi thử lại.</p>
     </div>
     <div class="table-wrap" th:unless="${#lists.isEmpty(showtimes)}">
         <table class="admin-table module1-table"><thead><tr>

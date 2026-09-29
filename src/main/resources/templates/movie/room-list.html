@@ -31,6 +31,7 @@
             <td th:text="|${room.totalRows} hàng × ${room.totalColumns} cột|">8 hàng × 10 cột</td>
             <td><span class="badge badge-brand" th:text="|${room.totalRows * room.totalColumns} ghế|">80 ghế</span></td>
             <td><div class="module1-row-actions">
+                <a class="btn btn-sm" th:href="@{/admin/rooms/{id}(id=${room.id})}">Xem sơ đồ</a>
                 <a class="btn btn-ghost btn-sm" th:href="@{/admin/rooms/{id}/edit(id=${room.id})}">Sửa</a>
                 <form th:action="@{/admin/rooms/{id}/delete(id=${room.id})}" method="post">
                     <button class="btn btn-ghost btn-sm" type="submit">Xoá</button>
