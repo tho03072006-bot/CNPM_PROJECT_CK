@@ -225,6 +225,12 @@ nào có cam kết thời gian hoạt động. Vì vậy:
   Chạy lại `seed-data.sql` trước hôm bảo vệ một ngày là xong — file này chạy lại được nhiều
   lần, chỉ thêm suất chiếu mới chứ không xoá gì, cũng không nhân đôi dữ liệu cũ.
 
+  Từ 30/09/2026 file seed còn **bỏ qua suất chồng giờ** với suất đã có trong cùng phòng. Trước đó
+  nó chỉ bỏ qua suất trùng y hệt, nên chạy lại vào một ngày khác thì mẫu lịch dịch đi và một
+  phòng chiếu hai phim cùng lúc: cả database máy cá nhân lẫn cloud còn 139 cặp như vậy ở ngày
+  23–25/09 (đều đã qua, không có vé, không ảnh hưởng gì). Lần chạy ngày 30/09 nối lịch tới hết
+  05/10 trên cả hai nơi, không thêm cặp chồng giờ nào.
+
   Câu kiểm tra nhanh còn bao nhiêu ngày lịch chiếu:
 
   ```sql
