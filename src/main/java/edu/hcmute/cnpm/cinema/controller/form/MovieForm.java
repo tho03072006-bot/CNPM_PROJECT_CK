@@ -5,6 +5,7 @@ import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
+import org.hibernate.validator.constraints.URL;
 
 public class MovieForm {
     @NotBlank(message = "Vui lòng nhập tên phim.")
@@ -16,6 +17,7 @@ public class MovieForm {
     @Min(value = 1, message = "Thời lượng phải lớn hơn 0 phút.")
     private Integer durationMin;
     private String description;
+    @URL(message = "Đường dẫn poster phải là URL hợp lệ, ví dụ https://...")
     @Size(max = 500, message = "Đường dẫn poster không được dài quá 500 ký tự.")
     private String posterUrl;
     @Size(max = 10, message = "Nhãn độ tuổi không được dài quá 10 ký tự.")

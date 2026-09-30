@@ -3,7 +3,8 @@
 Tài liệu này mô tả nhóm kiểm thử phần mềm thế nào, kiểm thử những gì, và vì sao chọn cách đó.
 Số liệu trong đây lấy từ lần chạy `mvn test` thật, không phải ước lượng.
 
-**Hiện trạng: 211 test, 211 đạt, 0 hỏng.**
+**Hiện trạng: 223 test** (211 của nhánh bổ sung tính năng + 12 test mới của Module 1 gộp từ
+`develop` ngày 30/09).
 
 ---
 
@@ -34,7 +35,7 @@ thúc bằng `_test` trước khi làm bất cứ việc gì. Nếu ai đó sử
 |---|---|---|---|
 | Unit test | Kiểm tra logic tính toán và kiểm tra dữ liệu đầu vào | Không | 52 |
 | Test MVC | Kiểm tra Controller, template và mã HTTP trả về | Không | 7 |
-| Test tích hợp | Kiểm tra nghiệp vụ chạy thật trên database | Có | 152 |
+| Test tích hợp | Kiểm tra nghiệp vụ chạy thật trên database | Có | 164 |
 
 Unit test chạy trong mili giây nên viết được nhiều và chạy liên tục lúc code. Test tích hợp chậm
 hơn nhưng là thứ duy nhất chứng minh được ràng buộc database có hoạt động thật hay không.
@@ -43,14 +44,15 @@ hơn nhưng là thứ duy nhất chứng minh được ràng buộc database có
 
 ## 3. Bảng kiểm thử theo module
 
-### Module 1 — Phim, phòng chiếu, suất chiếu (26 test)
+### Module 1 — Phim, phòng chiếu, suất chiếu (37 test)
 
 | Lớp test | Số test | Kiểm tra điều gì |
 |---|---|---|
-| `MoviePagesIntegrationTest` | 9 | Trang phim công khai và trang quản trị hiển thị đúng dữ liệu |
-| `ShowtimeServiceIntegrationTest` | 7 | **Chặn xếp hai suất trùng giờ trong cùng một phòng** |
-| `MovieServiceIntegrationTest` | 6 | Thêm, sửa, ngừng chiếu phim |
+| `MoviePagesIntegrationTest` | 14 | Trang phim công khai và trang quản trị hiển thị đúng dữ liệu; lọc phim, **lỗi trùng lịch hiện ngay dưới ô giờ bắt đầu** |
+| `ShowtimeServiceIntegrationTest` | 8 | **Chặn xếp hai suất trùng giờ trong cùng một phòng**, lọc suất theo ngày, phim, phòng |
+| `MovieServiceIntegrationTest` | 9 | Thêm, sửa, ngừng chiếu, khôi phục phim; tìm không dấu, lọc theo thể loại |
 | `RoomServiceIntegrationTest` | 4 | Tạo phòng và tự sinh ghế theo số hàng × cột |
+| `ShowtimeAvailabilityServiceIntegrationTest` | 2 | Đếm ghế còn lại theo suất, cảnh báo sắp hết và đánh dấu hết vé |
 
 Phần chặn trùng giờ chiếu được phủ đủ bốn kiểu chồng lấn: suất mới bắt đầu giữa suất cũ, kết thúc
 giữa suất cũ, bao trọn suất cũ, và nằm gọn trong suất cũ. Cộng thêm ca sát nút (bắt đầu đúng sau
@@ -97,12 +99,12 @@ Phần phân quyền gọi **thẳng địa chỉ** `/admin/**` bằng bốn tư
 khách hàng, tài khoản nhân viên, tài khoản quản trị. Đây mới là cách kiểm tra đúng — ẩn nút trên
 giao diện không phải là phân quyền.
 
-### Module 4 — Nền tảng dùng chung (18 test)
+### Module 4 — Nền tảng dùng chung (19 test)
 
 | Lớp test | Số test | Kiểm tra điều gì |
 |---|---|---|
 | `TicketPricingServiceIntegrationTest` | 6 | Bảng giá vé khớp với giá thật trong lịch chiếu |
-| `ScheduleServiceIntegrationTest` | 6 | Lịch chiếu theo ngày, gom theo loại phòng |
+| `ScheduleServiceIntegrationTest` | 7 | Lịch chiếu theo ngày, gom theo loại phòng, lọc theo phim và phòng |
 | `GlobalExceptionHandlerIntegrationTest` | 4 | Exception nghiệp vụ đổi đúng mã HTTP |
 | `BookingFlowEndToEndTest` | 2 | **Luồng đặt vé từ đầu đến cuối** |
 

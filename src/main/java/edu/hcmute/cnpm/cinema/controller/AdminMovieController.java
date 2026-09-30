@@ -3,6 +3,7 @@ package edu.hcmute.cnpm.cinema.controller;
 import edu.hcmute.cnpm.cinema.constants.Constants;
 import edu.hcmute.cnpm.cinema.controller.form.MovieForm;
 import edu.hcmute.cnpm.cinema.exception.BusinessException;
+import edu.hcmute.cnpm.cinema.entity.Movie;
 import edu.hcmute.cnpm.cinema.service.MovieService;
 import jakarta.validation.Valid;
 import org.springframework.stereotype.Controller;
@@ -13,6 +14,7 @@ import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 @Controller
@@ -25,9 +27,30 @@ public class AdminMovieController {
     }
 
     @GetMapping
-    public String list(Model model) {
-        model.addAttribute("movies", movieService.findAllMovies());
+    public String list(@RequestParam(required = false) String q,
+                       @RequestParam(required = false) String genre,
+                       @RequestParam(required = false) Boolean active,
+                       Model model) {
+        var allMovies = movieService.findAllMovies();
+        model.addAttribute("movies", movieService.findMovies(q, genre, active));
+        model.addAttribute("genres", movieService.findAllGenres());
+        model.addAttribute("keyword", q == null ? "" : q.trim());
+        model.addAttribute("selectedGenre", genre == null ? "" : genre);
+        model.addAttribute("selectedActive", active);
+        model.addAttribute("filtering", (q != null && !q.isBlank())
+                || (genre != null && !genre.isBlank()) || active != null);
+        model.addAttribute("totalMovies", allMovies.size());
+        model.addAttribute("activeMovies", allMovies.stream().filter(movie -> Boolean.TRUE.equals(movie.getActive())).count());
+        model.addAttribute("inactiveMovies", allMovies.stream().filter(movie -> !Boolean.TRUE.equals(movie.getActive())).count());
+        model.addAttribute("incompleteMovies", allMovies.stream().filter(this::isIncomplete).count());
         return "movie/admin-movie-list";
+    }
+
+    private boolean isIncomplete(Movie movie) {
+        return movie.getPosterUrl() == null || movie.getPosterUrl().isBlank()
+                || movie.getDescription() == null || movie.getDescription().isBlank()
+                || movie.getGenre() == null || movie.getGenre().isBlank()
+                || movie.getAgeRating() == null || movie.getAgeRating().isBlank();
     }
 
     @GetMapping("/new")
@@ -85,11 +108,10 @@ public class AdminMovieController {
         return "redirect:/admin/movies";
     }
 
-    @PostMapping("/{id}/activate")
-    public String activate(@PathVariable Long id, RedirectAttributes redirectAttributes) {
-        movieService.activateMovie(id);
-        redirectAttributes.addFlashAttribute(Constants.MODEL_SUCCESS_MESSAGE,
-                "Đã mở bán lại phim. Phim hiện lại trên trang Phim cho khán giả.");
+    @PostMapping("/{id}/reactivate")
+    public String reactivate(@PathVariable Long id, RedirectAttributes redirectAttributes) {
+        movieService.reactivateMovie(id);
+        redirectAttributes.addFlashAttribute(Constants.MODEL_SUCCESS_MESSAGE, "Đã khôi phục phim vào danh sách đang chiếu.");
         return "redirect:/admin/movies";
     }
 }

@@ -10,62 +10,56 @@
             <p>Khám phá phim đang chiếu, xem lịch chiếu và chọn buổi xem phù hợp với bạn.</p>
         </div>
         <div class="module1-hero-count" aria-label="Số phim đang chiếu">
+            <!-- Đếm mọi phim đang chiếu, không đếm theo kết quả lọc. -->
             <strong th:text="${activeMovieCount}">5</strong>
             <span>phim đang chiếu</span>
         </div>
     </section>
 
-    <!-- Tìm theo tên và lọc theo thể loại. Dùng GET để gửi link kết quả cho bạn bè được. -->
-    <form class="card movie-search" th:action="@{/movies}" method="get" role="search"
-          aria-label="Tìm phim">
-        <div class="form-field movie-search-keyword">
-            <label for="q">Tên phim</label>
-            <input class="form-control" id="q" name="q" type="search" th:value="${keyword}"
-                   maxlength="100" placeholder="Ví dụ: bong ma" autocomplete="off">
+    <form class="card module1-filter-panel module1-movie-filter" method="get" th:action="@{/movies}"
+          aria-label="Tìm và lọc phim">
+        <div class="form-field">
+            <label for="movie-search">Tên phim</label>
+            <input class="form-control" id="movie-search" name="q" type="search"
+                   th:value="${keyword}" placeholder="Ví dụ: Doraemon" autocomplete="off">
         </div>
-        <div class="form-field movie-search-genre">
-            <label for="theLoai">Thể loại</label>
-            <select class="form-control" id="theLoai" name="theLoai">
+        <div class="form-field">
+            <label for="movie-genre">Thể loại</label>
+            <select class="form-control" id="movie-genre" name="genre">
                 <option value="">Tất cả thể loại</option>
                 <option th:each="genre : ${genres}" th:value="${genre}" th:text="${genre}"
-                        th:selected="${genre == selectedGenre}">Hài</option>
+                        th:selected="${genre.equals(selectedGenre)}"></option>
             </select>
         </div>
-        <div class="movie-search-actions">
+        <div class="module1-filter-actions">
             <button class="btn" type="submit">Tìm phim</button>
-            <a class="btn btn-ghost" th:if="${isFiltering}" th:href="@{/movies}">Bỏ lọc</a>
+            <a class="btn btn-ghost" th:if="${filtering}" th:href="@{/movies}">Xoá bộ lọc</a>
         </div>
     </form>
 
     <div class="module1-section-head">
         <div>
             <span class="module1-kicker">TRÊN MÀN ẢNH</span>
-            <h2 th:text="${isFiltering} ? 'Kết quả tìm kiếm' : 'Chọn phim của bạn'">Chọn phim của bạn</h2>
+            <h2 th:text="${filtering} ? 'Kết quả tìm kiếm' : 'Chọn phim của bạn'">Chọn phim của bạn</h2>
         </div>
-        <p class="text-muted" role="status" th:unless="${#lists.isEmpty(movies)}"
-           th:text="${isFiltering} ? |Tìm thấy ${#lists.size(movies)} phim phù hợp|
-                                   : |${#lists.size(movies)} lựa chọn đang chờ bạn|">5 lựa chọn đang chờ bạn</p>
+        <p class="text-muted" th:unless="${#lists.isEmpty(movies)}"
+           th:text="|Tìm thấy ${#lists.size(movies)} phim phù hợp|">5 phim phù hợp</p>
     </div>
 
-    <div class="module1-empty" th:if="${#lists.isEmpty(movies) and isFiltering}" role="status">
+    <div class="module1-empty" th:if="${#lists.isEmpty(movies)}">
         <span class="module1-empty-icon" aria-hidden="true">✦</span>
-        <h3>Không có phim nào khớp</h3>
-        <p>Thử gõ ít chữ hơn hoặc chọn thể loại khác.</p>
-        <a class="btn btn-ghost" th:href="@{/movies}">Xem tất cả phim</a>
-    </div>
-
-    <div class="module1-empty" th:if="${#lists.isEmpty(movies) and !isFiltering}">
-        <span class="module1-empty-icon" aria-hidden="true">✦</span>
-        <h3>Chưa có phim đang chiếu</h3>
-        <p>Lịch phim mới sẽ sớm được cập nhật. Hãy quay lại sau nhé.</p>
+        <h3 th:text="${filtering} ? 'Không tìm thấy phim phù hợp' : 'Chưa có phim đang chiếu'">Chưa có phim đang chiếu</h3>
+        <p th:text="${filtering} ? 'Hãy thử từ khoá khác hoặc chọn tất cả thể loại.' : 'Lịch phim mới sẽ sớm được cập nhật. Hãy quay lại sau nhé.'">Thông báo</p>
+        <a class="btn btn-ghost" th:if="${filtering}" th:href="@{/movies}">Xem tất cả phim</a>
     </div>
 
     <div class="card-grid module1-catalog-grid" th:unless="${#lists.isEmpty(movies)}">
         <article class="movie-card module1-movie-card" th:each="movie, iter : ${movies}">
             <div class="movie-poster module1-poster" th:classappend="|module1-poster-tone-${iter.index % 5}|">
                 <img th:if="${movie.posterUrl != null and !#strings.isEmpty(movie.posterUrl)}"
-                     th:src="${movie.posterUrl}" th:alt="|Poster phim ${movie.title}|">
-                <div class="module1-poster-art" th:unless="${movie.posterUrl != null and !#strings.isEmpty(movie.posterUrl)}">
+                     th:src="${movie.posterUrl}" th:alt="|Poster phim ${movie.title}|"
+                     loading="lazy" onerror="this.hidden=true">
+                <div class="module1-poster-art">
                     <span class="module1-poster-index" th:text="${#numbers.formatInteger(iter.count, 2)}">01</span>
                     <span class="module1-poster-letter" aria-hidden="true"
                           th:text="${#strings.substring(movie.title, 0, 1)}">B</span>
@@ -79,8 +73,12 @@
                 <h3 class="movie-title" th:text="${movie.title}">Tên phim</h3>
                 <p class="movie-meta" th:text="|${movie.durationMin} phút · ${movie.ageRating ?: 'Chưa phân loại'}|">Thời lượng</p>
                 <p class="module1-card-description" th:text="${movie.description ?: 'Xem thông tin phim và các suất chiếu sắp tới.'}">Mô tả phim</p>
-                <a class="module1-card-link" th:href="@{/movies/{id}(id=${movie.id})}"
-                   th:aria-label="|Xem lịch chiếu phim ${movie.title}|">Xem lịch chiếu <span aria-hidden="true">→</span></a>
+                <div class="module1-card-actions">
+                    <a class="btn btn-sm" th:href="@{/movies/{id}(id=${movie.id})}"
+                       th:aria-label="|Đặt vé phim ${movie.title}|">Đặt vé</a>
+                    <a class="module1-card-link" th:href="@{/movies/{id}(id=${movie.id})}"
+                       th:aria-label="|Xem chi tiết phim ${movie.title}|">Chi tiết <span aria-hidden="true">→</span></a>
+                </div>
             </div>
         </article>
     </div>

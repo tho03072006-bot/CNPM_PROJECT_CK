@@ -51,18 +51,22 @@ class AdminFormErrorIntegrationTest extends IntegrationTestBase {
     }
 
     @Test
-    @DisplayName("Thêm suất trùng giờ thì hiện lại form kèm lời nhắc, dữ liệu vừa nhập vẫn còn")
-    void shouldRedisplayShowtimeForm_whenNewShowtimeOverlaps() throws Exception {
-        String overlapping = existing.getStartTime().plusMinutes(30).format(DateTimeFormatter.ISO_LOCAL_DATE_TIME);
+    @DisplayName("Xếp suất cho phim đã ngừng chiếu thì hiện lại form kèm lời nhắc, dữ liệu vừa nhập vẫn còn")
+    void shouldRedisplayShowtimeForm_whenMovieIsNoLongerShowing() throws Exception {
+        // Lỗi trùng giờ thì nằm dưới ô giờ bắt đầu (MoviePagesIntegrationTest của Module 1 kiểm tra);
+        // ở đây là các lỗi nghiệp vụ còn lại, hiện ở đầu form.
+        movie.setActive(false);
+        movieRepository.save(movie);
+        String nextDay = existing.getStartTime().plusDays(1).format(DateTimeFormatter.ISO_LOCAL_DATE_TIME);
 
         mockMvc.perform(post("/admin/showtimes").sessionAttr(Constants.SESSION_USER, admin)
                         .param("movieId", movie.getId().toString())
                         .param("roomId", room.getId().toString())
-                        .param("startTime", overlapping)
+                        .param("startTime", nextDay)
                         .param("basePrice", "115000"))
                 .andExpect(status().isOk())
                 .andExpect(view().name("movie/showtime-form"))
-                .andExpect(model().attribute(Constants.MODEL_ERROR_MESSAGE, containsString("trùng")))
+                .andExpect(model().attribute(Constants.MODEL_ERROR_MESSAGE, containsString("ngừng chiếu")))
                 .andExpect(model().attributeExists("movies", "rooms"));
 
         assertThat(showtimeRepository.count()).isEqualTo(1);

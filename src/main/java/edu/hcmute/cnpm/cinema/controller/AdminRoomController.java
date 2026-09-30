@@ -3,6 +3,8 @@ package edu.hcmute.cnpm.cinema.controller;
 import edu.hcmute.cnpm.cinema.constants.Constants;
 import edu.hcmute.cnpm.cinema.controller.form.RoomForm;
 import edu.hcmute.cnpm.cinema.exception.BusinessException;
+import edu.hcmute.cnpm.cinema.entity.Room;
+import edu.hcmute.cnpm.cinema.entity.Seat;
 import edu.hcmute.cnpm.cinema.service.RoomService;
 import jakarta.validation.Valid;
 import org.springframework.stereotype.Controller;
@@ -14,6 +16,8 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
+
+import java.util.List;
 
 @Controller
 @RequestMapping("/admin/rooms")
@@ -28,6 +32,19 @@ public class AdminRoomController {
     public String list(Model model) {
         model.addAttribute("rooms", roomService.findAllRooms());
         return "movie/room-list";
+    }
+
+    @GetMapping("/{id}")
+    public String detail(@PathVariable Long id, Model model) {
+        Room room = roomService.findById(id);
+        List<Seat> seats = roomService.findSeatsByRoom(id);
+        model.addAttribute("room", room);
+        model.addAttribute("seats", seats);
+        model.addAttribute("normalSeatCount", seats.stream()
+                .filter(seat -> "NORMAL".equals(seat.getSeatType())).count());
+        model.addAttribute("vipSeatCount", seats.stream()
+                .filter(seat -> "VIP".equals(seat.getSeatType())).count());
+        return "movie/room-detail";
     }
 
     @GetMapping("/new")

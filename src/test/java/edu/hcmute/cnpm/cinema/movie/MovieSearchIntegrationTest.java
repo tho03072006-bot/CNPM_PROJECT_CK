@@ -45,20 +45,20 @@ class MovieSearchIntegrationTest extends IntegrationTestBase {
     @Test
     @DisplayName("Gõ không dấu vẫn tìm ra phim có dấu, kể cả chữ đ")
     void shouldFindMovie_whenKeywordTypedWithoutAccents() {
-        assertThat(movieService.searchActiveMovies("bong ma", null))
+        assertThat(movieService.findActiveMovies("bong ma", null))
                 .extracting(Movie::getTitle).containsExactly("Bóng Ma Nhà Hát");
-        assertThat(movieService.searchActiveMovies("DAO QUEN", null))
+        assertThat(movieService.findActiveMovies("DAO QUEN", null))
                 .extracting(Movie::getTitle).containsExactly("Đảo Quên Lãng");
     }
 
     @Test
     @DisplayName("Lọc theo thể loại khớp đúng từng thể loại trong danh sách, không khớp nửa chữ")
     void shouldFilterByGenreToken_whenGenreSelected() {
-        assertThat(movieService.searchActiveMovies(null, "Hài"))
+        assertThat(movieService.findActiveMovies(null, "Hài"))
                 .extracting(Movie::getTitle).containsExactlyInAnyOrder("Bóng Ma Nhà Hát", "Đảo Quên Lãng");
-        assertThat(movieService.searchActiveMovies(null, "Kinh dị"))
+        assertThat(movieService.findActiveMovies(null, "Kinh dị"))
                 .extracting(Movie::getTitle).containsExactly("Bóng Ma Nhà Hát");
-        assertThat(movieService.searchActiveMovies(null, "Kinh"))
+        assertThat(movieService.findActiveMovies(null, "Kinh"))
                 .as("Chọn thể loại phải khớp nguyên thể loại, không phải một phần chữ")
                 .isEmpty();
     }
@@ -66,7 +66,7 @@ class MovieSearchIntegrationTest extends IntegrationTestBase {
     @Test
     @DisplayName("Phim đã ngừng chiếu không hiện trong kết quả tìm kiếm lẫn danh sách thể loại")
     void shouldExcludeInactiveMovies_whenSearchingAndListingGenres() {
-        assertThat(movieService.searchActiveMovies("minions", null)).isEmpty();
+        assertThat(movieService.findActiveMovies("minions", null)).isEmpty();
         assertThat(movieService.findActiveGenres())
                 .containsExactlyInAnyOrder("Hài", "Kinh dị", "Hoạt hình", "Gia đình");
     }
@@ -74,9 +74,9 @@ class MovieSearchIntegrationTest extends IntegrationTestBase {
     @Test
     @DisplayName("Mở bán lại phim đã ngừng chiếu thì phim hiện lại cho khán giả")
     void shouldShowMovieAgain_whenReactivated() {
-        movieService.activateMovie(stoppedMovie.getId());
+        movieService.reactivateMovie(stoppedMovie.getId());
 
-        assertThat(movieService.searchActiveMovies("minions", null))
+        assertThat(movieService.findActiveMovies("minions", null))
                 .extracting(Movie::getId).containsExactly(stoppedMovie.getId());
     }
 
@@ -91,11 +91,11 @@ class MovieSearchIntegrationTest extends IntegrationTestBase {
     }
 
     @Test
-    @DisplayName("Quản trị viên bấm Mở bán lại trên trang quản trị thì phim chuyển về đang chiếu")
-    void shouldActivateMovie_whenAdminPostsActivate() throws Exception {
+    @DisplayName("Quản trị viên bấm Khôi phục trên trang quản trị thì phim chuyển về đang chiếu")
+    void shouldReactivateMovie_whenAdminPostsReactivate() throws Exception {
         User admin = testDataFactory.createUserWithRole("admin@example.com", Role.ADMIN);
 
-        mockMvc.perform(post("/admin/movies/{id}/activate", stoppedMovie.getId())
+        mockMvc.perform(post("/admin/movies/{id}/reactivate", stoppedMovie.getId())
                         .sessionAttr(Constants.SESSION_USER, admin))
                 .andExpect(status().is3xxRedirection());
 
