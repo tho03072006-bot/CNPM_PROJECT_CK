@@ -2,6 +2,7 @@ package edu.hcmute.cnpm.cinema.controller;
 
 import edu.hcmute.cnpm.cinema.constants.Constants;
 import edu.hcmute.cnpm.cinema.controller.form.MovieForm;
+import edu.hcmute.cnpm.cinema.exception.BusinessException;
 import edu.hcmute.cnpm.cinema.service.MovieService;
 import jakarta.validation.Valid;
 import org.springframework.stereotype.Controller;
@@ -37,11 +38,16 @@ public class AdminMovieController {
 
     @PostMapping
     public String create(@Valid @ModelAttribute("movieForm") MovieForm form, BindingResult errors,
-                         RedirectAttributes redirectAttributes) {
+                         Model model, RedirectAttributes redirectAttributes) {
         if (errors.hasErrors()) {
             return "movie/movie-form";
         }
-        movieService.createMovie(form.toMovie());
+        try {
+            movieService.createMovie(form.toMovie());
+        } catch (BusinessException exception) {
+            model.addAttribute(Constants.MODEL_ERROR_MESSAGE, exception.getMessage());
+            return "movie/movie-form";
+        }
         redirectAttributes.addFlashAttribute(Constants.MODEL_SUCCESS_MESSAGE, "Đã thêm phim thành công.");
         return "redirect:/admin/movies";
     }
@@ -60,7 +66,14 @@ public class AdminMovieController {
             model.addAttribute("movieId", id);
             return "movie/movie-form";
         }
-        movieService.updateMovie(id, form.toMovie());
+        try {
+            movieService.updateMovie(id, form.toMovie());
+        } catch (BusinessException exception) {
+            // Ví dụ: đổi thời lượng của phim đã có suất chiếu.
+            model.addAttribute(Constants.MODEL_ERROR_MESSAGE, exception.getMessage());
+            model.addAttribute("movieId", id);
+            return "movie/movie-form";
+        }
         redirectAttributes.addFlashAttribute(Constants.MODEL_SUCCESS_MESSAGE, "Đã cập nhật phim thành công.");
         return "redirect:/admin/movies";
     }

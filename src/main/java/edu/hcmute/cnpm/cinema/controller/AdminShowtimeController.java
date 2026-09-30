@@ -2,6 +2,7 @@ package edu.hcmute.cnpm.cinema.controller;
 
 import edu.hcmute.cnpm.cinema.constants.Constants;
 import edu.hcmute.cnpm.cinema.controller.form.ShowtimeForm;
+import edu.hcmute.cnpm.cinema.exception.BusinessException;
 import edu.hcmute.cnpm.cinema.service.MovieService;
 import edu.hcmute.cnpm.cinema.service.RoomService;
 import edu.hcmute.cnpm.cinema.service.ShowtimeService;
@@ -50,8 +51,15 @@ public class AdminShowtimeController {
             addChoices(model);
             return "movie/showtime-form";
         }
-        showtimeService.createShowtime(form.getMovieId(), form.getRoomId(),
-                form.getStartTime(), form.getBasePrice());
+        try {
+            showtimeService.createShowtime(form.getMovieId(), form.getRoomId(),
+                    form.getStartTime(), form.getBasePrice());
+        } catch (BusinessException exception) {
+            // Trùng giờ chiếu... thì hiện lại form kèm lời nhắc, không bắt nhập lại từ đầu.
+            model.addAttribute(Constants.MODEL_ERROR_MESSAGE, exception.getMessage());
+            addChoices(model);
+            return "movie/showtime-form";
+        }
         redirectAttributes.addFlashAttribute(Constants.MODEL_SUCCESS_MESSAGE, "Đã thêm suất chiếu.");
         return "redirect:/admin/showtimes";
     }
@@ -72,16 +80,27 @@ public class AdminShowtimeController {
             addChoices(model);
             return "movie/showtime-form";
         }
-        showtimeService.updateShowtime(id, form.getMovieId(), form.getRoomId(),
-                form.getStartTime(), form.getBasePrice());
+        try {
+            showtimeService.updateShowtime(id, form.getMovieId(), form.getRoomId(),
+                    form.getStartTime(), form.getBasePrice());
+        } catch (BusinessException exception) {
+            model.addAttribute(Constants.MODEL_ERROR_MESSAGE, exception.getMessage());
+            model.addAttribute("showtimeId", id);
+            addChoices(model);
+            return "movie/showtime-form";
+        }
         redirectAttributes.addFlashAttribute(Constants.MODEL_SUCCESS_MESSAGE, "Đã cập nhật suất chiếu.");
         return "redirect:/admin/showtimes";
     }
 
     @PostMapping("/{id}/delete")
     public String delete(@PathVariable Long id, RedirectAttributes redirectAttributes) {
-        showtimeService.deleteShowtime(id);
-        redirectAttributes.addFlashAttribute(Constants.MODEL_SUCCESS_MESSAGE, "Đã xoá suất chiếu.");
+        try {
+            showtimeService.deleteShowtime(id);
+            redirectAttributes.addFlashAttribute(Constants.MODEL_SUCCESS_MESSAGE, "Đã xoá suất chiếu.");
+        } catch (BusinessException exception) {
+            redirectAttributes.addFlashAttribute(Constants.MODEL_ERROR_MESSAGE, exception.getMessage());
+        }
         return "redirect:/admin/showtimes";
     }
 
