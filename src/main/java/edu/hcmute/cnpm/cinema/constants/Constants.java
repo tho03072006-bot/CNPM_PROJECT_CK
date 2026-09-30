@@ -20,6 +20,9 @@ public class Constants {
     // Ten session attribute luu thong tin user dang dang nhap
     public static final String SESSION_USER = "LOGGED_IN_USER";
 
+    /** Cac ma QR MoMo dang cho khach quet, theo ma don (xem MomoPaymentController). */
+    public static final String SESSION_MOMO_QR_PAYMENTS = "MOMO_QR_PAYMENTS";
+
     public static final String ROLE_ADMIN = "ADMIN";
     public static final String ROLE_STAFF = "STAFF";
     public static final String ROLE_CUSTOMER = "CUSTOMER";

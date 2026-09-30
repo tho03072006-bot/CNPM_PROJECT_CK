@@ -2,8 +2,11 @@ package edu.hcmute.cnpm.cinema.booking;
 
 import edu.hcmute.cnpm.cinema.config.MomoProperties;
 import edu.hcmute.cnpm.cinema.constants.Constants;
+import edu.hcmute.cnpm.cinema.dto.payment.MomoCheckout;
 import edu.hcmute.cnpm.cinema.dto.payment.MomoPaymentResult;
 import edu.hcmute.cnpm.cinema.dto.payment.MomoPaymentResult.Outcome;
+import edu.hcmute.cnpm.cinema.dto.payment.MomoQrPayment;
+import edu.hcmute.cnpm.cinema.dto.payment.MomoQueryResult;
 import edu.hcmute.cnpm.cinema.entity.Movie;
 import edu.hcmute.cnpm.cinema.entity.PaymentMethod;
 import edu.hcmute.cnpm.cinema.entity.Room;
@@ -19,17 +22,21 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
+import org.springframework.mock.web.MockHttpSession;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
 
 import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.assertj.core.api.Assertions.within;
 import static org.hamcrest.Matchers.containsString;
+import static org.hamcrest.Matchers.hasSize;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.argThat;
@@ -38,9 +45,13 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.flash;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.redirectedUrl;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.view;
 
 /**
  * Thanh toán qua MoMo. Lớp gọi HTTP của MoMo là bản giả (xem IntegrationTestBase), còn
@@ -51,6 +62,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 class MomoPaymentIntegrationTest extends IntegrationTestBase {
 
     private static final String TRANS_ID = "4115000001";
+    private static final MomoCheckout QR_CHECKOUT = new MomoCheckout("https://test-payment.momo.vn/v2/gateway/pay?t=abc",
+            "momo://app?action=payWithApp&isScanQR=true&serviceType=qr&sid=abc");
 
     @Autowired
     private MomoPaymentService momoPaymentService;
@@ -168,8 +181,97 @@ class MomoPaymentIntegrationTest extends IntegrationTestBase {
     void shouldShowMomoButton_whenMomoConfigured() throws Exception {
         mockMvc.perform(get("/thanh-toan/{id}", showtime.getId()).sessionAttr(Constants.SESSION_USER, customer))
                 .andExpect(status().isOk())
-                .andExpect(content().string(containsString("Thanh toán bằng ví MoMo")))
+                .andExpect(content().string(containsString("Quét mã QR bằng app MoMo")))
+                .andExpect(content().string(containsString("Thẻ ATM hoặc thẻ quốc tế qua MoMo")))
                 .andExpect(content().string(containsString("Trả tiền mặt tại quầy")));
+    }
+
+    @Test
+    @DisplayName("Chọn quét mã QR thì tạo giao dịch MoMo kiểu QR đúng tổng tiền, hạn trả là lúc hết giữ ghế")
+    void shouldCreateQrPayment_withTotalAndHoldDeadline() {
+        when(momoApiClient.createQrPayment(anyString(), anyLong(), anyString())).thenReturn(QR_CHECKOUT);
+
+        MomoQrPayment qrPayment = momoPaymentService.startQrPayment(customer.getId(), showtime.getId());
+
+        assertThat(qrPayment.orderId()).matches("UTE-" + showtime.getId() + "-" + customer.getId() + "-\\d+");
+        assertThat(qrPayment.amount()).isEqualTo(150000L);
+        assertThat(qrPayment.qrCodeUrl()).isEqualTo(QR_CHECKOUT.qrCodeUrl());
+        LocalDateTime heldAt = heldTickets.getFirst().getHeldAt();
+        assertThat(qrPayment.expiresAt()).isCloseTo(heldAt.plusMinutes(Constants.SEAT_HOLD_MINUTES),
+                within(1, ChronoUnit.SECONDS));
+        verify(momoApiClient).createQrPayment(eq(qrPayment.orderId()), eq(150000L), anyString());
+    }
+
+    @Test
+    @DisplayName("MoMo báo giao dịch QR đã trả thì vé chuyển sang đã thanh toán qua MoMo")
+    void shouldMarkTicketsPaid_whenQrPaymentIsConfirmedByMomo() {
+        String orderId = orderIdOf(customer);
+        when(momoApiClient.queryPayment(orderId)).thenReturn(new MomoQueryResult(0, "Thành công.", TRANS_ID, 150000));
+
+        MomoPaymentResult result = momoPaymentService.checkQrPayment(orderId, customer.getId());
+
+        assertThat(result.getOutcome()).isEqualTo(Outcome.PAID);
+        assertThat(ticketRepository.findAll()).allMatch(ticket -> ticket.getStatus() == TicketStatus.PAID
+                && ticket.getPaymentMethod() == PaymentMethod.MOMO && TRANS_ID.equals(ticket.getPaymentRef()));
+    }
+
+    @Test
+    @DisplayName("Khách chưa quét mã thì báo đang chờ, ghế vẫn đang giữ")
+    void shouldReportPending_whenQrPaymentIsNotConfirmedYet() {
+        String orderId = orderIdOf(customer);
+        when(momoApiClient.queryPayment(orderId)).thenReturn(new MomoQueryResult(1000,
+                "Giao dịch đã được khởi tạo, chờ người dùng xác nhận thanh toán.", "0", 150000));
+
+        MomoPaymentResult result = momoPaymentService.checkQrPayment(orderId, customer.getId());
+
+        assertThat(result.getOutcome()).isEqualTo(Outcome.PENDING);
+        assertThat(ticketRepository.findAll()).allMatch(ticket -> ticket.getStatus() == TicketStatus.HELD);
+    }
+
+    @Test
+    @DisplayName("Không ai hỏi được giao dịch QR của người khác, MoMo cũng không bị gọi")
+    void shouldRejectQrCheck_whenOrderBelongsToAnotherCustomer() {
+        User stranger = testDataFactory.createCustomer("nguoi.la@example.com");
+
+        assertThatThrownBy(() -> momoPaymentService.checkQrPayment(orderIdOf(customer), stranger.getId()))
+                .isInstanceOf(BusinessException.class);
+        verify(momoApiClient, never()).queryPayment(anyString());
+    }
+
+    @Test
+    @DisplayName("Luồng QR trên web: tạo mã, trang hiện mã QR, hỏi trạng thái rồi sang trang hoàn tất")
+    void shouldWalkThroughQrPages_fromCreatingCodeToSuccessPage() throws Exception {
+        when(momoApiClient.createQrPayment(anyString(), anyLong(), anyString())).thenReturn(QR_CHECKOUT);
+        MockHttpSession session = new MockHttpSession();
+        session.setAttribute(Constants.SESSION_USER, customer);
+
+        String qrPage = mockMvc.perform(post("/thanh-toan/{id}/momo-qr", showtime.getId()).session(session))
+                .andExpect(status().is3xxRedirection())
+                .andReturn().getResponse().getRedirectedUrl();
+        assertThat(qrPage).startsWith("/thanh-toan/momo/qr/UTE-" + showtime.getId() + "-" + customer.getId() + "-");
+        String orderId = qrPage.substring(qrPage.lastIndexOf('/') + 1);
+
+        mockMvc.perform(get(qrPage).session(session))
+                .andExpect(status().isOk())
+                .andExpect(view().name("account/momo-qr"))
+                .andExpect(content().string(containsString("<svg")))
+                .andExpect(content().string(containsString("150.000 đ")))
+                .andExpect(content().string(containsString("Tôi đã thanh toán")));
+
+        when(momoApiClient.queryPayment(orderId)).thenReturn(new MomoQueryResult(0, "Thành công.", TRANS_ID, 150000));
+        mockMvc.perform(get(qrPage + "/trang-thai").session(session))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.state").value("PAID"))
+                .andExpect(jsonPath("$.redirectUrl").value(qrPage + "/xong"));
+
+        mockMvc.perform(get(qrPage + "/xong").session(session))
+                .andExpect(status().is3xxRedirection())
+                .andExpect(redirectedUrl("/thanh-toan/hoan-tat"))
+                .andExpect(flash().attribute("paidTicketIds", hasSize(2)));
+    }
+
+    private String orderIdOf(User owner) {
+        return "UTE-" + showtime.getId() + "-" + owner.getId() + "-1790000000000";
     }
 
     /** Dựng kết quả MoMo gửi về và ký bằng khoá test, đúng thứ tự trường MoMo quy định. */

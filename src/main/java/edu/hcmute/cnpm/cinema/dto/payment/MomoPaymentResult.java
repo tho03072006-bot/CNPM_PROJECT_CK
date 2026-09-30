@@ -13,7 +13,9 @@ public class MomoPaymentResult {
         /** Khách huỷ hoặc thanh toán không thành công bên MoMo. Ghế vẫn đang giữ. */
         FAILED,
         /** Tiền đã trừ nhưng không xuất được vé, nên đã hoàn lại (hoặc báo khách ra quầy). */
-        REFUNDED
+        REFUNDED,
+        /** Thanh toán QR: khách chưa quét hoặc chưa xác nhận trên app MoMo. */
+        PENDING
     }
 
     private final Outcome outcome;
