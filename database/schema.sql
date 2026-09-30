@@ -83,6 +83,53 @@ CREATE TABLE tickets (
     CONSTRAINT uq_showtime_seat UNIQUE (showtime_id, seat_id)
 );
 
+GO
+
+-- ----------------------------------------------------------------
+-- Bổ sung 27/09/2026: thanh toán MoMo, huỷ vé hoàn tiền, soát vé vào phòng
+-- (ADR-3 trong docs/DATABASE.md).
+-- Chỉ THÊM cột cho phép NULL và thêm bảng, không sửa hay xoá gì của cái cũ. Database tạo
+-- từ trước ngày này chỉ cần chạy lại cả file là được nâng cấp; code cũ vẫn chạy bình thường.
+-- ----------------------------------------------------------------
+IF COL_LENGTH('dbo.tickets', 'payment_method') IS NULL
+    ALTER TABLE tickets ADD payment_method NVARCHAR(20) NULL;   -- COUNTER | MOMO, NULL coi như tại quầy
+GO
+IF COL_LENGTH('dbo.tickets', 'payment_ref') IS NULL
+    ALTER TABLE tickets ADD payment_ref NVARCHAR(100) NULL;     -- mã giao dịch MoMo (transId)
+GO
+IF COL_LENGTH('dbo.tickets', 'checked_in_at') IS NULL
+    ALTER TABLE tickets ADD checked_in_at DATETIME2 NULL;       -- lúc nhân viên soát vé cho vào phòng
+GO
+
+-- Biên nhận hoàn tiền khi khách huỷ vé đã thanh toán. Cố ý KHÔNG có khoá ngoại và chép luôn
+-- tên phim, phòng, ghế: đây là chứng từ tiền bạc, phim đổi tên hay suất bị xoá sau này thì
+-- biên nhận vẫn phải đọc được.
+IF OBJECT_ID('dbo.ticket_refunds', 'U') IS NULL
+CREATE TABLE ticket_refunds (
+    id                  BIGINT IDENTITY(1,1) PRIMARY KEY,
+    original_ticket_id  BIGINT          NOT NULL,
+    user_id             BIGINT          NOT NULL,
+    showtime_id         BIGINT          NOT NULL,
+    movie_title         NVARCHAR(200)   NOT NULL,
+    room_name           NVARCHAR(50)    NOT NULL,
+    seat_label          NVARCHAR(10)    NOT NULL,
+    showtime_start      DATETIME2       NOT NULL,
+    paid_price          DECIMAL(10,2)   NOT NULL,
+    refund_percent      INT             NOT NULL,
+    refund_amount       DECIMAL(10,2)   NOT NULL,
+    payment_method      NVARCHAR(20)    NULL,       -- COUNTER | MOMO
+    payment_ref         NVARCHAR(100)   NULL,       -- mã giao dịch lúc trả tiền
+    refund_ref          NVARCHAR(100)   NULL,       -- mã giao dịch hoàn tiền bên MoMo
+    paid_at             DATETIME2       NULL,
+    refunded_at         DATETIME2       NOT NULL
+);
+GO
+-- Trang "Vé của tôi" liệt kê biên nhận theo khách.
+IF NOT EXISTS (SELECT 1 FROM sys.indexes WHERE name = 'ix_ticket_refunds_user_id'
+               AND object_id = OBJECT_ID('dbo.ticket_refunds'))
+    CREATE INDEX ix_ticket_refunds_user_id ON ticket_refunds(user_id);
+GO
+
 -- Tài khoản admin mặc định. Mật khẩu ở đây CHƯA HASH, chỉ là dữ liệu mẫu để test nhanh.
 -- Module 3 làm xong phần đăng nhập thì phải thay bằng chuỗi hash BCrypt.
 -- Mat khau cua ca 3 tai khoan mau deu la: 123456
