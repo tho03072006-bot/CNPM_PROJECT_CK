@@ -21,12 +21,16 @@ public class StaffAccessInterceptor implements HandlerInterceptor {
             throws Exception {
         Object currentUser = request.getSession(false) == null ? null
                 : request.getSession(false).getAttribute(Constants.SESSION_USER);
-        if (currentUser instanceof User user
-                && (user.getRole() == Role.STAFF || user.getRole() == Role.ADMIN)) {
+        // Chưa đăng nhập: mời đăng nhập, xong quay lại đúng trang đang muốn vào.
+        if (!(currentUser instanceof User user)) {
+            SessionUsers.sendToLogin(request, response);
+            return false;
+        }
+        if (user.getRole() == Role.STAFF || user.getRole() == Role.ADMIN) {
             return true;
         }
-        response.sendError(HttpServletResponse.SC_FORBIDDEN,
-                "Bạn cần đăng nhập bằng tài khoản nhân viên hoặc quản trị.");
+        // Đã đăng nhập nhưng không đủ quyền: báo 403, trang error.html giải thích bằng tiếng Việt.
+        response.sendError(HttpServletResponse.SC_FORBIDDEN, "Bạn cần đăng nhập bằng tài khoản nhân viên hoặc quản trị.");
         return false;
     }
 }

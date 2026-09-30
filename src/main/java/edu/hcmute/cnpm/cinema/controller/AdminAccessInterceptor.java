@@ -8,7 +8,10 @@ import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.stereotype.Component;
 import org.springframework.web.servlet.HandlerInterceptor;
 
-/** Chặn trang quản trị cho đến khi Module 3 cung cấp phiên đăng nhập ADMIN. */
+/**
+ * Chặn khu vực quản trị {@code /admin/**}: chỉ tài khoản quản trị vào được.
+ * Chưa đăng nhập thì chuyển sang trang đăng nhập, đăng nhập rồi mà không phải quản trị thì báo 403.
+ */
 @Component
 public class AdminAccessInterceptor implements HandlerInterceptor {
     @Override
@@ -16,9 +19,15 @@ public class AdminAccessInterceptor implements HandlerInterceptor {
             throws Exception {
         Object currentUser = request.getSession(false) == null ? null
                 : request.getSession(false).getAttribute(Constants.SESSION_USER);
-        if (currentUser instanceof User user && user.getRole() == Role.ADMIN) {
+        // Chưa đăng nhập: mời đăng nhập, xong quay lại đúng trang đang muốn vào.
+        if (!(currentUser instanceof User user)) {
+            SessionUsers.sendToLogin(request, response);
+            return false;
+        }
+        if (user.getRole() == Role.ADMIN) {
             return true;
         }
+        // Đã đăng nhập nhưng không đủ quyền: báo 403, trang error.html giải thích bằng tiếng Việt.
         response.sendError(HttpServletResponse.SC_FORBIDDEN, "Bạn cần đăng nhập bằng tài khoản quản trị.");
         return false;
     }

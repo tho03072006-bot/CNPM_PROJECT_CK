@@ -39,11 +39,13 @@ class StaffAccessIntegrationTest extends IntegrationTestBase {
     private MockMvc mockMvc;
 
     @Test
-    @DisplayName("Chưa đăng nhập hoặc là khách hàng thì không vào được trang soát vé")
-    void shouldForbidStaffPage_whenAnonymousOrCustomer() throws Exception {
+    @DisplayName("Chưa đăng nhập thì bị đưa sang trang đăng nhập, khách hàng thì bị từ chối ở trang soát vé")
+    void shouldKeepOutAnonymousAndCustomer_fromStaffPage() throws Exception {
         User customer = testDataFactory.createCustomer("khach@example.com");
 
-        mockMvc.perform(get(STAFF_PAGE)).andExpect(status().isForbidden());
+        mockMvc.perform(get(STAFF_PAGE))
+                .andExpect(status().is3xxRedirection())
+                .andExpect(redirectedUrl("/dang-nhap?next=%2Fnhan-vien%2Fsoat-ve"));
         mockMvc.perform(get(STAFF_PAGE).sessionAttr(Constants.SESSION_USER, customer))
                 .andExpect(status().isForbidden());
     }
@@ -67,7 +69,7 @@ class StaffAccessIntegrationTest extends IntegrationTestBase {
         User staff = testDataFactory.createUserWithRole("nhanvien@example.com", Role.STAFF);
         User admin = testDataFactory.createUserWithRole("admin@example.com", Role.ADMIN);
 
-        mockMvc.perform(get(USER_ADMIN_PAGE)).andExpect(status().isForbidden());
+        mockMvc.perform(get(USER_ADMIN_PAGE)).andExpect(status().is3xxRedirection());
         mockMvc.perform(get(USER_ADMIN_PAGE).sessionAttr(Constants.SESSION_USER, customer))
                 .andExpect(status().isForbidden());
         mockMvc.perform(get(USER_ADMIN_PAGE).sessionAttr(Constants.SESSION_USER, staff))
@@ -78,11 +80,13 @@ class StaffAccessIntegrationTest extends IntegrationTestBase {
     }
 
     @Test
-    @DisplayName("Gõ /admin thì quản trị viên vào trang thống kê, người khác bị chặn")
+    @DisplayName("Gõ /admin thì quản trị viên vào trang thống kê, chưa đăng nhập thì được mời đăng nhập")
     void shouldRedirectAdminRoot_toStatsPage() throws Exception {
         User admin = testDataFactory.createUserWithRole("admin@example.com", Role.ADMIN);
 
-        mockMvc.perform(get("/admin")).andExpect(status().isForbidden());
+        mockMvc.perform(get("/admin"))
+                .andExpect(status().is3xxRedirection())
+                .andExpect(redirectedUrl("/dang-nhap?next=%2Fadmin"));
         mockMvc.perform(get("/admin").sessionAttr(Constants.SESSION_USER, admin))
                 .andExpect(status().is3xxRedirection())
                 .andExpect(redirectedUrl("/admin/thong-ke"));
