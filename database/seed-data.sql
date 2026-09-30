@@ -15,7 +15,9 @@
 -- Trên database dùng chung ở cloud thì đổi -S, -d, -U, -P cho đúng (xem docs/DATABASE.md).
 --
 -- File này CHẠY LẠI ĐƯỢC NHIỀU LẦN: mỗi khối đều kiểm tra "nếu chưa có thì mới thêm",
--- nên không sợ chạy nhầm hai lần rồi nhân đôi dữ liệu.
+-- nên không sợ chạy nhầm hai lần rồi nhân đôi dữ liệu. Suất chiếu thì bỏ qua cả suất chồng
+-- giờ với suất đã có trong cùng phòng, nên chạy lại vào ngày khác cũng không bị một phòng
+-- chiếu hai phim cùng lúc - lịch chỉ được nối dài thêm.
 --
 -- DỮ LIỆU LẤY TỪ MỘT RẠP CÓ THẬT: phim, lịch chiếu, số phòng, loại phòng và giá vé
 -- đều lấy theo CGV Vincom Đồng Khởi (Quận 1, TP.HCM), lịch 5 ngày 20-24/09/2026. Ảnh poster để ở dạng đường dẫn tới
@@ -596,11 +598,16 @@ SELECT
 FROM @plannedShowtimes p
 JOIN movies m ON m.title = p.movieTitle
 JOIN rooms  r ON r.name  = p.roomName
+-- Bỏ qua suất nào mà phòng đó đã có suất khác chiếm khung giờ này (kể cả 15 phút dọn phòng).
+-- Không chỉ so "trùng y hệt": chạy lại vào ngày khác thì mẫu lịch dịch đi, hai ngày đầu của lần
+-- chạy mới rơi đúng vào hai ngày cuối của lần trước với giờ khác, so trùng y hệt là một phòng
+-- chiếu hai phim cùng lúc. Đã dính thật ngày 23-25/09/2026 (139 cặp suất chồng giờ).
 WHERE NOT EXISTS (
     SELECT 1 FROM showtimes s
-    WHERE s.movie_id = m.id
-      AND s.room_id = r.id
-      AND s.start_time = DATEADD(MINUTE, p.minuteOfDay, DATEADD(DAY, p.dayOffset, @ngayMai))
+    WHERE s.room_id = r.id
+      AND s.start_time < DATEADD(MINUTE, m.duration_min + 15,
+                                 DATEADD(MINUTE, p.minuteOfDay, DATEADD(DAY, p.dayOffset, @ngayMai)))
+      AND s.end_time   > DATEADD(MINUTE, p.minuteOfDay, DATEADD(DAY, p.dayOffset, @ngayMai))
 );
 
 -- ---------------------------------------------------------------
