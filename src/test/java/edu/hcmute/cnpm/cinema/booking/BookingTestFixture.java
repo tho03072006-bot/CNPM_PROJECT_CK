@@ -12,6 +12,7 @@ import edu.hcmute.cnpm.cinema.repository.ShowtimeRepository;
 import edu.hcmute.cnpm.cinema.repository.TicketRepository;
 import edu.hcmute.cnpm.cinema.repository.UserRepository;
 import edu.hcmute.cnpm.cinema.service.SeatBookingService;
+import edu.hcmute.cnpm.cinema.service.SeatHoldService;
 import edu.hcmute.cnpm.cinema.service.SeatPricingService;
 import edu.hcmute.cnpm.cinema.service.SeatSelectionPolicy;
 import edu.hcmute.cnpm.cinema.service.SeatService;
@@ -35,10 +36,12 @@ class BookingTestFixture {
             roomRepository, seatRepository, showtimeRepository);
     final SeatPricingService seatPricingService = new SeatPricingService();
     final SeatSelectionPolicy seatSelectionPolicy = new SeatSelectionPolicy();
+    final SeatHoldService seatHoldService = new SeatHoldService(ticketRepository);
     final SeatService seatService = new SeatService(showtimeRepository, seatRepository,
             ticketRepository, seatPricingService);
     final SeatBookingService seatBookingService = new SeatBookingService(seatService,
-            seatPricingService, seatSelectionPolicy, seatRepository, ticketRepository, userRepository);
+            seatPricingService, seatSelectionPolicy, seatHoldService,
+            seatRepository, ticketRepository, userRepository);
     final Movie movie;
     final Room room;
     final Seat seat;
