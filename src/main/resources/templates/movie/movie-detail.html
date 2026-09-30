@@ -43,6 +43,13 @@
             <p class="text-muted" th:unless="${showtimesByDate.isEmpty()}"
                th:text="|${showtimesByDate.size()} ngày có lịch chiếu|">Ngày có lịch chiếu</p>
         </div>
+        <div class="module1-booking-guide" th:unless="${showtimesByDate.isEmpty()}" aria-label="Quy trình đặt vé">
+            <div><span aria-hidden="true">1</span><strong>Chọn suất chiếu</strong><small>Giờ và phòng phù hợp</small></div>
+            <i aria-hidden="true">›</i>
+            <div><span aria-hidden="true">2</span><strong>Chọn ghế đẹp</strong><small>Giữ ghế trong 5 phút</small></div>
+            <i aria-hidden="true">›</i>
+            <div><span aria-hidden="true">3</span><strong>Combo & thanh toán</strong><small>Nhận vé điện tử tức thì</small></div>
+        </div>
         <div class="module1-empty" th:if="${showtimesByDate.isEmpty()}">
             <span class="module1-empty-icon" aria-hidden="true">◷</span>
             <h3>Chưa có suất chiếu sắp tới</h3>
@@ -50,26 +57,40 @@
         </div>
         <div class="module1-date-block" th:each="entry : ${showtimesByDate}">
             <div class="module1-date-heading">
-                <h3 th:text="|Ngày ${#temporals.format(entry.key, 'dd/MM/yyyy')}|">Ngày chiếu</h3>
-                <span th:text="|${#lists.size(entry.value)} suất chiếu|">2 suất chiếu</span>
+                <div class="module1-date-title">
+                    <span class="module1-calendar-icon" aria-hidden="true">▣</span>
+                    <div>
+                        <small>Lịch chiếu trong ngày</small>
+                        <h3 th:text="|Ngày ${#temporals.format(entry.key, 'dd/MM/yyyy')}|">Ngày chiếu</h3>
+                    </div>
+                </div>
+                <span class="module1-date-count" th:text="|${#lists.size(entry.value)} suất chiếu|">2 suất chiếu</span>
             </div>
             <div class="module1-slot-list">
                 <article class="module1-slot" th:each="showtime : ${entry.value}"
                          th:with="availability=${availabilityByShowtimeId[showtime.id]}"
                          th:classappend="|room-slot-${showtime.room.roomType.cssModifier}${availability.soldOut ? ' is-soldout' : ''}|">
-                    <div class="module1-slot-time" th:text="${#temporals.format(showtime.startTime, 'HH:mm')}">18:00</div>
+                    <div class="module1-slot-time">
+                        <small>Bắt đầu</small>
+                        <strong th:text="${#temporals.format(showtime.startTime, 'HH:mm')}">18:00</strong>
+                    </div>
                     <div class="module1-slot-meta">
                         <span class="room-badge" th:classappend="|room-badge-${showtime.room.roomType.cssModifier}|"
                               th:text="${showtime.room.roomType.label}">Phòng thường</span>
-                        <strong th:text="${showtime.room.name}">Phòng chiếu</strong>
-                        <span th:text="|Kết thúc ${#temporals.format(showtime.endTime, 'HH:mm')}${showtime.endTime.toLocalDate().isAfter(showtime.startTime.toLocalDate()) ? ' (+1 ngày)' : ''} · Giá từ ${#numbers.formatDecimal(showtime.basePrice, 0, 'POINT', 0, 'COMMA')} đ|">Giờ kết thúc và giá vé</span>
+                        <strong class="module1-room-name"><span aria-hidden="true">▰</span> <span th:text="${showtime.room.name}">Phòng chiếu</span></strong>
+                        <span th:text="|Kết thúc ${#temporals.format(showtime.endTime, 'HH:mm')}${showtime.endTime.toLocalDate().isAfter(showtime.startTime.toLocalDate()) ? ' (+1 ngày)' : ''}|">Giờ kết thúc</span>
+                        <strong class="module1-slot-price" th:text="|Từ ${#numbers.formatDecimal(showtime.basePrice, 0, 'POINT', 0, 'COMMA')} đ|">Giá vé</strong>
                         <span class="module1-seat-status"
                               th:classappend="${availability.soldOut} ? ' is-soldout' : (${availability.almostFull} ? ' is-low' : '')"
                               th:text="${availability.label}">Còn ghế</span>
+                        <span class="module1-slot-occupancy" aria-hidden="true">
+                            <i th:style="|width: ${availability.occupancyPercent}%|"
+                               th:classappend="${availability.soldOut} ? ' is-full' : (${availability.almostFull} ? ' is-low' : '')"></i>
+                        </span>
                     </div>
                     <a class="btn btn-sm" th:unless="${availability.soldOut}"
                        th:href="@{/booking/showtime/{id}(id=${showtime.id})}"
-                       th:aria-label="|Chọn ghế suất chiếu ${#temporals.format(showtime.startTime, 'HH:mm')} tại ${showtime.room.name}|">Chọn ghế</a>
+                       th:aria-label="|Chọn ghế suất chiếu ${#temporals.format(showtime.startTime, 'HH:mm')} tại ${showtime.room.name}|">Chọn ghế <span aria-hidden="true">→</span></a>
                     <span class="badge badge-danger" th:if="${availability.soldOut}">Hết vé</span>
                 </article>
             </div>

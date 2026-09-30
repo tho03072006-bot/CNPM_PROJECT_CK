@@ -58,6 +58,8 @@
             <dd th:text="${#temporals.format(ticket.checkedInAt, 'HH:mm dd/MM/yyyy')}">19:05 27/09/2026</dd>
         </div>
     </dl>
+    <a class="btn btn-ghost btn-sm" th:if="${ticket.bookingOrder != null and ticket.bookingOrder.status.name() == 'PAID'}"
+       th:href="@{/hoa-don/{code}(code=${ticket.bookingOrder.receiptCode})}">Hóa đơn điện tử</a>
 </article>
 </body>
 </html>

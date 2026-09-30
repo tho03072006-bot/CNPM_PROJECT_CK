@@ -27,6 +27,8 @@
             Một bản xác nhận cũng đã được gửi tới email của bạn, nếu rạp có cấu hình gửi thư.
         </p>
         <div class="account-actions">
+            <a class="btn btn-accent" th:if="${receiptCode != null}"
+               th:href="@{/hoa-don/{code}(code=${receiptCode})}">Xem và in hóa đơn</a>
             <a class="btn" th:href="@{/ve-cua-toi}">Xem vé của tôi</a>
             <a class="btn btn-ghost" th:href="@{/lich-chieu}">Đặt thêm vé</a>
         </div>

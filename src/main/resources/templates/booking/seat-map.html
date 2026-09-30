@@ -106,7 +106,7 @@
                   thì trình đọc màn hình sẽ đọc liên tục không cho người dùng làm gì.
                 -->
                 <div id="hold-timer" class="seat-hold-timer" hidden
-                     th:attr="data-cancel-url=@{/booking/showtime/{id}/cancel(id=${seatMap.showtimeId})},data-pay-url=@{/thanh-toan/{id}(id=${seatMap.showtimeId})},data-expires-at=${activeHold != null ? activeHold.expiresAt : ''},data-held-seat-ids=${activeHold != null ? #strings.listJoin(activeHold.seatIds, ',') : ''}">
+                     th:attr="data-cancel-url=@{/booking/showtime/{id}/cancel(id=${seatMap.showtimeId})},data-pay-url=@{/bap-nuoc/{id}(id=${seatMap.showtimeId})},data-expires-at=${activeHold != null ? activeHold.expiresAt : ''},data-held-seat-ids=${activeHold != null ? #strings.listJoin(activeHold.seatIds, ',') : ''}">
                     <div>
                         <p class="seat-hold-timer-label">Ghế đang được giữ cho bạn. Thời gian còn lại:</p>
                         <p class="seat-hold-timer-value" id="hold-timer-value" role="timer" aria-live="off">05:00</p>
@@ -118,7 +118,7 @@
                         </p>
                     </div>
                     <div class="seat-hold-timer-actions">
-                        <a id="hold-pay-link" class="btn btn-accent" href="#">Thanh toán</a>
+                        <a id="hold-pay-link" class="btn btn-accent" href="#">Tiếp tục chọn bắp nước</a>
                         <button id="hold-cancel-button" class="btn btn-ghost" type="button">Huỷ giữ ghế</button>
                     </div>
                 </div>

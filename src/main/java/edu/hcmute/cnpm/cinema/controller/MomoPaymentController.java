@@ -6,6 +6,7 @@ import edu.hcmute.cnpm.cinema.dto.payment.MomoQrPayment;
 import edu.hcmute.cnpm.cinema.entity.User;
 import edu.hcmute.cnpm.cinema.exception.BusinessException;
 import edu.hcmute.cnpm.cinema.service.MomoPaymentService;
+import edu.hcmute.cnpm.cinema.service.BookingOrderService;
 import edu.hcmute.cnpm.cinema.service.PaymentService;
 import edu.hcmute.cnpm.cinema.service.QrCodeService;
 import jakarta.servlet.http.HttpSession;
@@ -47,12 +48,14 @@ public class MomoPaymentController {
     private final MomoPaymentService momoPaymentService;
     private final PaymentService paymentService;
     private final QrCodeService qrCodeService;
+    private final BookingOrderService bookingOrderService;
 
     public MomoPaymentController(MomoPaymentService momoPaymentService, PaymentService paymentService,
-                                 QrCodeService qrCodeService) {
+                                 QrCodeService qrCodeService, BookingOrderService bookingOrderService) {
         this.momoPaymentService = momoPaymentService;
         this.paymentService = paymentService;
         this.qrCodeService = qrCodeService;
+        this.bookingOrderService = bookingOrderService;
     }
 
     /** Khách chọn "Thẻ ATM / thẻ quốc tế": tạo giao dịch rồi chuyển thẳng sang trang của MoMo. */
@@ -165,6 +168,7 @@ public class MomoPaymentController {
             case PAID, ALREADY_PAID -> {
                 qrPayments(session).remove(orderId);
                 redirectAttributes.addFlashAttribute("paidTicketIds", result.getTicketIds());
+                addReceiptCode(result, redirectAttributes);
                 return "redirect:/thanh-toan/hoan-tat";
             }
             case PENDING -> {
@@ -199,6 +203,7 @@ public class MomoPaymentController {
         switch (result.getOutcome()) {
             case PAID -> {
                 redirectAttributes.addFlashAttribute("paidTicketIds", result.getTicketIds());
+                addReceiptCode(result, redirectAttributes);
                 return "redirect:/thanh-toan/hoan-tat";
             }
             case ALREADY_PAID -> {
@@ -245,6 +250,13 @@ public class MomoPaymentController {
         payments.put(qrPayment.orderId(), qrPayment);
         // Gán lại để session lưu ra đĩa hoặc chia sẻ giữa nhiều máy chủ vẫn thấy thay đổi.
         session.setAttribute(Constants.SESSION_MOMO_QR_PAYMENTS, payments);
+    }
+
+    private void addReceiptCode(MomoPaymentResult result, RedirectAttributes redirectAttributes) {
+        if (!result.getTicketIds().isEmpty()) {
+            bookingOrderService.findReceiptCodeByTicketId(result.getTicketIds().get(0), result.getUserId())
+                    .ifPresent(code -> redirectAttributes.addFlashAttribute("receiptCode", code));
+        }
     }
 
     @SuppressWarnings("unchecked")

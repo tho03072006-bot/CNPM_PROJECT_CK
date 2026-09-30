@@ -32,6 +32,12 @@ public class Ticket {
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
 
+    // Đơn hàng gom các vé trong cùng lượt với bắp nước và hóa đơn. Cho phép null để
+    // những vé cũ tạo trước khi có chức năng hóa đơn vẫn đọc được bình thường.
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "booking_order_id")
+    private BookingOrder bookingOrder;
+
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 20)
     private TicketStatus status = TicketStatus.HELD;
@@ -69,6 +75,8 @@ public class Ticket {
     public void setSeat(Seat seat) { this.seat = seat; }
     public User getUser() { return user; }
     public void setUser(User user) { this.user = user; }
+    public BookingOrder getBookingOrder() { return bookingOrder; }
+    public void setBookingOrder(BookingOrder bookingOrder) { this.bookingOrder = bookingOrder; }
     public TicketStatus getStatus() { return status; }
     public void setStatus(TicketStatus status) { this.status = status; }
     public BigDecimal getPrice() { return price; }
