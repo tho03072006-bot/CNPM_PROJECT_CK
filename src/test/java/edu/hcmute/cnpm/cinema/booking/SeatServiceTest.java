@@ -61,6 +61,25 @@ class SeatServiceTest {
     }
 
     @Test
+    @DisplayName("Đóng đặt vé trực tuyến trước giờ chiếu 5 phút")
+    void shouldRejectShowtime_whenOnlineBookingCutoffHasBeenReached() {
+        fixture.showtime.setStartTime(LocalDateTime.now().plusMinutes(4));
+
+        assertThatThrownBy(() -> fixture.seatService.findSeatMap(1L))
+                .isInstanceOf(InvalidBookingException.class)
+                .hasMessageContaining("5 phút");
+    }
+
+    @Test
+    @DisplayName("Người đã giữ ghế vẫn xem lại được sơ đồ trong mốc đóng đặt mới")
+    void shouldReturnSeatMapInsideCutoff_whenRecoveringActiveHold() {
+        fixture.showtime.setStartTime(LocalDateTime.now().plusMinutes(4));
+
+        assertThat(fixture.seatService.findSeatMapForActiveHold(1L).getShowtimeId())
+                .isEqualTo(1L);
+    }
+
+    @Test
     @DisplayName("Không cho đặt phim đã ngừng hoạt động")
     void shouldRejectShowtime_whenMovieIsInactive() {
         fixture.movie.setActive(false);

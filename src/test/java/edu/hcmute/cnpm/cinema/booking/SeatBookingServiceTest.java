@@ -40,12 +40,15 @@ class SeatBookingServiceTest {
     @BeforeEach
     void setUp() {
         fixture = new BookingTestFixture();
-        when(fixture.userRepository.findById(1L)).thenReturn(Optional.of(fixture.customer));
+        when(fixture.userRepository.findByIdForBookingUpdate(1L))
+                .thenReturn(Optional.of(fixture.customer));
         when(fixture.showtimeRepository.findById(1L)).thenReturn(Optional.of(fixture.showtime));
         when(fixture.seatRepository.findById(1L)).thenReturn(Optional.of(fixture.seat));
         when(fixture.seatRepository.findByRoomId(1L)).thenReturn(List.of(fixture.seat));
         when(fixture.ticketRepository.findByShowtimeIdAndStatusIn(eq(1L), anyList()))
                 .thenReturn(List.of());
+        when(fixture.ticketRepository.findByUserIdAndShowtimeIdAndStatus(
+                1L, 1L, TicketStatus.HELD)).thenReturn(List.of());
     }
 
     @Test
@@ -59,7 +62,7 @@ class SeatBookingServiceTest {
     @Test
     @DisplayName("Từ chối session trỏ tới tài khoản đã bị xóa")
     void shouldRejectBooking_whenSessionUserNoLongerExists() {
-        when(fixture.userRepository.findById(1L)).thenReturn(Optional.empty());
+        when(fixture.userRepository.findByIdForBookingUpdate(1L)).thenReturn(Optional.empty());
         assertThatThrownBy(() -> fixture.seatBookingService.holdSeats(1L, createRequest(1L), fixture.customer))
                 .isInstanceOf(InvalidBookingException.class);
         verifyNoInteractions(fixture.ticketRepository);
@@ -119,6 +122,21 @@ class SeatBookingServiceTest {
         assertThatThrownBy(() -> fixture.seatBookingService.holdSeats(1L, createRequest(1L), fixture.customer))
                 .isInstanceOf(InvalidBookingException.class);
         verifyNoInteractions(fixture.ticketRepository);
+    }
+
+    @Test
+    @DisplayName("Không cho một tài khoản mở hai lượt giữ ghế cho cùng suất chiếu")
+    void shouldRejectBooking_whenCustomerAlreadyHasActiveHold() {
+        Ticket activeTicket = fixture.testDataFactory
+                .newHeldTicket(fixture.showtime, fixture.seat, fixture.customer);
+        activeTicket.setId(10L);
+        when(fixture.ticketRepository.findByUserIdAndShowtimeIdAndStatus(
+                1L, 1L, TicketStatus.HELD)).thenReturn(List.of(activeTicket));
+
+        assertThatThrownBy(() -> fixture.seatBookingService
+                .holdSeats(1L, createRequest(1L), fixture.customer))
+                .isInstanceOf(InvalidBookingException.class)
+                .hasMessageContaining("đang có một lượt giữ ghế");
     }
 
     @Test

@@ -12,7 +12,7 @@ import java.util.Collection;
 import java.util.List;
 
 public interface TicketRepository extends JpaRepository<Ticket, Long> {
-    // Dung de ve seat-map: lay cac ghe da bi giu/dat cho 1 suat chieu
+    // Dùng để vẽ seat-map: lấy các ghế đã bị giữ/đặt cho một suất chiếu.
     List<Ticket> findByShowtimeIdAndStatusIn(Long showtimeId, List<TicketStatus> statuses);
 
     boolean existsByShowtimeId(Long showtimeId);
@@ -26,32 +26,32 @@ public interface TicketRepository extends JpaRepository<Ticket, Long> {
             """)
     List<Object[]> countReservedSeatsByShowtimeIds(@Param("showtimeIds") Collection<Long> showtimeIds);
 
-    // ===== Module 3 them: thanh toan, lich su ve, thong ke =====
+    // ===== Module 3: thanh toán, lịch sử vé, thống kê =====
 
-    /** Ve dang giu cua mot khach cho mot suat chieu - dung o buoc thanh toan. */
+    /** Vé đang giữ của một khách cho một suất chiếu - dùng ở bước thanh toán. */
     List<Ticket> findByUserIdAndShowtimeIdAndStatus(Long userId, Long showtimeId, TicketStatus status);
 
-    /** Toan bo ve cua mot khach, moi nhat len dau - dung cho trang lich su dat ve. */
+    /** Toàn bộ vé của một khách, mới nhất lên đầu - dùng cho trang lịch sử đặt vé. */
     List<Ticket> findByUserIdOrderByHeldAtDesc(Long userId);
 
-    /** Ve da thanh toan trong mot khoang thoi gian - dung cho trang thong ke doanh thu. */
+    /** Vé đã thanh toán trong một khoảng thời gian - dùng cho trang thống kê doanh thu. */
     List<Ticket> findByStatusAndPaidAtGreaterThanEqualAndPaidAtLessThan(
             TicketStatus status, LocalDateTime from, LocalDateTime until);
 
-    /** Ve dang giu qua han - dung cho tac vu don ve het han cua Module 2 (ADR-2). */
-    List<Ticket> findByStatusAndHeldAtLessThan(TicketStatus status, LocalDateTime heldBefore);
+    /** Vé đang giữ đã đến hạn - dùng cho tác vụ dọn vé hết hạn của Module 2 (ADR-2). */
+    List<Ticket> findByStatusAndHeldAtLessThanEqual(TicketStatus status, LocalDateTime heldBefore);
 
-    // ===== Bo sung 27/09: thanh toan MoMo, soat ve, huy ve =====
+    // ===== Bổ sung 27/09: thanh toán MoMo, soát vé, huỷ vé =====
 
-    /** Ve da tra bang mot giao dich MoMo - dung de khong xu ly trung khi khach tai lai trang ket qua. */
+    /** Vé đã trả bằng một giao dịch MoMo - dùng để không xử lý trùng khi khách tải lại trang kết quả. */
     List<Ticket> findByPaymentRef(String paymentRef);
 
     /**
-     * Danh dau khach da vao phong. Dieu kien "checked_in_at IS NULL" nam ngay trong cau UPDATE
-     * nen hai nhan vien soat cung mot ve cung luc thi chi mot nguoi thanh cong (cung tinh than
-     * ADR-1: de database chan, khong doc len kiem tra roi moi ghi).
+     * Đánh dấu khách đã vào phòng. Điều kiện "checked_in_at IS NULL" nằm ngay trong câu UPDATE
+     * nên hai nhân viên soát cùng một vé cùng lúc thì chỉ một người thành công (cùng tinh thần
+     * ADR-1: để database chặn, không đọc lên kiểm tra rồi mới ghi).
      *
-     * @return 1 neu danh dau duoc, 0 neu ve da vao phong roi hoac khong con la ve da thanh toan
+     * @return 1 nếu đánh dấu được, 0 nếu vé đã vào phòng rồi hoặc không còn là vé đã thanh toán
      */
     @Modifying(flushAutomatically = true, clearAutomatically = true)
     @Query("update Ticket t set t.checkedInAt = :checkedInAt "
@@ -60,10 +60,10 @@ public interface TicketRepository extends JpaRepository<Ticket, Long> {
                       @Param("paid") TicketStatus paid);
 
     /**
-     * Xoa ve da thanh toan khi khach huy. Chi xoa neu ve chua vao phong - huy va soat ve
-     * xay ra cung luc thi chi mot ben thang.
+     * Xoá vé đã thanh toán khi khách huỷ. Chỉ xoá nếu vé chưa vào phòng - huỷ và soát vé
+     * xảy ra cùng lúc thì chỉ một bên thắng.
      *
-     * @return 1 neu xoa duoc, 0 neu ve da vao phong, da bi huy truoc do, hoac khong ton tai
+     * @return 1 nếu xoá được, 0 nếu vé đã vào phòng, đã bị huỷ trước đó, hoặc không tồn tại
      */
     @Modifying(flushAutomatically = true, clearAutomatically = true)
     @Query("delete from Ticket t where t.id = :ticketId and t.status = :paid and t.checkedInAt is null")

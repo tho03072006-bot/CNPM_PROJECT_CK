@@ -1,6 +1,7 @@
 package edu.hcmute.cnpm.cinema.booking;
 
 import edu.hcmute.cnpm.cinema.constants.Constants;
+import edu.hcmute.cnpm.cinema.dto.booking.ActiveSeatHoldView;
 import edu.hcmute.cnpm.cinema.entity.Movie;
 import edu.hcmute.cnpm.cinema.entity.Room;
 import edu.hcmute.cnpm.cinema.entity.Seat;
@@ -16,9 +17,11 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.assertj.core.api.Assertions.within;
 
 /**
  * M2.6 va M2.7 - tra ghe ve trang thai trong.
@@ -74,6 +77,38 @@ class SeatHoldServiceIntegrationTest extends IntegrationTestBase {
 
         assertThat(released).isZero();
         assertThat(ticketRepository.findById(conHan.getId())).isPresent();
+    }
+
+    @Test
+    @DisplayName("Tải lại trang vẫn lấy được ghế, tổng tiền và hạn giữ hiện tại")
+    void shouldRestoreActiveHold_whenCustomerReloadsSeatMap() {
+        Fixture fixture = createFixture();
+        Ticket held = saveHeldTicket(fixture, LocalDateTime.now());
+
+        ActiveSeatHoldView activeHold = seatHoldService
+                .findActiveHold(fixture.customer.getId(), fixture.showtime.getId())
+                .orElseThrow();
+
+        assertThat(activeHold.getTicketIds()).containsExactly(held.getId());
+        assertThat(activeHold.getSeatIds()).containsExactly(fixture.seat.getId());
+        assertThat(activeHold.getSeatLabels()).containsExactly("A1");
+        assertThat(activeHold.getTotalPrice()).isEqualByComparingTo(held.getPrice());
+        // SQL Server lưu DATETIME2 tới micro giây, còn Java giữ tới nano giây: so khớp tới 1 mili
+        // giây, nếu không test đỏ ngẫu nhiên tuỳ lúc chạy (đã đỏ trên CI ở PR #45).
+        assertThat(activeHold.getExpiresAt()).isCloseTo(
+                held.getHeldAt().plusMinutes(Constants.SEAT_HOLD_MINUTES), within(1, ChronoUnit.MILLIS));
+    }
+
+    @Test
+    @DisplayName("Đọc phiên giữ ghế sẽ xoá ngay vé đã hết hạn")
+    void shouldDeleteExpiredHold_whenRestoringCurrentHold() {
+        Fixture fixture = createFixture();
+        Ticket expired = saveHeldTicket(fixture,
+                LocalDateTime.now().minusMinutes(Constants.SEAT_HOLD_MINUTES + 1));
+
+        assertThat(seatHoldService
+                .findActiveHold(fixture.customer.getId(), fixture.showtime.getId())).isEmpty();
+        assertThat(ticketRepository.findById(expired.getId())).isEmpty();
     }
 
     @Test
