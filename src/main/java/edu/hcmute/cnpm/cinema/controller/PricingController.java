@@ -22,7 +22,6 @@ public class PricingController {
         model.addAttribute("priceRows", ticketPricingService.findPriceRows());
         model.addAttribute("seatSurcharges", ticketPricingService.findSeatSurcharges());
         model.addAttribute("exampleBasePrice", ticketPricingService.getExampleBasePrice());
-        model.addAttribute("upcomingShowtimeCount", ticketPricingService.countUpcomingShowtimes());
         return "pricing/price-list";
     }
 }

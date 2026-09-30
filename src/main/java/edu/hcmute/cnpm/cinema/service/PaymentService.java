@@ -1,6 +1,7 @@
 package edu.hcmute.cnpm.cinema.service;
 
 import edu.hcmute.cnpm.cinema.constants.Constants;
+import edu.hcmute.cnpm.cinema.entity.PaymentMethod;
 import edu.hcmute.cnpm.cinema.entity.Ticket;
 import edu.hcmute.cnpm.cinema.entity.TicketStatus;
 import edu.hcmute.cnpm.cinema.exception.InvalidBookingException;
@@ -15,8 +16,8 @@ import java.util.List;
 /**
  * Xác nhận thanh toán: chuyển vé từ trạng thái đang giữ sang đã thanh toán.
  *
- * Đây là đồ án nên không nối vào cổng thanh toán thật. Bấm xác nhận là coi như
- * đã trả tiền tại quầy - luồng nghiệp vụ và dữ liệu vẫn đúng như thật.
+ * Có hai đường vào: trả tại quầy (bấm xác nhận trên trang) và trả qua MoMo
+ * ({@link MomoPaymentService} gọi vào đây sau khi MoMo báo đã nhận tiền).
  */
 @Service
 public class PaymentService {
@@ -50,6 +51,16 @@ public class PaymentService {
      */
     @Transactional
     public List<Ticket> confirmPayment(Long userId, Long showtimeId) {
+        return confirmPayment(userId, showtimeId, PaymentMethod.COUNTER, null);
+    }
+
+    /**
+     * Xác nhận thanh toán, ghi kèm cách trả và mã giao dịch bên cổng thanh toán.
+     *
+     * @param paymentRef mã giao dịch của cổng thanh toán (transId của MoMo), null nếu trả tại quầy
+     */
+    @Transactional
+    public List<Ticket> confirmPayment(Long userId, Long showtimeId, PaymentMethod paymentMethod, String paymentRef) {
         List<Ticket> held = ticketRepository
                 .findByUserIdAndShowtimeIdAndStatus(userId, showtimeId, TicketStatus.HELD);
 
@@ -68,6 +79,8 @@ public class PaymentService {
         for (Ticket ticket : held) {
             ticket.setStatus(TicketStatus.PAID);
             ticket.setPaidAt(paidAt);
+            ticket.setPaymentMethod(paymentMethod);
+            ticket.setPaymentRef(paymentRef);
         }
         return ticketRepository.saveAll(held);
     }

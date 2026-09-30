@@ -39,6 +39,24 @@ public class SeatView {
         };
     }
 
+    /** Tên ngắn để ghép vào danh sách ghế đã chọn, ví dụ "J5 (Đôi)". */
+    public String getSeatTypeShortLabel() {
+        return switch (seatType) {
+            case "VIP" -> "VIP";
+            case "COUPLE" -> "Đôi";
+            default -> "Thường";
+        };
+    }
+
+    /** Hậu tố class CSS để mỗi loại ghế có màu và dấu hiệu riêng. */
+    public String getCssModifier() {
+        return switch (seatType) {
+            case "VIP" -> "vip";
+            case "COUPLE" -> "couple";
+            default -> "normal";
+        };
+    }
+
     public String getStatusLabel() {
         return switch (status) {
             case "AVAILABLE" -> "Còn trống";

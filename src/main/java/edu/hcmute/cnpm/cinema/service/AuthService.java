@@ -83,6 +83,55 @@ public class AuthService {
                 .orElseThrow(() -> new BusinessException("Tài khoản không còn tồn tại. Bạn hãy đăng nhập lại."));
     }
 
+    /**
+     * Sửa họ tên và số điện thoại của chính mình.
+     *
+     * Email không cho sửa ở đây: email là tên đăng nhập, đổi nó phải xác minh lại hộp thư
+     * mới, mà hệ thống chưa có bước gửi mã xác minh.
+     */
+    @Transactional
+    public User updateProfile(Long userId, String fullName, String phone) {
+        if (fullName == null || fullName.isBlank()) {
+            throw new BusinessException("Bạn hãy nhập họ tên.");
+        }
+        if (fullName.trim().length() > 150) {
+            throw new BusinessException("Họ tên không được dài quá 150 ký tự.");
+        }
+        String normalizedPhone = phone == null || phone.isBlank() ? null : phone.trim();
+        if (normalizedPhone != null && !normalizedPhone.matches("0\\d{9,10}")) {
+            throw new BusinessException("Số điện thoại phải bắt đầu bằng số 0 và có 10 đến 11 chữ số.");
+        }
+
+        User user = findById(userId);
+        user.setFullName(fullName.trim());
+        user.setPhone(normalizedPhone);
+        return userRepository.save(user);
+    }
+
+    /**
+     * Đổi mật khẩu. Bắt nhập lại mật khẩu hiện tại để người khác cầm máy đang đăng nhập
+     * sẵn cũng không đổi được mật khẩu của chủ tài khoản.
+     */
+    @Transactional
+    public void changePassword(Long userId, String currentPassword, String newPassword) {
+        User user = findById(userId);
+        if (currentPassword == null || !passwordEncoder.matches(currentPassword, user.getPasswordHash())) {
+            throw new BusinessException("Mật khẩu hiện tại không đúng.");
+        }
+        if (newPassword == null || newPassword.length() < MIN_PASSWORD_LENGTH) {
+            throw new BusinessException("Mật khẩu mới phải dài ít nhất " + MIN_PASSWORD_LENGTH + " ký tự.");
+        }
+        // BCrypt chỉ đọc 72 byte đầu, phần dư bị bỏ qua mà người dùng không hề biết.
+        if (newPassword.length() > 72) {
+            throw new BusinessException("Mật khẩu mới không được dài quá 72 ký tự.");
+        }
+        if (newPassword.equals(currentPassword)) {
+            throw new BusinessException("Mật khẩu mới phải khác mật khẩu hiện tại.");
+        }
+        user.setPasswordHash(passwordEncoder.encode(newPassword));
+        userRepository.save(user);
+    }
+
     private void validateRegistration(String fullName, String email, String rawPassword) {
         if (fullName == null || fullName.isBlank()) {
             throw new BusinessException("Bạn hãy nhập họ tên.");

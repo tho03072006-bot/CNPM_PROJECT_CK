@@ -60,6 +60,16 @@ public class TestDataFactory {
         return userRepository.save(customer);
     }
 
+    /**
+     * Tao tai khoan voi vai tro tuy chon (nhan vien, quan tri...).
+     * Mat khau KHONG dang nhap duoc; test nao can dang nhap that thi dung AuthService.register().
+     */
+    public User createUserWithRole(String email, Role role) {
+        User user = createCustomer(email);
+        user.setRole(role);
+        return userRepository.save(user);
+    }
+
     public Movie createMovie(String title) {
         Movie movie = new Movie();
         movie.setTitle(title);

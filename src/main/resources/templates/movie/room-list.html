@@ -11,11 +11,7 @@
         </div>
         <a class="btn" th:href="@{/admin/rooms/new}">+ Thêm phòng</a>
     </div>
-    <nav class="module1-admin-nav" aria-label="Quản lý lịch chiếu">
-        <a th:href="@{/admin/movies}">Phim</a>
-        <a th:href="@{/admin/rooms}" aria-current="page">Phòng chiếu</a>
-        <a th:href="@{/admin/showtimes}">Suất chiếu</a>
-    </nav>
+    <nav th:replace="~{fragments/admin-nav :: adminNav('rooms')}"></nav>
     <div class="module1-admin-summary">
         <span class="module1-summary-number" th:text="${#lists.size(rooms)}">2</span>
         <div><strong>Phòng chiếu</strong><span>Ghế được tạo tự động theo số hàng và số cột.</span></div>
@@ -31,8 +27,10 @@
             <td th:text="|${room.totalRows} hàng × ${room.totalColumns} cột|">8 hàng × 10 cột</td>
             <td><span class="badge badge-brand" th:text="|${room.totalRows * room.totalColumns} ghế|">80 ghế</span></td>
             <td><div class="module1-row-actions">
+                <a class="btn btn-sm" th:href="@{/admin/rooms/{id}(id=${room.id})}">Xem sơ đồ</a>
                 <a class="btn btn-ghost btn-sm" th:href="@{/admin/rooms/{id}/edit(id=${room.id})}">Sửa</a>
-                <form th:action="@{/admin/rooms/{id}/delete(id=${room.id})}" method="post">
+                <form th:action="@{/admin/rooms/{id}/delete(id=${room.id})}" method="post"
+                      onsubmit="return confirm('Xoá phòng chiếu này?');">
                     <button class="btn btn-ghost btn-sm" type="submit">Xoá</button>
                 </form>
             </div></td>

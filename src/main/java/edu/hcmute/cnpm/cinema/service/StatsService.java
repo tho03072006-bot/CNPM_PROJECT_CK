@@ -2,7 +2,9 @@ package edu.hcmute.cnpm.cinema.service;
 
 import edu.hcmute.cnpm.cinema.dto.stats.RevenueRow;
 import edu.hcmute.cnpm.cinema.entity.Ticket;
+import edu.hcmute.cnpm.cinema.entity.TicketRefund;
 import edu.hcmute.cnpm.cinema.entity.TicketStatus;
+import edu.hcmute.cnpm.cinema.repository.TicketRefundRepository;
 import edu.hcmute.cnpm.cinema.repository.TicketRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -22,6 +24,9 @@ import java.util.Map;
  *
  * Chỉ đếm vé ở trạng thái đã thanh toán - vé đang giữ chưa phải là tiền thật.
  *
+ * Vé khách đã huỷ (xem {@link TicketRefundService}) không còn tính là vé bán ra, nhưng
+ * phần tiền rạp giữ lại (giá vé trừ tiền hoàn) vẫn cộng vào doanh thu của ngày bán.
+ *
  * Phép gom nhóm làm bằng Java thay vì viết câu truy vấn gom nhóm riêng: một rạp
  * chỉ bán vài trăm tới vài nghìn vé trong khoảng thống kê, đọc hết vào bộ nhớ vẫn
  * nhẹ, mà code thì dễ đọc và dễ viết test hơn nhiều.
@@ -35,9 +40,11 @@ public class StatsService {
     private static final DateTimeFormatter DAY_FORMAT = DateTimeFormatter.ofPattern("dd/MM/yyyy");
 
     private final TicketRepository ticketRepository;
+    private final TicketRefundRepository refundRepository;
 
-    public StatsService(TicketRepository ticketRepository) {
+    public StatsService(TicketRepository ticketRepository, TicketRefundRepository refundRepository) {
         this.ticketRepository = ticketRepository;
+        this.refundRepository = refundRepository;
     }
 
     /** Vé đã thanh toán trong {@code days} ngày gần nhất, tính cả hôm nay. */
@@ -76,6 +83,12 @@ public class StatsService {
                 revenues.put(date, revenues.get(date).add(safePrice(ticket)));
             }
         }
+        for (TicketRefund refund : findRefundsSoldWithin(range)) {
+            LocalDate date = refund.getPaidAt().toLocalDate();
+            if (revenues.containsKey(date)) {
+                revenues.put(date, revenues.get(date).add(refund.getRetainedAmount()));
+            }
+        }
 
         List<RevenueRow> rows = new ArrayList<>();
         for (Map.Entry<LocalDate, long[]> entry : counts.entrySet()) {
@@ -96,6 +109,12 @@ public class StatsService {
             counts.computeIfAbsent(title, key -> new long[]{0})[0]++;
             revenues.merge(title, safePrice(ticket), BigDecimal::add);
         }
+        for (TicketRefund refund : findRefundsSoldWithin(days)) {
+            if (refund.getRetainedAmount().signum() > 0) {
+                counts.computeIfAbsent(refund.getMovieTitle(), key -> new long[]{0});
+                revenues.merge(refund.getMovieTitle(), refund.getRetainedAmount(), BigDecimal::add);
+            }
+        }
 
         List<RevenueRow> rows = new ArrayList<>();
         for (Map.Entry<String, long[]> entry : counts.entrySet()) {
@@ -104,6 +123,23 @@ public class StatsService {
         rows.sort(Comparator.comparing(RevenueRow::getRevenue).reversed()
                 .thenComparing(RevenueRow::getLabel));
         return rows.size() > limit ? rows.subList(0, limit) : rows;
+    }
+
+    /**
+     * Vé đã huỷ trong khoảng thống kê, tính theo ngày hoàn tiền: số vé và tổng tiền đã hoàn.
+     * Dùng chung kiểu {@link RevenueRow} với cột doanh thu là tiền đã trả lại khách.
+     */
+    @Transactional(readOnly = true)
+    public RevenueRow summarizeRefunds(int days) {
+        LocalDate today = LocalDate.now();
+        LocalDateTime from = today.minusDays(Math.max(days, 1) - 1L).atStartOfDay();
+        LocalDateTime until = today.plusDays(1).atStartOfDay();
+        List<TicketRefund> refunds = refundRepository.findByRefundedAtGreaterThanEqualAndRefundedAtLessThan(from, until);
+        BigDecimal total = BigDecimal.ZERO;
+        for (TicketRefund refund : refunds) {
+            total = total.add(refund.getRefundAmount());
+        }
+        return new RevenueRow("Đã hoàn tiền", refunds.size(), total);
     }
 
     /** Tổng doanh thu của cả khoảng thống kê. */
@@ -122,6 +158,14 @@ public class StatsService {
             total += row.getTicketCount();
         }
         return total;
+    }
+
+    /** Vé đã huỷ mà ngày BÁN nằm trong khoảng thống kê. */
+    private List<TicketRefund> findRefundsSoldWithin(int days) {
+        LocalDate today = LocalDate.now();
+        LocalDateTime from = today.minusDays(Math.max(days, 1) - 1L).atStartOfDay();
+        LocalDateTime until = today.plusDays(1).atStartOfDay();
+        return refundRepository.findByPaidAtGreaterThanEqualAndPaidAtLessThan(from, until);
     }
 
     private BigDecimal safePrice(Ticket ticket) {

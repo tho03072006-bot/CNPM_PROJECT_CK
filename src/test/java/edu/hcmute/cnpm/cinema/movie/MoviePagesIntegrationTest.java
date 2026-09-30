@@ -5,6 +5,7 @@ import edu.hcmute.cnpm.cinema.entity.Movie;
 import edu.hcmute.cnpm.cinema.entity.Role;
 import edu.hcmute.cnpm.cinema.entity.Room;
 import edu.hcmute.cnpm.cinema.entity.User;
+import edu.hcmute.cnpm.cinema.service.RoomService;
 import edu.hcmute.cnpm.cinema.support.IntegrationTestBase;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -28,6 +29,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @AutoConfigureMockMvc
 class MoviePagesIntegrationTest extends IntegrationTestBase {
     @Autowired private MockMvc mockMvc;
+    @Autowired private RoomService roomService;
 
     @Test
     @DisplayName("Trang phim công khai chỉ hiện phim đang chiếu")
@@ -41,6 +43,24 @@ class MoviePagesIntegrationTest extends IntegrationTestBase {
                 .andExpect(status().isOk())
                 .andExpect(content().string(containsString("Phim đang chiếu")))
                 .andExpect(content().string(not(containsString("Phim đã ngừng"))));
+    }
+
+    @Test
+    @DisplayName("Trang phim tìm không dấu và lọc theo thể loại")
+    void shouldFilterMovies_whenSearchingByTitleAndGenre() throws Exception {
+        Movie action = testDataFactory.createMovie("Bão Giữa Trời Quang");
+        action.setGenre("Hành Động, Tâm Lý");
+        movieRepository.save(action);
+        Movie comedy = testDataFactory.createMovie("Ngày Vui");
+        comedy.setGenre("Hài");
+        movieRepository.save(comedy);
+
+        mockMvc.perform(MockMvcRequestBuilders.get("/movies")
+                        .param("q", "bao giua")
+                        .param("genre", "Hành Động"))
+                .andExpect(status().isOk())
+                .andExpect(content().string(containsString("Bão Giữa Trời Quang")))
+                .andExpect(content().string(not(containsString("Ngày Vui"))));
     }
 
     @Test
@@ -97,6 +117,21 @@ class MoviePagesIntegrationTest extends IntegrationTestBase {
                         .param("title", " ").param("durationMin", "0"))
                 .andExpect(status().isOk())
                 .andExpect(model().attributeHasFieldErrors("movieForm", "title", "durationMin"));
+    }
+
+    @Test
+    @DisplayName("Form phim từ chối đường dẫn poster không hợp lệ")
+    void shouldShowFieldError_whenPosterUrlIsInvalid() throws Exception {
+        User admin = new User();
+        admin.setRole(Role.ADMIN);
+
+        mockMvc.perform(MockMvcRequestBuilders.post("/admin/movies")
+                        .sessionAttr(Constants.SESSION_USER, admin)
+                        .param("title", "Phim có poster lỗi")
+                        .param("durationMin", "100")
+                        .param("posterUrl", "khong-phai-url"))
+                .andExpect(status().isOk())
+                .andExpect(model().attributeHasFieldErrors("movieForm", "posterUrl"));
     }
 
     @Test
@@ -182,5 +217,67 @@ class MoviePagesIntegrationTest extends IntegrationTestBase {
                         .sessionAttr(Constants.SESSION_USER, admin))
                 .andExpect(status().is3xxRedirection());
         assertThat(movieRepository.findById(movie.getId()).orElseThrow().getActive()).isFalse();
+
+        mockMvc.perform(MockMvcRequestBuilders.post("/admin/movies/{id}/reactivate", movie.getId())
+                        .sessionAttr(Constants.SESSION_USER, admin))
+                .andExpect(status().is3xxRedirection());
+        assertThat(movieRepository.findById(movie.getId()).orElseThrow().getActive()).isTrue();
+    }
+
+    @Test
+    @DisplayName("Lỗi trùng lịch hiện ngay dưới ô giờ bắt đầu")
+    void shouldShowInlineError_whenShowtimeOverlaps() throws Exception {
+        User admin = new User();
+        admin.setRole(Role.ADMIN);
+        Movie movie = testDataFactory.createMovie("Phim trùng lịch");
+        Room room = testDataFactory.createRoom("Phòng A", 5, 8);
+        LocalDateTime start = LocalDateTime.now().plusDays(2)
+                .withHour(10).withMinute(0).withSecond(0).withNano(0);
+        testDataFactory.createShowtime(movie, room, start);
+
+        mockMvc.perform(MockMvcRequestBuilders.post("/admin/showtimes")
+                        .sessionAttr(Constants.SESSION_USER, admin)
+                        .param("movieId", movie.getId().toString())
+                        .param("roomId", room.getId().toString())
+                        .param("startTime", start.plusMinutes(30)
+                                .format(DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm")))
+                        .param("basePrice", "75000"))
+                .andExpect(status().isOk())
+                .andExpect(model().attributeHasFieldErrors("showtimeForm", "startTime"))
+                .andExpect(content().string(containsString("Giờ chiếu trùng với suất chiếu")));
+    }
+
+    @Test
+    @DisplayName("Quản trị viên xem được sơ đồ ghế của phòng")
+    void shouldRenderSeatMap_whenOpeningRoomDetail() throws Exception {
+        User admin = new User();
+        admin.setRole(Role.ADMIN);
+        Room room = testDataFactory.createRoom("Phòng sơ đồ", 4, 5);
+        roomService.generateSeats(room.getId());
+
+        mockMvc.perform(MockMvcRequestBuilders.get("/admin/rooms/{id}", room.getId())
+                        .sessionAttr(Constants.SESSION_USER, admin))
+                .andExpect(status().isOk())
+                .andExpect(content().string(containsString("Phòng sơ đồ")))
+                .andExpect(content().string(containsString("A1")))
+                .andExpect(content().string(containsString("Ghế VIP")));
+    }
+
+    @Test
+    @DisplayName("Trang quản trị phim lọc được trạng thái đã ngừng")
+    void shouldFilterInactiveMovies_whenOpeningAdminMovieList() throws Exception {
+        User admin = new User();
+        admin.setRole(Role.ADMIN);
+        testDataFactory.createMovie("Phim còn chiếu");
+        Movie inactive = testDataFactory.createMovie("Phim cần khôi phục");
+        inactive.setActive(false);
+        movieRepository.save(inactive);
+
+        mockMvc.perform(MockMvcRequestBuilders.get("/admin/movies")
+                        .sessionAttr(Constants.SESSION_USER, admin)
+                        .param("active", "false"))
+                .andExpect(status().isOk())
+                .andExpect(content().string(containsString("Phim cần khôi phục")))
+                .andExpect(content().string(not(containsString("Phim còn chiếu"))));
     }
 }

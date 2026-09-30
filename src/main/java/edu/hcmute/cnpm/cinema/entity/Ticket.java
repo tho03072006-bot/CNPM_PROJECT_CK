@@ -1,6 +1,8 @@
 package edu.hcmute.cnpm.cinema.entity;
 
 import jakarta.persistence.*;
+import org.hibernate.annotations.Nationalized;
+
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
@@ -43,6 +45,20 @@ public class Ticket {
     @Column(name = "paid_at")
     private LocalDateTime paidAt;
 
+    // Trả bằng cách nào. Vé thanh toán trước ngày 27/09/2026 để trống, coi như trả tại quầy.
+    @Enumerated(EnumType.STRING)
+    @Column(name = "payment_method", length = 20)
+    private PaymentMethod paymentMethod;
+
+    // Mã giao dịch bên cổng thanh toán (transId của MoMo). Cần để hoàn tiền về đúng giao dịch.
+    @Nationalized
+    @Column(name = "payment_ref", length = 100)
+    private String paymentRef;
+
+    // Lúc nhân viên soát vé cho khách vào phòng. Khác null nghĩa là vé đã dùng rồi.
+    @Column(name = "checked_in_at")
+    private LocalDateTime checkedInAt;
+
     public Ticket() {}
 
     public Long getId() { return id; }
@@ -61,4 +77,10 @@ public class Ticket {
     public void setHeldAt(LocalDateTime heldAt) { this.heldAt = heldAt; }
     public LocalDateTime getPaidAt() { return paidAt; }
     public void setPaidAt(LocalDateTime paidAt) { this.paidAt = paidAt; }
+    public PaymentMethod getPaymentMethod() { return paymentMethod; }
+    public void setPaymentMethod(PaymentMethod paymentMethod) { this.paymentMethod = paymentMethod; }
+    public String getPaymentRef() { return paymentRef; }
+    public void setPaymentRef(String paymentRef) { this.paymentRef = paymentRef; }
+    public LocalDateTime getCheckedInAt() { return checkedInAt; }
+    public void setCheckedInAt(LocalDateTime checkedInAt) { this.checkedInAt = checkedInAt; }
 }

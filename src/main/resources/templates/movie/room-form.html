@@ -26,10 +26,17 @@
                 <span class="form-hint">Từ 1 đến 50 cột mỗi hàng.</span>
                 <span class="form-error" th:if="${#fields.hasErrors('totalColumns')}" th:errors="*{totalColumns}"></span></div>
         </div>
+        <aside class="module1-live-preview module1-capacity-preview" data-room-preview>
+            <span class="module1-preview-icon" aria-hidden="true">▦</span>
+            <div><span class="module1-kicker">SỨC CHỨA DỰ KIẾN</span>
+                <strong><span data-seat-total>0</span> ghế</strong>
+                <small><span data-seat-normal>0</span> ghế thường · <span data-seat-vip>0</span> ghế VIP</small></div>
+        </aside>
         <p class="module1-form-note">Hai hàng cuối là ghế VIP. Phòng đã có suất chiếu chỉ có thể đổi tên, không thể đổi sơ đồ ghế.</p>
         <div class="module1-form-actions">
             <button class="btn" type="submit">Lưu phòng</button>
             <a class="btn btn-ghost" th:href="@{/admin/rooms}">Huỷ</a>
         </div>
     </form>
+    <script th:src="@{/js/module1-forms.js}" defer></script>
 </div></body></html>

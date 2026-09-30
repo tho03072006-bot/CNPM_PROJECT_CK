@@ -1,80 +1,64 @@
 package edu.hcmute.cnpm.cinema.service;
 
 import edu.hcmute.cnpm.cinema.entity.Ticket;
+import edu.hcmute.cnpm.cinema.entity.TicketRefund;
 import edu.hcmute.cnpm.cinema.entity.User;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.ObjectProvider;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.mail.SimpleMailMessage;
-import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
+import java.util.Locale;
 
 /**
- * Gửi email xác nhận vé sau khi thanh toán thành công.
+ * Soạn nội dung thư gửi khách về vé: xác nhận đặt vé và xác nhận hoàn tiền.
  *
- * Hai điều cố ý làm ở đây:
- *
- * 1. Nhận {@link JavaMailSender} qua {@link ObjectProvider}. Spring chỉ tạo bean này
- *    khi có cấu hình {@code spring.mail.host}. Máy nào chưa điền cấu hình email thì
- *    ứng dụng vẫn chạy bình thường, chỉ là không gửi thư - tiện lúc chạy thử và
- *    lúc chạy test.
- *
- * 2. Nuốt mọi lỗi gửi thư. Vé đã thanh toán xong rồi; nếu để lỗi SMTP ném ngược lên
- *    thì giao dịch bị huỷ và khách mất vé chỉ vì server mail chập chờn. Gửi hỏng thì
- *    ghi log để xử lý sau, tiền vé vẫn phải được ghi nhận.
+ * Việc gửi thật (công tắc bật/tắt, bỏ qua địa chỉ thử nghiệm, nuốt lỗi SMTP) do
+ * {@link MailDelivery} lo. Vé đã thanh toán xong rồi thì thư gửi hỏng cũng không được
+ * làm khách mất vé, nên các hàm ở đây không bao giờ ném lỗi.
  */
 @Service
 public class TicketMailService {
 
-    private static final Logger log = LoggerFactory.getLogger(TicketMailService.class);
     private static final DateTimeFormatter TIME_FORMAT = DateTimeFormatter.ofPattern("HH:mm dd/MM/yyyy");
 
-    private final ObjectProvider<JavaMailSender> mailSenderProvider;
-    private final String fromAddress;
+    private final MailDelivery mailDelivery;
 
-    public TicketMailService(ObjectProvider<JavaMailSender> mailSenderProvider,
-                             @Value("${app.mail.from:khong-tra-loi@utecinema.local}") String fromAddress) {
-        this.mailSenderProvider = mailSenderProvider;
-        this.fromAddress = fromAddress;
+    public TicketMailService(MailDelivery mailDelivery) {
+        this.mailDelivery = mailDelivery;
     }
 
     /**
-     * Gửi thư xác nhận. Không bao giờ ném lỗi ra ngoài.
+     * Gửi thư xác nhận đặt vé. Không bao giờ ném lỗi ra ngoài.
      *
      * @return true nếu đã gửi đi, false nếu bỏ qua hoặc gửi hỏng
      */
     public boolean sendTicketConfirmation(User customer, List<Ticket> tickets, BigDecimal total) {
-        JavaMailSender mailSender = mailSenderProvider.getIfAvailable();
-        if (mailSender == null) {
-            log.info("Chua cau hinh email (spring.mail.host), bo qua buoc gui thu xac nhan ve.");
+        // Chưa bật email thì dừng ngay, khỏi đọc phim/phòng/ghế của vé (chạy ngoài
+        // transaction như trong test là dính LazyInitializationException).
+        if (!mailDelivery.isReady()) {
             return false;
         }
         if (customer == null || customer.getEmail() == null || tickets.isEmpty()) {
             return false;
         }
-
-        try {
-            SimpleMailMessage message = new SimpleMailMessage();
-            message.setFrom(fromAddress);
-            message.setTo(customer.getEmail());
-            message.setSubject("UTE Cinema - Xac nhan ve xem phim");
-            message.setText(buildBody(customer, tickets, total));
-            mailSender.send(message);
-            log.info("Da gui thu xac nhan ve toi {}", customer.getEmail());
-            return true;
-        } catch (RuntimeException exception) {
-            log.warn("Gui thu xac nhan ve that bai cho {}: {}",
-                    customer.getEmail(), exception.getMessage());
-            return false;
-        }
+        return mailDelivery.send(customer.getEmail(), "UTE Cinema - Xác nhận vé xem phim",
+                buildConfirmationBody(customer, tickets, total));
     }
 
-    private String buildBody(User customer, List<Ticket> tickets, BigDecimal total) {
+    /** Gửi thư xác nhận đã huỷ vé và số tiền hoàn. Không bao giờ ném lỗi ra ngoài. */
+    public boolean sendRefundConfirmation(User customer, TicketRefund refund) {
+        if (!mailDelivery.isReady()) {
+            return false;
+        }
+        if (customer == null || customer.getEmail() == null || refund == null) {
+            return false;
+        }
+        return mailDelivery.send(customer.getEmail(), "UTE Cinema - Xác nhận huỷ vé #" + refund.getOriginalTicketId(),
+                buildRefundBody(customer, refund));
+    }
+
+    private String buildConfirmationBody(User customer, List<Ticket> tickets, BigDecimal total) {
         Ticket first = tickets.get(0);
         StringBuilder body = new StringBuilder();
         body.append("Chào ").append(customer.getFullName()).append(",\n\n");
@@ -87,13 +71,39 @@ public class TicketMailService {
             if (index > 0) {
                 body.append(", ");
             }
-            body.append(tickets.get(index).getSeat().getSeatRow())
-                .append(tickets.get(index).getSeat().getSeatColumn());
+            Ticket ticket = tickets.get(index);
+            body.append(ticket.getSeat().getSeatRow()).append(ticket.getSeat().getSeatColumn())
+                .append(" (mã vé #").append(ticket.getId()).append(')');
         }
         body.append('\n');
-        body.append("Tổng   : ").append(total.toPlainString()).append(" đ\n\n");
-        body.append("Bạn vui lòng tới quầy trước giờ chiếu 15 phút để nhận vé.\n");
+        body.append("Tổng   : ").append(formatMoney(total)).append("\n\n");
+        body.append("Tới rạp bạn đọc mã vé cho nhân viên soát vé ở cửa phòng chiếu.\n");
+        body.append("Cần huỷ vé thì vào mục Vé của tôi trên trang web.\n\n");
         body.append("Cảm ơn bạn đã chọn UTE Cinema.\n");
         return body.toString();
+    }
+
+    private String buildRefundBody(User customer, TicketRefund refund) {
+        StringBuilder body = new StringBuilder();
+        body.append("Chào ").append(customer.getFullName()).append(",\n\n");
+        body.append("UTE Cinema xác nhận đã huỷ vé #").append(refund.getOriginalTicketId()).append(".\n\n");
+        body.append("Phim      : ").append(refund.getMovieTitle()).append('\n');
+        body.append("Suất      : ").append(TIME_FORMAT.format(refund.getShowtimeStart())).append('\n');
+        body.append("Phòng/Ghế : ").append(refund.getRoomName()).append(" / ").append(refund.getSeatLabel()).append('\n');
+        body.append("Giá vé    : ").append(formatMoney(refund.getPaidPrice())).append('\n');
+        body.append("Hoàn lại  : ").append(formatMoney(refund.getRefundAmount()))
+            .append(" (").append(refund.getRefundPercent()).append("%)\n\n");
+        if (refund.getRefundRef() != null) {
+            body.append("Tiền được hoàn về ví MoMo đã dùng để thanh toán (mã giao dịch hoàn ")
+                .append(refund.getRefundRef()).append(").\n");
+        } else if (refund.getRefundAmount().signum() > 0) {
+            body.append("Vé trả tại quầy nên bạn nhận lại tiền mặt tại quầy vé, nhớ mang theo thư này.\n");
+        }
+        body.append("\nCảm ơn bạn đã chọn UTE Cinema.\n");
+        return body.toString();
+    }
+
+    private String formatMoney(BigDecimal amount) {
+        return String.format(Locale.US, "%,d đ", amount.longValue()).replace(',', '.');
     }
 }

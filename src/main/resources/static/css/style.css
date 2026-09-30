@@ -48,6 +48,13 @@
     --ok-700: #15683d;
     --danger-700: #a82a24;
 
+    /* ---- Thanh toán MoMo ----
+       Mã QR luôn đen trên trắng ở CẢ chế độ tối: đảo màu là nhiều app quét không đọc được.
+       Hồng MoMo chỉ dùng làm khung và nhãn; chữ trắng trên nền này đạt 7.5:1. */
+    --qr-fg: #000000;
+    --qr-bg: #ffffff;
+    --momo-500: #a50064;
+
     /* ---- Khoảng cách ---- */
     --space-1: 4px;
     --space-2: 8px;
@@ -126,6 +133,14 @@
     --seat-held-bg: #f0a828;
     --seat-booked-bg: #646e8a;
     --seat-selected-bg: #1b5fd0;
+
+    /* Loại ghế. Cố ý KHÔNG dùng vàng: vàng đã là màu "đang giữ", khách sẽ nhầm ghế VIP
+       với ghế có người giữ. VIP tím, ghế đôi hồng. Chữ màu --surface trên nền đậm đạt
+       6.4:1 (tím) và 5.3:1 (hồng). */
+    --seat-vip: #6d3fd1;
+    --seat-vip-tint: #efe8ff;
+    --seat-couple: #c2336f;
+    --seat-couple-tint: #fde8f0;
 }
 
 /* =====================================================================
@@ -169,6 +184,12 @@
     --seat-held-bg: #f0a828;
     --seat-booked-bg: #4a5878;
     --seat-selected-bg: #1b5fd0;
+
+    /* Bản sáng hơn cho nền tối; chữ --surface trên đó đạt 5.4:1 (tím) và 5.6:1 (hồng). */
+    --seat-vip: #9b7bf0;
+    --seat-vip-tint: #2a1f4d;
+    --seat-couple: #e2689b;
+    --seat-couple-tint: #3b1a2e;
 }
 
 /* Khi người dùng CHƯA tự chọn thì đi theo cài đặt hệ điều hành */
@@ -206,6 +227,11 @@
         --seat-available-border: #35456b;
         --seat-booked-bg: #4a5878;
         --seat-selected-bg: #1b5fd0;
+
+        --seat-vip: #9b7bf0;
+        --seat-vip-tint: #2a1f4d;
+        --seat-couple: #e2689b;
+        --seat-couple-tint: #3b1a2e;
     }
 }
 
@@ -1121,9 +1147,28 @@ main.container {
 .module1-admin-head h1 { margin-bottom: 0; }
 .module1-section-head > p { margin: 0; }
 
-.module1-catalog-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
-.module1-movie-card { border-color: var(--border-strong); }
-.module1-catalog-grid .module1-poster { aspect-ratio: 5 / 4; }
+.module1-filter-panel {
+    display: grid;
+    align-items: end;
+    gap: var(--space-4);
+    padding: var(--space-4);
+    margin-bottom: var(--space-6);
+}
+.module1-filter-panel .form-field { margin: 0; }
+.module1-movie-filter { grid-template-columns: minmax(220px, 2fr) minmax(180px, 1fr) auto; }
+.module1-showtime-filter { grid-template-columns: minmax(150px, 1fr) minmax(190px, 1.5fr) minmax(170px, 1fr) auto; }
+.module1-schedule-filter { grid-template-columns: repeat(3, minmax(160px, 1fr)) auto; }
+.module1-admin-movie-filter { grid-template-columns: minmax(190px, 1.4fr) repeat(2, minmax(150px, 1fr)) auto; }
+.module1-filter-actions { display: flex; flex-wrap: wrap; gap: var(--space-2); }
+.module1-filter-actions .btn { white-space: nowrap; }
+
+.module1-catalog-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+.module1-movie-card {
+    border-color: var(--border-strong);
+    transition: transform var(--motion-fast) var(--ease-out), box-shadow var(--motion-fast) var(--ease-out);
+}
+.module1-movie-card:hover { transform: translateY(-4px); box-shadow: var(--shadow-lg); }
+.module1-catalog-grid .module1-poster { aspect-ratio: 2 / 3; }
 .module1-poster { background: linear-gradient(140deg, var(--brand-700), var(--brand-900)); }
 .module1-poster-tone-1 { background: linear-gradient(140deg, var(--brand-500), var(--brand-900)); }
 .module1-poster-tone-2 { background: linear-gradient(140deg, var(--accent-600), var(--brand-900)); }
@@ -1183,6 +1228,85 @@ main.container {
 }
 .module1-card-link:hover { text-decoration: underline; }
 .module1-card-link span { font-size: var(--text-xl); line-height: 1; }
+.module1-card-actions {
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+    margin-top: auto;
+    padding-top: var(--space-3);
+    border-top: 1px solid var(--border);
+}
+.module1-card-actions .module1-card-link { flex: 1; margin: 0; padding: 0; border: 0; }
+
+.module1-live-preview {
+    display: flex;
+    align-items: center;
+    gap: var(--space-4);
+    margin-top: var(--space-5);
+    padding: var(--space-4);
+    border: 1px dashed var(--border-strong);
+    border-radius: var(--radius-lg);
+    background: var(--surface-2);
+}
+.module1-live-preview > div:last-child { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.module1-live-preview strong { font-size: var(--text-lg); }
+.module1-live-preview small { color: var(--text-muted); }
+.module1-preview-poster {
+    position: relative;
+    flex: 0 0 72px;
+    width: 72px;
+    aspect-ratio: 2 / 3;
+    overflow: hidden;
+    border-radius: var(--radius-md);
+    background: linear-gradient(145deg, var(--brand-600), var(--brand-900));
+}
+.module1-preview-poster img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; z-index: 1; }
+.module1-preview-poster span { display: grid; place-items: center; width: 100%; height: 100%; color: var(--accent-400); font-size: var(--text-3xl); font-weight: 900; }
+.module1-preview-icon { color: var(--accent-500); font-size: var(--text-3xl); }
+
+.module1-stats-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: var(--space-3); margin-bottom: var(--space-4); }
+.module1-stat-card {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-3);
+    padding: var(--space-4);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    background: var(--surface);
+}
+.module1-stat-card span { color: var(--text-muted); font-weight: 700; }
+.module1-stat-card strong { font-size: var(--text-2xl); }
+.module1-stat-card.is-active { border-color: var(--brand-300); background: var(--tint-brand); }
+.module1-stat-card.is-inactive { background: var(--surface-2); }
+.module1-stat-card.is-warning { border-color: var(--accent-500); background: var(--tint-accent); }
+.module1-data-warning { color: var(--accent-600) !important; font-weight: 700; }
+[data-theme="dark"] .module1-data-warning { color: var(--accent-400) !important; }
+
+.module1-age-notice {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+    width: fit-content;
+    padding: var(--space-2) var(--space-3);
+    border-radius: var(--radius-md);
+    background: var(--tint-accent);
+    color: var(--text) !important;
+    font-size: var(--text-sm);
+}
+.module1-seat-status { margin-top: 2px; color: var(--ok-700) !important; font-size: var(--text-xs); font-weight: 800; }
+.module1-seat-status.is-low { color: var(--accent-600) !important; }
+.module1-seat-status.is-soldout { color: var(--danger-700) !important; }
+[data-theme="dark"] .module1-seat-status { color: #6fd79f !important; }
+[data-theme="dark"] .module1-seat-status.is-low { color: var(--accent-400) !important; }
+[data-theme="dark"] .module1-seat-status.is-soldout { color: #ff9d97 !important; }
+.module1-slot.is-soldout { opacity: .72; background: var(--surface-2); }
+
+.module1-admin-occupancy { display: grid; grid-template-columns: auto auto; align-items: baseline; gap: 2px var(--space-2); min-width: 105px; }
+.module1-admin-occupancy strong { font-variant-numeric: tabular-nums; }
+.module1-admin-occupancy > span:not(.module1-occupancy-track) { color: var(--text-muted); font-size: var(--text-xs); }
+.module1-occupancy-track { grid-column: 1 / -1; display: block; height: 5px; overflow: hidden; border-radius: var(--radius-pill); background: var(--border); }
+.module1-occupancy-track i { display: block; height: 100%; border-radius: inherit; background: var(--brand-500); }
 
 .module1-back-link { display: inline-flex; gap: var(--space-2); align-items: center; margin-bottom: var(--space-5); font-weight: 700; text-decoration: none; }
 .module1-back-link:hover { text-decoration: underline; }
@@ -1221,7 +1345,10 @@ main.container {
 .module1-empty p { color: var(--text-muted); margin: 0; }
 
 @media (max-width: 900px) {
-    .module1-catalog-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .module1-catalog-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+    .module1-admin-movie-filter { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .module1-schedule-filter { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .module1-stats-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
     .module1-detail-hero { grid-template-columns: minmax(200px, 280px) minmax(0, 1fr); gap: var(--space-5); }
     .module1-slot-list { grid-template-columns: 1fr; }
 }
@@ -1230,12 +1357,22 @@ main.container {
     .module1-hero-count { min-width: 0; flex-direction: row; align-items: baseline; gap: var(--space-3); width: fit-content; }
     .module1-hero-count strong { font-size: var(--text-2xl); }
     .module1-section-head, .module1-admin-head { align-items: start; flex-direction: column; }
-    .module1-catalog-grid { grid-template-columns: 1fr; }
+    .module1-catalog-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .module1-schedule-filter, .module1-admin-movie-filter { grid-template-columns: 1fr; }
+    .module1-stats-grid { grid-template-columns: 1fr; }
     .module1-detail-hero { grid-template-columns: 1fr; gap: 0; }
     .module1-detail-poster { aspect-ratio: 5 / 4; }
     .module1-detail-copy { padding: var(--space-5) 0 0; }
     .module1-slot { flex-wrap: wrap; }
     .module1-slot .btn { width: 100%; }
+    .module1-movie-body { padding: var(--space-4); }
+    .module1-card-description { display: none; }
+    .module1-card-actions { align-items: stretch; flex-direction: column; }
+    .module1-card-actions .btn, .module1-card-actions .module1-card-link { width: 100%; justify-content: center; text-align: center; }
+}
+
+@media (max-width: 420px) {
+    .module1-catalog-grid { grid-template-columns: 1fr; }
 }
 
 .module1-admin-head { margin-bottom: var(--space-5); }
@@ -1291,7 +1428,7 @@ main.container {
     font-size: var(--text-lg);
     font-weight: 800;
 }
-.module1-row-actions { display: flex; gap: var(--space-2); align-items: center; }
+.module1-row-actions { display: flex; flex-wrap: wrap; gap: var(--space-2); align-items: center; }
 .module1-row-actions form { margin: 0; }
 .module1-row-actions .btn-ghost { color: var(--link); border-color: var(--border-strong); }
 .module1-row-actions .btn-ghost:hover { background: var(--tint-brand); }
@@ -1314,12 +1451,50 @@ main.container {
 .module1-form-actions .btn-ghost { color: var(--link); border-color: var(--border-strong); }
 .module1-form-actions .btn-ghost:hover { background: var(--tint-brand); }
 
+.module1-room-preview { padding: var(--space-6); }
+.module1-room-preview-head {
+    display: flex;
+    align-items: start;
+    justify-content: space-between;
+    gap: var(--space-5);
+    margin-bottom: var(--space-6);
+}
+.module1-room-preview-head p { margin: 0; }
+.module1-room-stats { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: var(--space-2); }
+.module1-room-stats span {
+    padding: var(--space-2) var(--space-3);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-pill);
+    background: var(--surface-2);
+    color: var(--text-muted);
+    font-size: var(--text-sm);
+}
+.module1-room-stats strong { color: var(--text); }
+.module1-seat-preview .seat { cursor: default; }
+.module1-seat-preview .seat:hover { transform: none; box-shadow: none; }
+.module1-seat-preview .seat.vip,
+.module1-legend-vip {
+    background: var(--accent-500);
+    border-color: var(--accent-600);
+    color: var(--brand-900);
+}
+
+@media (max-width: 900px) {
+    .module1-showtime-filter { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
 @media (max-width: 640px) {
     .module1-admin-head > .btn { width: 100%; }
+    .module1-filter-panel,
+    .module1-movie-filter,
+    .module1-showtime-filter { grid-template-columns: 1fr; }
+    .module1-filter-actions .btn { flex: 1; }
     .module1-form-panel { padding: var(--space-5); }
     .module1-form-grid { grid-template-columns: 1fr; }
     .module1-field-full { grid-column: auto; }
     .module1-form-actions .btn { flex: 1; }
+    .module1-room-preview { padding: var(--space-4); }
+    .module1-room-preview-head { flex-direction: column; }
+    .module1-room-stats { justify-content: flex-start; }
 }
 
 /* =====================================================================
@@ -1449,6 +1624,13 @@ main.container {
 .schedule-time:hover { transform: translateY(-2px); background: var(--tint-brand); border-color: var(--brand-500); }
 .schedule-time-hour { font-weight: 700; font-size: var(--text-base); line-height: 1.15; }
 .schedule-time-room { font-size: var(--text-xs); color: var(--text-muted); }
+.schedule-time-seats { margin-top: 2px; color: var(--ok-700); font-size: .68rem; font-weight: 800; white-space: nowrap; }
+.schedule-time-seats.is-low { color: var(--accent-600); }
+[data-theme="dark"] .schedule-time-seats { color: #6fd79f; }
+[data-theme="dark"] .schedule-time-seats.is-low { color: var(--accent-400); }
+.schedule-time.is-soldout { opacity: .58; cursor: not-allowed; pointer-events: none; }
+.schedule-time.is-soldout .schedule-time-seats { color: var(--danger-700); }
+[data-theme="dark"] .schedule-time.is-soldout .schedule-time-seats { color: #ff9d97; }
 
 .schedule-time.is-premium { border-color: var(--brand-500); background: var(--tint-brand); }
 .schedule-time.is-gold { border-color: var(--accent-600); background: var(--tint-accent); }
@@ -1468,8 +1650,7 @@ main.container {
 .pricing-block { margin-bottom: var(--space-7); }
 .pricing-block-title { margin: 0 0 var(--space-4); font-size: var(--text-xl); }
 
-/* Bảng có 4 cột, trên điện thoại cho cuộn ngang trong khung riêng thay vì
-   bóp chữ nhỏ lại. */
+/* Trên điện thoại bảng cuộn ngang trong khung riêng thay vì bóp chữ nhỏ lại. */
 .pricing-table-wrap {
     overflow-x: auto;
     border: 1px solid var(--border);
@@ -1496,22 +1677,6 @@ main.container {
 
 .pricing-table tbody tr.is-deal { background: var(--tint-accent); }
 .pricing-deal-tag { margin-left: var(--space-2); }
-
-/* Dung lai .badge-ok / .badge-danger co san thay vi tu che mau: hai class do
-   da co ban mau rieng cho che do toi va da qua dot ra soat tuong phan.
-   Chi them phan cho phep xuong dong, vi .badge mac dinh khong xuong dong. */
-.pricing-check { white-space: normal; }
-.pricing-check.is-none { color: var(--text-muted); font-size: var(--text-xs); font-weight: 600; }
-
-.pricing-note {
-    margin: var(--space-3) 0 0;
-    color: var(--text-muted);
-    font-size: var(--text-sm);
-}
-
-.pricing-faq { margin: 0; padding-left: var(--space-5); display: grid; gap: var(--space-3); }
-.pricing-faq li { color: var(--text-muted); }
-.pricing-faq strong { color: var(--text); }
 
 .pricing-actions { display: flex; flex-wrap: wrap; gap: var(--space-3); margin-top: var(--space-5); }
 
@@ -1635,3 +1800,298 @@ main.container {
     .account-ticket-grid { grid-template-columns: 1fr; }
     .account-actions .btn { flex: 1; }
 }
+
+/* =====================================================================
+   Bổ sung: tìm phim, soát vé, quản lý người dùng
+   ===================================================================== */
+
+/* ---- Ô tìm kiếm dạng một hàng (trang Phim và trang Người dùng) ----
+   Trên điện thoại các ô xếp chồng lên nhau, từ 640px trở lên thì nằm một hàng. */
+.movie-search {
+    display: grid;
+    gap: var(--space-4);
+    padding: var(--space-5);
+    margin-bottom: var(--space-6);
+}
+.movie-search .form-field { margin: 0; }
+.movie-search-actions { display: flex; flex-wrap: wrap; gap: var(--space-2); align-items: flex-end; }
+
+@media (min-width: 640px) {
+    .movie-search { grid-template-columns: minmax(0, 2fr) minmax(0, 1fr) auto; align-items: end; }
+    .movie-search:not(:has(.movie-search-genre)) { grid-template-columns: minmax(0, 1fr) auto; }
+}
+
+/* ---- Mã vé trên thẻ vé: chữ số cách đều cho nhân viên đọc nhanh ---- */
+.account-ticket-code { font-weight: 800; font-variant-numeric: tabular-nums; letter-spacing: .5px; }
+
+/* ---- Trang soát vé ---- */
+.staff-search-grid {
+    display: grid;
+    gap: var(--space-4);
+    margin-bottom: var(--space-6);
+}
+@media (min-width: 900px) {
+    .staff-search-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+.staff-search-title { margin: 0; font-size: var(--text-lg); }
+
+.staff-result { margin-bottom: var(--space-6); }
+.staff-verdict {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: var(--space-2) var(--space-4);
+    font-size: var(--text-lg);
+}
+.staff-verdict-label { font-size: var(--text-xl); letter-spacing: 1px; }
+.staff-customer { margin: 0 0 var(--space-4); color: var(--text-muted); }
+
+.staff-email-item { display: grid; gap: var(--space-2); }
+.staff-email-verdict {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--space-2);
+    margin: 0;
+    font-size: var(--text-sm);
+}
+
+/* ---- Ô đổi vai trò trong bảng người dùng ---- */
+/* position: relative để nhãn .sr-only (position: absolute) nằm gọn trong khung cuộn của bảng.
+   Thiếu dòng này nhãn ẩn tính vị trí theo cả trang và làm trang tràn ngang trên điện thoại. */
+.user-role-form { position: relative; display: flex; gap: var(--space-2); align-items: center; }
+.user-role-form .form-control { width: auto; min-width: 9rem; padding: var(--space-2) var(--space-3); }
+
+/* =====================================================================
+   Bổ sung: thanh toán MoMo, huỷ vé, soát vé vào phòng, quên mật khẩu
+   ===================================================================== */
+
+/* Hai lựa chọn trả tiền xếp dọc, mỗi lựa chọn kèm một dòng giải thích ngay dưới. */
+.payment-options { display: grid; gap: var(--space-2); }
+.payment-options form + .account-summary-note { margin-bottom: var(--space-3); }
+
+/* Nút huỷ vé nằm sát ngay dưới thẻ vé tương ứng. */
+.ticket-cancel-row { margin: calc(var(--space-2) * -1) 0 var(--space-3); display: flex; justify-content: flex-end; }
+
+.refund-policy { font-size: var(--text-sm); color: var(--text-muted); }
+.refund-policy summary { cursor: pointer; font-weight: 700; color: var(--text); }
+.refund-policy ul { margin: var(--space-2) 0 0; padding-left: var(--space-5); }
+
+/* Nút "Cho vào phòng" to rõ, nhân viên bấm nhanh ở cửa. */
+.staff-checkin { margin: 0 0 var(--space-4); }
+
+.stats-note { margin: calc(var(--space-4) * -1) 0 var(--space-6); font-size: var(--text-sm); }
+
+/* Nút trên trang lỗi: xếp ngang, tự xuống dòng trên điện thoại. */
+.error-actions { display: flex; flex-wrap: wrap; justify-content: center; gap: var(--space-3); }
+
+/* Mọi khung cuộn ngang đều là khung định vị: phần tử position: absolute bên trong (nhãn
+   .sr-only cho trình đọc màn hình, tooltip...) sẽ bị cắt theo khung thay vì làm cả trang tràn ngang. */
+.table-wrap, .pricing-table-wrap, .seat-map-scroll { position: relative; }
+
+/* =====================================================================
+   Bổ sung: phân biệt loại ghế, loại phòng và thanh toán bằng mã QR
+   ===================================================================== */
+
+/* ---- Nhãn loại phòng: dùng ở sơ đồ ghế, lịch chiếu, chi tiết phim, bảng giá ----
+   Viết hai class liền nhau (.room-badge.room-badge-gold) để thắng các luật kiểu
+   ".module1-slot-meta span { color }" có sẵn trong trang, không phải sửa luật của người khác. */
+.room-badge {
+    display: inline-flex;
+    align-items: center;
+    align-self: flex-start;
+    padding: 2px var(--space-3);
+    border: 1px solid var(--border-strong);
+    border-radius: var(--radius-pill);
+    font-size: var(--text-xs);
+    font-weight: 800;
+    letter-spacing: .06em;
+    text-transform: uppercase;
+    white-space: nowrap;
+    vertical-align: middle;
+}
+.room-badge.room-badge-standard { background: var(--surface-2); color: var(--text-muted); border-color: var(--border-strong); }
+.room-badge.room-badge-premium  { background: var(--tint-brand); color: var(--brand-500); border-color: var(--brand-300); }
+.room-badge.room-badge-gold     { background: var(--tint-accent); color: var(--accent-600); border-color: var(--accent-500); }
+[data-theme="dark"] .room-badge.room-badge-premium { color: var(--brand-300); }
+[data-theme="dark"] .room-badge.room-badge-gold    { color: var(--accent-400); }
+@media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) .room-badge.room-badge-premium { color: var(--brand-300); }
+    :root:not([data-theme="light"]) .room-badge.room-badge-gold    { color: var(--accent-400); }
+}
+
+/* Nhãn nhóm phòng trên trang lịch chiếu giờ là một nhãn màu; giữ bề rộng tối thiểu để các
+   hàng giờ chiếu vẫn thẳng cột. */
+.schedule-room-label.room-badge { min-width: 112px; justify-content: center; letter-spacing: .06em; }
+
+/* Suất chiếu ở trang chi tiết phim: phòng cao cấp có vạch màu bên trái. */
+.module1-slot.room-slot-premium { border-left: 4px solid var(--brand-500); }
+.module1-slot.room-slot-gold    { border-left: 4px solid var(--accent-500); }
+.module1-slot-meta .room-badge  { margin-bottom: var(--space-1); }
+
+/* ---- Đầu trang chọn ghế ---- */
+.seat-page-meta {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: center;
+    gap: var(--space-2);
+    margin: 0;
+    color: var(--text-muted);
+}
+.seat-page-room-note { margin: var(--space-2) auto var(--space-5); max-width: 62ch; font-size: var(--text-sm); }
+
+/* ---- Nhãn hàng ở hai đầu mỗi hàng ghế ---- */
+.seat-row-label {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: var(--text-xs);
+    font-weight: 800;
+    color: var(--text-muted);
+    user-select: none;
+}
+
+/* ---- Loại ghế ----
+   Không chỉ dựa vào màu: ghế VIP có dấu sao, ghế đôi có dấu tim và đáy bo tròn hơn, để
+   người mù màu vẫn phân biệt được. Chỉ tô màu loại ghế khi ghế còn trống và chưa chọn;
+   ghế đang chọn, đang giữ, đã bán vẫn dùng đúng màu trạng thái như cũ. */
+.seat-map .seat { position: relative; }
+.seat.seat-vip,
+.seat.seat-couple { padding-top: 9px; }
+.seat.seat-couple { border-radius: 9px 9px 14px 14px; }
+
+.seat.seat-vip.available:not(.selected)    { background: var(--seat-vip-tint);    border: 2px solid var(--seat-vip); }
+.seat.seat-couple.available:not(.selected) { background: var(--seat-couple-tint); border: 2px solid var(--seat-couple); }
+
+.seat.seat-vip::before,
+.seat.seat-couple::before {
+    position: absolute;
+    top: 2px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 9px;
+    line-height: 1;
+    pointer-events: none;
+}
+.seat.seat-vip::before    { content: "★"; color: var(--seat-vip); }
+.seat.seat-couple::before { content: "♥"; color: var(--seat-couple); }
+.seat.selected::before,
+.seat.held::before,
+.seat.booked::before { color: inherit; }
+
+/* ---- Chú thích: nhóm "Loại ghế" và nhóm "Tình trạng" ---- */
+.seat-legend-groups { display: grid; gap: var(--space-3); margin-top: var(--space-5); }
+.seat-legend-groups .seat-legend { margin-top: 0; }
+.seat-legend-title {
+    font-size: var(--text-xs);
+    font-weight: 800;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+    color: var(--text);
+}
+.seat-legend strong { color: var(--text); }
+
+.seat-legend .legend-type {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-style: normal;
+    font-size: 9px;
+    line-height: 1;
+    background: var(--seat-available-bg);
+}
+.seat-legend .legend-type-vip    { background: var(--seat-vip-tint);    border: 2px solid var(--seat-vip);    color: var(--seat-vip); }
+.seat-legend .legend-type-couple { background: var(--seat-couple-tint); border: 2px solid var(--seat-couple); color: var(--seat-couple); border-radius: 6px 6px 8px 8px; }
+.legend-type-vip::before    { content: "★"; }
+.legend-type-couple::before { content: "♥"; }
+
+/* ---- Luật chọn ghế, ngay dưới tổng tiền ---- */
+.seat-rules {
+    margin: var(--space-3) auto var(--space-4);
+    padding-left: var(--space-5);
+    max-width: 56ch;
+    text-align: left;
+    font-size: var(--text-sm);
+    color: var(--text-muted);
+}
+.seat-rules li + li { margin-top: var(--space-1); }
+
+/* ---- Thanh toán bằng mã QR MoMo ---- */
+.payment-sandbox-note {
+    margin: var(--space-2) 0 0;
+    padding: var(--space-3) var(--space-4);
+    border: 1px dashed var(--border-strong);
+    border-radius: var(--radius-md);
+    background: var(--surface-2);
+    font-size: var(--text-sm);
+    color: var(--text-muted);
+    text-align: left;
+}
+
+.momo-qr { display: grid; gap: var(--space-5); align-items: start; }
+@media (min-width: 900px) {
+    .momo-qr { grid-template-columns: minmax(300px, 380px) 1fr; }
+}
+
+.momo-qr-card { position: relative; text-align: center; border-top: 4px solid var(--momo-500); }
+.momo-qr-brand {
+    display: inline-block;
+    margin-bottom: var(--space-3);
+    padding: 2px var(--space-3);
+    border-radius: var(--radius-pill);
+    background: var(--momo-500);
+    color: var(--qr-bg);
+    font-size: var(--text-xs);
+    font-weight: 800;
+    letter-spacing: .08em;
+}
+
+/* Khung trắng quanh mã: ở chế độ tối vẫn là nền trắng để app quét đọc được. */
+.momo-qr-frame {
+    width: min(100%, 280px);
+    margin: 0 auto;
+    padding: var(--space-2);
+    border-radius: var(--radius-md);
+    background: var(--qr-bg);
+    color: var(--qr-fg);
+    box-shadow: var(--shadow-md);
+}
+.momo-qr-frame .qr-svg { display: block; width: 100%; height: auto; }
+
+.momo-qr-amount { margin: var(--space-4) 0 var(--space-1); font-size: var(--text-2xl); font-weight: 800; color: var(--text); }
+.momo-qr-timer { margin: 0 0 var(--space-3); color: var(--text-muted); font-size: var(--text-sm); }
+.momo-qr-timer strong { font-size: var(--text-lg); color: var(--text); font-variant-numeric: tabular-nums; }
+.momo-qr.is-expired .momo-qr-timer strong { color: var(--danger-700); }
+.momo-qr.is-expired .momo-qr-frame { opacity: .35; }
+
+.momo-qr-status {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--space-2);
+    margin: 0;
+    padding: var(--space-3);
+    border-radius: var(--radius-md);
+    background: var(--surface-2);
+    font-size: var(--text-sm);
+    font-weight: 600;
+}
+.momo-qr-status.is-ok     { background: var(--tint-ok);     color: var(--ok-700); }
+.momo-qr-status.is-danger { background: var(--tint-danger); color: var(--danger-700); }
+.momo-qr-status.is-ok .spinner,
+.momo-qr-status.is-danger .spinner { display: none; }
+/* Nền tối: chữ xanh/đỏ đậm trên nền tint tối không đủ tương phản, dùng màu chữ thường. */
+[data-theme="dark"] .momo-qr-status.is-ok,
+[data-theme="dark"] .momo-qr-status.is-danger { color: var(--text); }
+@media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) .momo-qr-status.is-ok,
+    :root:not([data-theme="light"]) .momo-qr-status.is-danger { color: var(--text); }
+}
+
+.momo-qr-help { text-align: left; }
+.momo-qr-help-title { margin: 0 0 var(--space-3); font-size: var(--text-lg); }
+.momo-qr-steps { margin: 0 0 var(--space-4); padding-left: var(--space-5); }
+.momo-qr-steps li + li { margin-top: var(--space-2); }
+.momo-qr-seats { margin: 0 0 var(--space-3); color: var(--text-muted); font-size: var(--text-sm); }
+.momo-qr-help .account-actions { margin-top: var(--space-4); }

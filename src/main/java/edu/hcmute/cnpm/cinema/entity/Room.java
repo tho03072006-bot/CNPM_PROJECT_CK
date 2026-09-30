@@ -38,4 +38,10 @@ public class Room {
     public void setTotalColumns(Integer totalColumns) { this.totalColumns = totalColumns; }
     public List<Seat> getSeats() { return seats; }
     public void setSeats(List<Seat> seats) { this.seats = seats; }
+
+    /**
+     * Loại phòng suy ra từ tên, không phải cột trong database. Entity dùng field access
+     * (@Id đặt trên field) nên Hibernate bỏ qua getter này.
+     */
+    public RoomType getRoomType() { return RoomType.fromRoomName(name); }
 }

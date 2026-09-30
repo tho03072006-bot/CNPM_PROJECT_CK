@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout" layout:decorate="~{layout/base}">
+<head><title>Quản lý người dùng</title></head>
+<body><div layout:fragment="content">
+    <div class="module1-admin-head">
+        <div>
+            <span class="module1-kicker">QUẢN TRỊ</span>
+            <h1>Quản lý người dùng</h1>
+            <p class="text-muted">Cấp quyền nhân viên soát vé hoặc quyền quản trị cho tài khoản.</p>
+        </div>
+    </div>
+    <nav th:replace="~{fragments/admin-nav :: adminNav('users')}"></nav>
+
+    <div class="account-stat-grid">
+        <div class="card account-stat">
+            <span class="account-stat-label">Khách hàng</span>
+            <strong class="account-stat-value" th:text="${customerCount}">0</strong>
+        </div>
+        <div class="card account-stat">
+            <span class="account-stat-label">Nhân viên</span>
+            <strong class="account-stat-value" th:text="${staffCount}">0</strong>
+        </div>
+        <div class="card account-stat">
+            <span class="account-stat-label">Quản trị</span>
+            <strong class="account-stat-value" th:text="${adminCount}">0</strong>
+        </div>
+    </div>
+
+    <form class="card movie-search" th:action="@{/admin/users}" method="get" role="search"
+          aria-label="Tìm tài khoản">
+        <div class="form-field movie-search-keyword">
+            <label for="q">Họ tên hoặc email</label>
+            <input class="form-control" id="q" name="q" type="search" th:value="${keyword}"
+                   maxlength="150" autocomplete="off" placeholder="Ví dụ: nguyen van">
+        </div>
+        <div class="movie-search-actions">
+            <button class="btn" type="submit">Tìm</button>
+            <a class="btn btn-ghost" th:if="${keyword != null and !#strings.isEmpty(keyword)}"
+               th:href="@{/admin/users}">Bỏ lọc</a>
+        </div>
+    </form>
+
+    <div class="module1-empty" th:if="${#lists.isEmpty(users)}" role="status">
+        <h2>Không có tài khoản nào khớp</h2><p>Thử tìm bằng một phần của email.</p>
+    </div>
+
+    <div class="table-wrap" th:unless="${#lists.isEmpty(users)}">
+        <table class="admin-table module1-table">
+            <caption class="sr-only">Danh sách tài khoản, mới tạo nhất lên đầu</caption>
+            <thead><tr>
+                <th scope="col">Tài khoản</th><th scope="col">Số điện thoại</th>
+                <th scope="col">Vai trò</th><th scope="col">Ngày tạo</th><th scope="col">Đổi vai trò</th>
+            </tr></thead>
+            <tbody><tr th:each="user : ${users}">
+                <td><div class="module1-table-title">
+                    <span class="module1-table-mark" aria-hidden="true"
+                          th:text="${#strings.toUpperCase(#strings.substring(user.fullName, 0, 1))}">N</span>
+                    <span><strong th:text="${user.fullName}">Họ tên</strong>
+                          <small th:text="${user.email}">email</small></span>
+                </div></td>
+                <td th:text="${user.phone != null and !#strings.isEmpty(user.phone)} ? ${user.phone} : '—'">0901234567</td>
+                <td th:switch="${user.role.name()}">
+                    <span th:case="'ADMIN'" class="badge badge-accent">Quản trị</span>
+                    <span th:case="'STAFF'" class="badge badge-brand">Nhân viên</span>
+                    <span th:case="*" class="badge badge-ok">Khách hàng</span>
+                </td>
+                <td th:text="${#temporals.format(user.createdAt, 'dd/MM/yyyy')}">27/09/2026</td>
+                <td>
+                    <span class="text-muted" th:if="${user.id == currentUserId}">Tài khoản của bạn</span>
+                    <form class="user-role-form" th:unless="${user.id == currentUserId}"
+                          th:action="@{/admin/users/{id}/role(id=${user.id})}" method="post">
+                        <input type="hidden" name="q" th:value="${keyword}">
+                        <label class="sr-only" th:for="|role-${user.id}|"
+                               th:text="|Vai trò mới cho ${user.email}|">Vai trò mới</label>
+                        <select class="form-control" th:id="|role-${user.id}|" name="role">
+                            <option th:each="role : ${roles}" th:value="${role}"
+                                    th:selected="${role == user.role}"
+                                    th:text="${role.name() == 'ADMIN'} ? 'Quản trị'
+                                            : (${role.name() == 'STAFF'} ? 'Nhân viên' : 'Khách hàng')">Khách hàng</option>
+                        </select>
+                        <button class="btn btn-ghost btn-sm" type="submit">Lưu</button>
+                    </form>
+                </td>
+            </tr></tbody>
+        </table>
+    </div>
+</div></body></html>

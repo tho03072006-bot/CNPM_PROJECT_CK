@@ -98,8 +98,17 @@ sqlcmd -S localhost,1433 -U sa -C -f 65001 -d cinema_booking_test -Q "SELECT t.n
 ```
 
 Đối chiếu danh sách đó với các trường có `@Nationalized` trong `entity/`. Trường nào có annotation
-mà cột vẫn `varchar` thì phải `ALTER`. Các cột không có annotation (`users`, `seats`, `tickets`)
-để `varchar` là đúng, đừng đổi bừa.
+mà cột vẫn `varchar` thì phải `ALTER`. Các cột không có annotation (email, mật khẩu băm, vai trò,
+`seats`, `tickets`) chỉ chứa chữ không dấu nên để `varchar` là đúng, đừng đổi bừa.
+
+Ngày 27/09/2026 dính lần hai: `User.fullName` bị sót `@Nationalized`, nên database test lưu
+"Trần Văn Mới" thành "Tr?n Van M?i". Database dev và cloud không sao vì dựng từ `schema.sql`
+(đã là `NVARCHAR`), chỉ database test và CI do Hibernate tự sinh bảng mới bị. Đã thêm annotation;
+máy nào đã có sẵn `cinema_booking_test` thì chạy thêm:
+
+```bash
+sqlcmd -S localhost,1433 -U sa -C -f 65001 -d cinema_booking_test -Q "ALTER TABLE users ALTER COLUMN full_name NVARCHAR(150) NOT NULL;"
+```
 
 ---
 
@@ -153,9 +162,52 @@ test ADR-1 sẽ báo xanh giả, tức là mất luôn thứ đang chứng minh 
 - Hai giá trị `EXPIRED` và `CANCELLED` trong enum `TicketStatus` **không còn được dùng** trong
   luồng hiện tại. Giữ lại trong enum vì Module 2 đang tham chiếu `TicketStatus.values()`, xoá đi
   sẽ làm gãy `SeatService`.
-- Giới hạn đã biết: nếu sau này làm hoàn tiền cho vé **đã thanh toán**, sẽ đụng lại đúng vấn đề
-  này — muốn trả ghế về trống thì phải xoá dòng, mà xoá dòng thì mất chứng từ thanh toán. Hoàn
-  tiền nằm ngoài phạm vi đồ án nên chưa giải quyết.
+- Giới hạn từng ghi ở đây — hoàn tiền cho vé **đã thanh toán** thì xoá dòng sẽ mất chứng từ —
+  đã giải quyết ở ADR-3 ngay dưới.
+
+### ADR-3: huỷ vé đã thanh toán — vẫn xoá dòng, nhưng chép biên nhận sang bảng riêng
+
+**Bối cảnh.** Từ ngày 27/09/2026 khách được tự huỷ vé đã thanh toán và nhận lại tiền theo chính
+sách (còn ≥ 24 giờ: 100%, 2 tới dưới 24 giờ: 50%, dưới 2 giờ hoặc đã vào phòng: không huỷ).
+Ghế phải trống lại để người khác mua, mà ràng buộc `UNIQUE (showtime_id, seat_id)` của ADR-1
+không nhìn cột `status` — giống hệt vấn đề của ADR-2.
+
+**Quyết định.** Huỷ vé đã thanh toán cũng **xoá dòng** trong `tickets`. Nhưng trước khi xoá,
+chép mọi thứ liên quan tới tiền sang bảng `ticket_refunds`: giá đã trả, phần trăm và số tiền
+hoàn, mã giao dịch MoMo, mã giao dịch hoàn, thời điểm trả và thời điểm hoàn. Chép luôn tên phim,
+phòng, ghế, giờ chiếu (không chỉ giữ khoá ngoại) vì đây là chứng từ tiền bạc: phim đổi tên hay
+suất bị xoá sau này thì biên nhận vẫn phải đọc được.
+
+**Hệ quả.**
+
+- Thống kê: vé đã huỷ không còn tính là vé bán ra, nhưng phần rạp giữ lại (giá trừ tiền hoàn)
+  vẫn cộng vào doanh thu ngày bán. Trang thống kê có thêm ô "Đã hoàn tiền".
+- Hai chốt chặn nằm ngay trong câu lệnh SQL, cùng tinh thần ADR-1: huỷ vé là
+  `DELETE ... WHERE checked_in_at IS NULL`, soát vé vào phòng là `UPDATE ... WHERE checked_in_at IS NULL`.
+  Khách bấm huỷ đúng lúc nhân viên soát vé ở cửa thì chỉ một bên thắng.
+- Vé trả qua MoMo: gọi API hoàn tiền của MoMo **sau** khi đã ghi biên nhận và xoá vé, trong
+  cùng transaction. MoMo từ chối thì transaction rollback, vé còn nguyên.
+
+### Các cột và bảng thêm ngày 27/09/2026
+
+| Chỗ | Kiểu | Dùng để |
+|---|---|---|
+| `tickets.payment_method` | `NVARCHAR(20)` NULL | `COUNTER` (tại quầy) hoặc `MOMO`. Vé cũ để NULL, coi như trả tại quầy |
+| `tickets.payment_ref` | `NVARCHAR(100)` NULL | Mã giao dịch MoMo (`transId`), cần để hoàn tiền đúng giao dịch |
+| `tickets.checked_in_at` | `DATETIME2` NULL | Lúc nhân viên soát vé cho vào phòng; khác NULL là vé đã dùng |
+| bảng `ticket_refunds` | — | Biên nhận hoàn tiền theo ADR-3 |
+
+Chỉ **thêm** cột cho phép NULL và thêm bảng, không sửa hay xoá gì của cái cũ, nên code cũ vẫn
+chạy được với database đã nâng cấp.
+
+- **Máy cá nhân và database test:** không phải làm gì. Hai database này chạy `ddl-auto=update`,
+  lần khởi động đầu tiên Hibernate tự thêm cột và bảng.
+- **Cloud: đã nâng cấp ngày 30/09/2026** bằng cách chạy lại `schema-cloud.sql` (file này giờ có
+  thêm khối "Bổ sung 27/09/2026": `ALTER TABLE ... ADD` có kiểm tra "nếu chưa có" và tạo bảng
+  `ticket_refunds`). Dữ liệu cũ giữ nguyên; chạy lại lần hai không lỗi. Đã kiểm chứng bằng cách
+  chạy app với profile `cloud`: Hibernate `validate` chấp nhận, trang Vé của tôi và sơ đồ ghế
+  chạy bình thường.
+- **Database tạo mới:** `schema.sql` và `schema-cloud.sql` đều đã có cột và bảng mới.
 
 ---
 
