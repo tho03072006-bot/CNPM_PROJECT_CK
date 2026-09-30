@@ -3,7 +3,7 @@
 Tài liệu này mô tả nhóm kiểm thử phần mềm thế nào, kiểm thử những gì, và vì sao chọn cách đó.
 Số liệu trong đây lấy từ lần chạy `mvn test` thật, không phải ước lượng.
 
-**Hiện trạng: 160 test, 160 đạt, 0 hỏng.**
+**Hiện trạng: 211 test, 211 đạt, 0 hỏng.**
 
 ---
 
@@ -32,9 +32,9 @@ thúc bằng `_test` trước khi làm bất cứ việc gì. Nếu ai đó sử
 
 | Tầng | Dùng khi | Cần database? | Số test |
 |---|---|---|---|
-| Unit test | Kiểm tra logic tính toán và kiểm tra dữ liệu đầu vào | Không | 40 |
+| Unit test | Kiểm tra logic tính toán và kiểm tra dữ liệu đầu vào | Không | 52 |
 | Test MVC | Kiểm tra Controller, template và mã HTTP trả về | Không | 7 |
-| Test tích hợp | Kiểm tra nghiệp vụ chạy thật trên database | Có | 113 |
+| Test tích hợp | Kiểm tra nghiệp vụ chạy thật trên database | Có | 152 |
 
 Unit test chạy trong mili giây nên viết được nhiều và chạy liên tục lúc code. Test tích hợp chậm
 hơn nhưng là thứ duy nhất chứng minh được ràng buộc database có hoạt động thật hay không.
@@ -56,14 +56,14 @@ Phần chặn trùng giờ chiếu được phủ đủ bốn kiểu chồng l�
 giữa suất cũ, bao trọn suất cũ, và nằm gọn trong suất cũ. Cộng thêm ca sát nút (bắt đầu đúng sau
 15 phút dọn phòng thì phải cho qua) và ca hai phòng khác nhau chiếu cùng giờ thì không được chặn.
 
-### Module 2 — Ghế và vé (60 test)
+### Module 2 — Ghế và vé (61 test)
 
 | Lớp test | Số test | Kiểm tra điều gì |
 |---|---|---|
 | `SeatBookingServiceTest` | 12 | Kiểm tra dữ liệu đầu vào khi giữ ghế |
 | `SeatServiceTest` | 11 | Dựng sơ đồ ghế kèm trạng thái từng ghế |
 | `SeatPricingServiceTest` | 11 | Tính giá theo loại ghế |
-| `SeatSelectionPolicyTest` | 6 | Quy tắc chọn ghế: tối đa 8 chỗ, cùng hàng, liền nhau, không để ghế lẻ |
+| `SeatSelectionPolicyTest` | 7 | Quy tắc chọn ghế: tối đa 8 chỗ, không để ghế lẻ; **chọn khác hàng, cách nhau vẫn được** (từ 28/09) |
 | `BookingControllerTest` | 7 | API giữ ghế: chỉ nhận JSON, lấy danh tính từ session |
 | `SeatHoldServiceIntegrationTest` | 6 | **Trả ghế về trạng thái trống** khi hết hạn hoặc khách huỷ |
 | `SeatBookingConcurrencyIntegrationTest` | 4 | **Chống đặt trùng ghế — ADR-1** |
@@ -121,7 +121,7 @@ như trình duyệt gọi:
 Test thứ hai kiểm tra chiều ngược lại: chưa đăng nhập thì không giữ ghế được, và **không được
 tạo ra dòng vé nào** trong database.
 
-### Tính năng bổ sung ngày 27/09 (35 test)
+### Tính năng bổ sung ngày 27/09 — đợt một (35 test)
 
 | Lớp test | Số test | Kiểm tra điều gì |
 |---|---|---|
@@ -134,6 +134,32 @@ tạo ra dòng vé nào** trong database.
 Test soát vé truyền "bây giờ" vào tay thay vì đọc đồng hồ máy, nên chạy lúc 23 giờ 59 hay lúc
 nào cũng ra cùng một kết quả — kiểm tra "đúng ngày chiếu" mà dựa vào giờ thật thì sớm muộn cũng
 có ngày test đỏ không rõ lý do.
+
+### Tính năng bổ sung ngày 27/09 — đợt hai (38 test)
+
+| Lớp test | Số test | Kiểm tra điều gì |
+|---|---|---|
+| `TicketRefundIntegrationTest` | 9 | Hoàn 100% / 50% / không huỷ theo giờ, **ghế trống lại cho người khác đặt**, MoMo từ chối thì vé còn nguyên, thống kê trừ tiền hoàn |
+| `PasswordResetIntegrationTest` | 9 | Link đặt lại mật khẩu: hết hạn, **chỉ dùng một lần**, sửa link là hỏng, **không dò được email** |
+| `MomoPaymentIntegrationTest` | 8 | **Chữ ký giả bị từ chối**, tải lại trang kết quả không xử lý trùng, ghế hết hạn giữ thì tự hoàn tiền |
+| `CheckInIntegrationTest` | 5 | Cho vào phòng, **một vé không dùng được hai lần**, khách không tự bấm cho vào được |
+| `MailDeliveryTest` | 4 | Công tắc tắt email, bỏ qua tên miền thử nghiệm, lỗi SMTP không làm hỏng giao dịch |
+| `AdminFormErrorIntegrationTest` | 3 | Lỗi nghiệp vụ ở khu quản trị hiện ngay trên form, không đá sang trang lỗi |
+
+### Bổ sung ngày 28/09 — loại ghế, loại phòng, thanh toán QR (12 test)
+
+| Lớp test | Số test | Kiểm tra điều gì |
+|---|---|---|
+| `MomoPaymentIntegrationTest` (thêm) | 5 | Tạo giao dịch QR đúng tiền và hạn trả, MoMo báo đã trả thì xuất vé, chưa quét thì chờ, **không hỏi được giao dịch của người khác**, đi trọn luồng web tới trang hoàn tất |
+| `SeatMapViewTest` | 4 | Gom ghế theo hàng, chú thích loại ghế kèm giá của suất, nhận ra loại phòng từ tên |
+| `QrCodeServiceTest` | 3 | **Mã QR vẽ ra đọc ngược lại được đúng dữ liệu MoMo trả về**, SVG không ghi mã màu |
+
+`QrCodeServiceTest` không chỉ kiểm tra "có ra thẻ `<svg>`": nó dựng lại ảnh từ SVG rồi cho bộ
+đọc QR của ZXing đọc, nên mã vẽ sai một ô là test đỏ ngay.
+
+**Không test nào gọi MoMo hay Gmail thật.** Lớp gọi HTTP của MoMo (`MomoApiClient`) được thay
+bằng bản giả ngay trong `IntegrationTestBase`, và profile test đặt `app.mail.enabled=false`.
+Chữ ký MoMo thì vẫn ký thật bằng khoá test, để chứng minh được chữ ký giả bị từ chối.
 
 ---
 
@@ -150,6 +176,14 @@ có ngày test đỏ không rõ lý do.
 | Vé chưa thanh toán, sai ngày hoặc hết suất thì không cho vào | `TicketLookupServiceIntegrationTest` |
 | Đổi mật khẩu phải nhập đúng mật khẩu hiện tại | `AccountSettingsIntegrationTest` |
 | Quản trị viên không tự khoá mình ra khỏi hệ thống | `UserManagementIntegrationTest` |
+| Kết quả thanh toán MoMo phải đúng chữ ký mới được ghi nhận | `MomoPaymentIntegrationTest` |
+| Tiền đã trừ mà không xuất được vé thì phải tự hoàn | `MomoPaymentIntegrationTest` |
+| Chỉ chủ giao dịch mới hỏi được trạng thái thanh toán QR | `MomoPaymentIntegrationTest` |
+| Khách tự chọn hàng và vị trí, chỉ cấm để trống một ghế lẻ | `SeatSelectionPolicyTest` |
+| Mã QR thanh toán mã hoá đúng dữ liệu MoMo trả về | `QrCodeServiceTest` |
+| Hoàn tiền đúng chính sách theo số giờ còn lại tới suất chiếu | `TicketRefundIntegrationTest` |
+| Vé đã vào phòng thì không huỷ được và không dùng lại được | `TicketRefundIntegrationTest`, `CheckInIntegrationTest` |
+| Link đặt lại mật khẩu dùng một lần và có hạn | `PasswordResetIntegrationTest` |
 | Vé quá hạn giữ thì không thanh toán được | `PaymentServiceIntegrationTest` |
 | Không trả tiền hộ vé của người khác | `PaymentServiceIntegrationTest` |
 | Chưa đăng nhập thì không giữ ghế được | `BookingFlowEndToEndTest` |
@@ -208,9 +242,11 @@ Nói thẳng để không ai tưởng bộ test phủ hết mọi thứ:
 - **Giao diện trên trình duyệt thật.** Nhóm kiểm tra bằng mắt: mở trang, thu nhỏ cửa sổ xuống khổ
   điện thoại, xem cả chế độ sáng lẫn tối, đi bằng phím Tab kiểm tra viền focus. Chưa có test tự
   động chụp màn hình so sánh.
-- **Gửi email thật.** `TicketMailService` được viết để không gửi gì khi chưa cấu hình email, và
-  lỗi SMTP không làm hỏng giao dịch đã thanh toán. Việc thư có tới hộp thư hay không thì phải thử
-  tay.
+- **Gửi email thật và gọi MoMo thật.** Bộ test tự động cố ý không chạm tới hai dịch vụ này.
+  Đã thử tay ngày 27/09, kết quả ở mục 9.
+- **MoMo gọi thẳng về máy chủ (IPN).** Chạy trên `localhost` thì MoMo không gọi tới được; trang
+  kết quả (MoMo đưa khách quay về) lo việc xác nhận. Đường IPN đã viết và có chung logic kiểm chữ
+  ký, nhưng chỉ chạy thật được khi đưa ứng dụng lên máy chủ có tên miền.
 - **Đồng hồ đếm ngược giữ ghế.** Phần JavaScript trên trang chọn ghế chưa có test tự động. Logic
   quan trọng nằm ở phía máy chủ và đã có test: vé quá hạn thì không thanh toán được.
 - **Chịu tải.** Đồ án không đặt mục tiêu này. Test tranh chấp chỉ dùng 10 luồng, đủ để chứng minh
@@ -259,7 +295,51 @@ Kiểm tra giao diện:
 
 ### Vẫn chưa kiểm thử
 
-- **Gửi email thật.** Chưa cấu hình SMTP nên `TicketMailService` không gửi gì. Muốn demo phần
-  này thì phải điền `spring.mail.username` và App Password vào `application-secrets.properties`
-  rồi thử gửi tay.
 - **Chịu tải.** Vẫn nằm ngoài mục tiêu của đồ án.
+- **Quét mã QR tới lúc trả tiền xong.** Cần điện thoại cài app MoMo Test (xem mục 10).
+
+---
+
+## 9. Kết quả thử tay với MoMo và Gmail ngày 27/09
+
+Chạy trên máy cá nhân, dùng môi trường thử của MoMo (`test-payment.momo.vn`) và Gmail thật.
+
+| Việc thử | Kết quả |
+|---|---|
+| Giữ 2 ghế, bấm "Thanh toán bằng ví MoMo" | Sang trang MoMo đúng mã đơn `UTE-<suất>-<khách>-…` và đúng số tiền |
+| Bấm "Quay về", huỷ giao dịch bên MoMo | Quay lại app, **chữ ký thật của MoMo được chấp nhận**, báo lý do, ghế vẫn giữ |
+| Trả bằng thẻ quốc tế thử | Vé chuyển sang "Đã thanh toán — Trả qua Ví MoMo", lưu mã giao dịch MoMo |
+| Huỷ một vé còn hơn 24 giờ tới suất | Gọi API hoàn tiền thật của MoMo, nhận mã hoàn; ghế trống lại trên sơ đồ |
+| Nhân viên soát vé, bấm "Cho vào phòng" | Soát lại cùng mã thì báo "ĐÃ VÀO PHÒNG", không có nút cho vào nữa |
+| Quên mật khẩu với email thật | Gmail nhận thư "Đặt lại mật khẩu" |
+| Thư tới tài khoản mẫu `@utecinema.local` | Bỏ qua đúng thiết kế, ghi log, không để Gmail trả thư lỗi |
+
+**Thẻ thử của MoMo.** Tài liệu MoMo ghi thẻ quốc tế `4111 1111 1111 1111`, tên `NGUYEN VAN A`,
+CVC `111`, hạn `05/26`. Hạn đó đã qua nên MoMo từ chối (mã 1002 — bị ngân hàng phát hành từ
+chối). Nhập hạn còn hiệu lực, ví dụ `12/30`, thì thanh toán thành công. Thẻ ATM thử
+`9704 0000 0000 0018` cũng bị từ chối với cùng mã lỗi trong lần thử này.
+
+## 10. Kết quả thử tay ngày 28/09 — loại ghế, loại phòng, thanh toán QR
+
+Chạy bản mới ở cổng riêng trên máy cá nhân, database `cinema_booking`, tài khoản khách mẫu, MoMo
+môi trường thử. Suất thử: "Bóng Ma Nhà Hát", Cinema 3, và một suất Gold Class.
+
+| Việc thử | Kết quả |
+|---|---|
+| Mở sơ đồ ghế phòng thường | Chữ cái hàng ở hai đầu; hàng H–I ghế VIP tím có dấu sao, hàng J ghế đôi hồng có dấu tim; ghế đã bán vẫn xám |
+| Chú thích loại ghế | Ghi đúng giá của suất: thường 115.000 đ, VIP 172.500 đ, đôi 230.000 đ (2 người) |
+| Chọn A5, A6, C7 và ghế đôi J8 | Hợp lệ, đếm 5/8 chỗ, tổng 575.000 đ |
+| Chọn A5 và A7 (chừa đúng A6) | Bị chặn: "Lựa chọn này sẽ để ghế A6 trống một mình" |
+| Giữ C7, E10, H3 (ba hàng khác nhau) | Máy chủ nhận, tổng 402.500 đ |
+| Bấm "Quét mã QR bằng app MoMo" | Tạo giao dịch thật trên MoMo thử, trang của rạp hiện mã QR đen trên nền trắng (cả ở chế độ tối), đúng tiền, đếm ngược theo giờ giữ ghế |
+| Để yên trang QR | Cứ 3 giây hỏi MoMo một lần, MoMo trả mã 1000 (đang chờ khách xác nhận) |
+| Bấm "Tôi đã thanh toán" khi chưa trả | Báo "MoMo chưa báo nhận được tiền", vẫn ở trang QR |
+| Phòng Gold Class | Nhãn vàng GOLD CLASS, chú thích chỉ có ghế VIP 300.000 đ |
+| Lịch chiếu, chi tiết phim, bảng giá | Nhãn màu theo loại phòng; suất Gold/Premium có vạch màu bên trái |
+| Khổ 375px | Không tràn ngang; sơ đồ cuộn trong khung riêng, ghế 32×32px; mã QR 280×280px |
+| Tương phản màu | Chữ trên ghế VIP/đôi từ 13:1 trở lên, dấu sao/tim từ 4.5:1, viền từ 5:1, ở cả hai chế độ |
+
+**Quét mã ở môi trường thử.** Mã QR của môi trường thử chỉ app **MoMo Test** mới quét được
+(tải ở trang tải về dành cho nhà phát triển của MoMo, phải gỡ app MoMo thật trước khi cài). Tài
+khoản ví thử dùng mật khẩu và OTP `000000`. Chưa cài được thì chọn "Thẻ ATM hoặc thẻ quốc tế qua
+MoMo" và dùng thẻ thử ở mục 9.
