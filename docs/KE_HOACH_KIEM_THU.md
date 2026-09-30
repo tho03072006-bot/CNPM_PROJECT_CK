@@ -3,8 +3,8 @@
 Tài liệu này mô tả nhóm kiểm thử phần mềm thế nào, kiểm thử những gì, và vì sao chọn cách đó.
 Số liệu trong đây lấy từ lần chạy `mvn test` thật, không phải ước lượng.
 
-**Hiện trạng: 223 test** (211 của nhánh bổ sung tính năng + 12 test mới của Module 1 gộp từ
-`develop` ngày 30/09).
+**Hiện trạng: 234 test, 234 đạt, 0 hỏng** (chạy `mvn test` trên máy ngày 30/09/2026, sau khi gộp
+Module 1 của Tài - PR #44 - và phần giữ ghế của Thắng - PR #45).
 
 ---
 
@@ -33,9 +33,9 @@ thúc bằng `_test` trước khi làm bất cứ việc gì. Nếu ai đó sử
 
 | Tầng | Dùng khi | Cần database? | Số test |
 |---|---|---|---|
-| Unit test | Kiểm tra logic tính toán và kiểm tra dữ liệu đầu vào | Không | 52 |
-| Test MVC | Kiểm tra Controller, template và mã HTTP trả về | Không | 7 |
-| Test tích hợp | Kiểm tra nghiệp vụ chạy thật trên database | Có | 164 |
+| Unit test | Kiểm tra logic tính toán và kiểm tra dữ liệu đầu vào | Không | 58 |
+| Test MVC | Kiểm tra Controller, template và mã HTTP trả về | Không | 9 |
+| Test tích hợp | Kiểm tra nghiệp vụ chạy thật trên database | Có | 167 |
 
 Unit test chạy trong mili giây nên viết được nhiều và chạy liên tục lúc code. Test tích hợp chậm
 hơn nhưng là thứ duy nhất chứng minh được ràng buộc database có hoạt động thật hay không.
@@ -58,18 +58,19 @@ Phần chặn trùng giờ chiếu được phủ đủ bốn kiểu chồng l�
 giữa suất cũ, bao trọn suất cũ, và nằm gọn trong suất cũ. Cộng thêm ca sát nút (bắt đầu đúng sau
 15 phút dọn phòng thì phải cho qua) và ca hai phòng khác nhau chiếu cùng giờ thì không được chặn.
 
-### Module 2 — Ghế và vé (61 test)
+### Module 2 — Ghế và vé (72 test)
 
 | Lớp test | Số test | Kiểm tra điều gì |
 |---|---|---|
-| `SeatBookingServiceTest` | 12 | Kiểm tra dữ liệu đầu vào khi giữ ghế |
-| `SeatServiceTest` | 11 | Dựng sơ đồ ghế kèm trạng thái từng ghế |
+| `SeatBookingServiceTest` | 13 | Kiểm tra dữ liệu đầu vào và chặn nhiều lượt giữ cùng tài khoản |
+| `SeatServiceTest` | 13 | Dựng sơ đồ ghế và đóng bán trực tuyến trước giờ chiếu 5 phút |
 | `SeatPricingServiceTest` | 11 | Tính giá theo loại ghế |
 | `SeatSelectionPolicyTest` | 7 | Quy tắc chọn ghế: tối đa 8 chỗ, không để ghế lẻ; **chọn khác hàng, cách nhau vẫn được** (từ 28/09) |
-| `BookingControllerTest` | 7 | API giữ ghế: chỉ nhận JSON, lấy danh tính từ session |
-| `SeatHoldServiceIntegrationTest` | 6 | **Trả ghế về trạng thái trống** khi hết hạn hoặc khách huỷ |
+| `BookingControllerTest` | 9 | API giữ/huỷ ghế: chỉ nhận JSON, lấy danh tính từ session, **khôi phục lượt giữ khi tải lại trang** |
+| `SeatHoldServiceTest` | 3 | Khôi phục lượt giữ và xoá vé hết hạn ngay khi tải lại trang |
+| `SeatHoldServiceIntegrationTest` | 8 | **Trả ghế về trạng thái trống** khi hết hạn hoặc khách huỷ; khôi phục lượt giữ còn hạn |
 | `SeatBookingConcurrencyIntegrationTest` | 4 | **Chống đặt trùng ghế — ADR-1** |
-| `SeatBookingServiceIntegrationTest` | 3 | Giữ nhiều ghế trong một giao dịch |
+| `SeatBookingServiceIntegrationTest` | 4 | Giữ nhiều ghế trong một giao dịch, **chặn hai lượt giữ song song của một tài khoản** |
 
 **Hai test quan trọng nhất của cả đồ án nằm ở đây.**
 
@@ -171,6 +172,8 @@ Chữ ký MoMo thì vẫn ký thật bằng khoá test, để chứng minh đư�
 |---|---|
 | Hai người không thể đặt trùng một ghế | `SeatBookingConcurrencyIntegrationTest` |
 | Hết giờ giữ ghế thì ghế phải trống lại cho người khác đặt | `SeatHoldServiceIntegrationTest` |
+| Tải lại trang không làm mất ghế hoặc đặt lại đồng hồ giữ | `SeatHoldServiceTest`, `BookingControllerTest` |
+| Một tài khoản không thể mở hai lượt giữ cho cùng suất chiếu | `SeatBookingServiceTest`, `SeatBookingServiceIntegrationTest` |
 | Một phòng không thể chiếu hai phim cùng lúc | `ShowtimeServiceIntegrationTest` |
 | Mật khẩu không bao giờ lưu dạng thô | `AuthServiceIntegrationTest` |
 | Khách hàng không vào được khu vực quản trị | `AdminAccessIntegrationTest` |
@@ -189,6 +192,9 @@ Chữ ký MoMo thì vẫn ký thật bằng khoá test, để chứng minh đư�
 | Vé quá hạn giữ thì không thanh toán được | `PaymentServiceIntegrationTest` |
 | Không trả tiền hộ vé của người khác | `PaymentServiceIntegrationTest` |
 | Chưa đăng nhập thì không giữ ghế được | `BookingFlowEndToEndTest` |
+| Một khách không giữ hai lượt ghế song song cho cùng một suất | `SeatBookingServiceIntegrationTest` |
+| Tải lại trang sơ đồ ghế vẫn còn nguyên lượt giữ và đồng hồ | `SeatHoldServiceIntegrationTest`, `BookingControllerTest` |
+| Đóng bán trực tuyến 5 phút trước giờ chiếu | `SeatServiceTest` |
 | Giá ghế VIP và ghế đôi tính đúng hệ số | `SeatPricingServiceTest` |
 | Bảng giá công bố khớp giá thật trong lịch chiếu | `TicketPricingServiceIntegrationTest` |
 | Lỗi nghiệp vụ trả đúng mã HTTP, không lòi lỗi 500 | `GlobalExceptionHandlerIntegrationTest` |
@@ -212,7 +218,7 @@ mvn test
 Chạy riêng phần không cần database, nhanh hơn nhiều lúc đang code:
 
 ```bash
-mvn -Dtest=SeatPricingServiceTest,SeatServiceTest,SeatBookingServiceTest,BookingControllerTest test
+mvn -Dtest=SeatPricingServiceTest,SeatSelectionPolicyTest,SeatServiceTest,SeatBookingServiceTest,SeatHoldServiceTest,BookingControllerTest test
 ```
 
 **Nhớ đặt `JAVA_HOME` trỏ vào JDK 21 trước khi chạy Maven**, vì máy của nhóm đang để mặc định

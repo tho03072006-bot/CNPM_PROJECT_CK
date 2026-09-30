@@ -2,6 +2,7 @@ package edu.hcmute.cnpm.cinema.booking;
 
 import edu.hcmute.cnpm.cinema.constants.Constants;
 import edu.hcmute.cnpm.cinema.controller.BookingController;
+import edu.hcmute.cnpm.cinema.dto.booking.ActiveSeatHoldView;
 import edu.hcmute.cnpm.cinema.dto.booking.HoldSeatsRequest;
 import edu.hcmute.cnpm.cinema.dto.booking.HoldSeatsResponse;
 import edu.hcmute.cnpm.cinema.dto.booking.SeatMapView;
@@ -23,6 +24,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 
 import static org.hamcrest.Matchers.containsString;
 import static org.mockito.ArgumentMatchers.any;
@@ -57,6 +59,7 @@ class BookingControllerTest {
     @DisplayName("Trang chọn ghế dùng layout và thành phần giao diện chung")
     void shouldRenderSeatMap_whenShowtimeIsAvailable() throws Exception {
         when(seatBookingService.getMaximumAdmissionsPerBooking()).thenReturn(8);
+        when(seatService.getOnlineBookingCutoffMinutes()).thenReturn(5);
         when(seatService.findSeatMap(1L)).thenReturn(new SeatMapView(1L, "Phim kiểm thử", "Phòng 1",
                 LocalDateTime.now().plusDays(1), 8,
                 List.of(new SeatView(1L, "A", 1, "NORMAL", new BigDecimal("75000.00"), "AVAILABLE"))));
@@ -68,8 +71,34 @@ class BookingControllerTest {
                 .andExpect(content().string(containsString("seat-map-scroll")))
                 .andExpect(content().string(containsString("Bạn cần đăng nhập")))
                 .andExpect(content().string(containsString("Tối đa 8 chỗ")))
+                .andExpect(content().string(containsString("5 phút")))
                 .andExpect(content().string(containsString("Không để trống đúng một ghế lẻ")))
                 .andExpect(content().string(containsString("/booking/showtime/1/hold")));
+    }
+
+    @Test
+    @DisplayName("Tải lại trang khôi phục lượt giữ ghế còn hiệu lực")
+    void shouldRestoreActiveHold_whenCustomerReloadsSeatMap() throws Exception {
+        BookingTestFixture fixture = new BookingTestFixture();
+        LocalDateTime expiresAt = LocalDateTime.now().plusMinutes(4);
+        ActiveSeatHoldView activeHold = new ActiveSeatHoldView(
+                List.of(10L), List.of(1L), List.of("A1"),
+                new BigDecimal("75000.00"), expiresAt);
+        when(seatHoldService.findActiveHold(1L, 1L)).thenReturn(Optional.of(activeHold));
+        when(seatBookingService.getMaximumAdmissionsPerBooking()).thenReturn(8);
+        when(seatService.getOnlineBookingCutoffMinutes()).thenReturn(5);
+        when(seatService.findSeatMapForActiveHold(1L)).thenReturn(new SeatMapView(
+                1L, "Phim kiểm thử", "Phòng 1",
+                LocalDateTime.now().plusDays(1), 8,
+                List.of(new SeatView(1L, "A", 1, "NORMAL", new BigDecimal("75000.00"), "HELD"))));
+
+        mockMvc.perform(get("/booking/showtime/1")
+                        .sessionAttr(Constants.SESSION_USER, fixture.customer))
+                .andExpect(status().isOk())
+                .andExpect(content().string(containsString("data-held-seat-ids=\"1\"")))
+                .andExpect(content().string(containsString("A1")))
+                .andExpect(content().string(containsString("75.000 ₫")))
+                .andExpect(content().string(containsString("/thanh-toan/1")));
     }
 
     @Test
@@ -112,6 +141,22 @@ class BookingControllerTest {
                         .content("{\"seatIds\":[1]}"))
                 .andExpect(status().isConflict())
                 .andExpect(jsonPath("$.success").value(false));
+    }
+
+    @Test
+    @DisplayName("API huỷ giữ ghế chỉ huỷ vé của người dùng trong session")
+    void shouldUseSessionUser_whenCancellingHold() throws Exception {
+        BookingTestFixture fixture = new BookingTestFixture();
+        when(seatHoldService.cancelHold(1L, 1L)).thenReturn(2);
+
+        mockMvc.perform(post("/booking/showtime/1/cancel")
+                        .sessionAttr(Constants.SESSION_USER, fixture.customer)
+                        .accept(MediaType.APPLICATION_JSON)
+                        .header("X-Requested-With", "XMLHttpRequest"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.success").value(true))
+                .andExpect(jsonPath("$.releasedSeats").value(2));
+        verify(seatHoldService).cancelHold(1L, 1L);
     }
 
     @Test

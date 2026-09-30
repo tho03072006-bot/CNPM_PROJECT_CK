@@ -3,6 +3,7 @@ package edu.hcmute.cnpm.cinema.controller;
 import edu.hcmute.cnpm.cinema.constants.Constants;
 import edu.hcmute.cnpm.cinema.dto.booking.HoldSeatsRequest;
 import edu.hcmute.cnpm.cinema.dto.booking.HoldSeatsResponse;
+import edu.hcmute.cnpm.cinema.dto.booking.ActiveSeatHoldView;
 import edu.hcmute.cnpm.cinema.entity.User;
 import edu.hcmute.cnpm.cinema.exception.InvalidBookingException;
 import edu.hcmute.cnpm.cinema.service.SeatBookingService;
@@ -19,6 +20,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.SessionAttribute;
 
+import java.util.Optional;
+
 @Controller
 @RequestMapping("/booking")
 public class BookingController {
@@ -34,9 +37,19 @@ public class BookingController {
     }
 
     @GetMapping("/showtime/{showtimeId}")
-    public String showSeatMap(@PathVariable Long showtimeId, Model model) {
-        model.addAttribute("seatMap", seatService.findSeatMap(showtimeId));
+    public String showSeatMap(@PathVariable Long showtimeId,
+                              @SessionAttribute(name = Constants.SESSION_USER, required = false)
+                              User currentUser,
+                              Model model) {
+        Optional<ActiveSeatHoldView> activeHold = currentUser == null
+                ? Optional.empty()
+                : seatHoldService.findActiveHold(currentUser.getId(), showtimeId);
+        model.addAttribute("seatMap", activeHold.isPresent()
+                ? seatService.findSeatMapForActiveHold(showtimeId)
+                : seatService.findSeatMap(showtimeId));
+        model.addAttribute("activeHold", activeHold.orElse(null));
         model.addAttribute("maximumAdmissions", seatBookingService.getMaximumAdmissionsPerBooking());
+        model.addAttribute("bookingCutoffMinutes", seatService.getOnlineBookingCutoffMinutes());
         return "booking/seat-map";
     }
 
@@ -70,6 +83,6 @@ public class BookingController {
                 "Đã huỷ giữ " + released + " ghế. Ghế được trả lại cho người khác đặt.", released);
     }
 
-    /** Ket qua tra ve cho AJAX khi huy giu ghe. */
+    /** Kết quả trả về cho AJAX khi huỷ giữ ghế. */
     public record CancelHoldResponse(boolean success, String message, int releasedSeats) {}
 }

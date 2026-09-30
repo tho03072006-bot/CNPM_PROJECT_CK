@@ -67,6 +67,8 @@ Tài khoản tạo sẵn để thử từng vai trò: xem mục [Tài khoản d�
   ghế thường, ghế VIP (tím, dấu sao) và ghế đôi (hồng, dấu tim), chú thích ghi giá thật của suất.
   Khách tự chọn hàng và vị trí; chỉ giữ hai luật như các rạp lớn: tối đa 8 chỗ một lượt (ghế đôi
   tính 2 chỗ) và không để trống đúng một ghế lẻ. Hai người không thể đặt trùng một ghế (ADR-1).
+  Tải lại trang vẫn còn nguyên lượt giữ ghế và đồng hồ; mỗi khách chỉ giữ một lượt cho một suất;
+  đặt vé trực tuyến đóng trước giờ chiếu 5 phút.
 - **Loại phòng:** Phòng thường, Premium, Gold Class có nhãn màu riêng ở lịch chiếu, chi tiết phim,
   sơ đồ ghế và bảng giá. Loại phòng suy ra từ tên phòng, không thêm cột database.
 - **Thanh toán:** ưu tiên quét mã QR MoMo ngay trên trang của rạp (trang tự nhận kết quả, không
