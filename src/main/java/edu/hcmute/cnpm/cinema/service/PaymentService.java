@@ -23,9 +23,11 @@ import java.util.List;
 public class PaymentService {
 
     private final TicketRepository ticketRepository;
+    private final BookingOrderService bookingOrderService;
 
-    public PaymentService(TicketRepository ticketRepository) {
+    public PaymentService(TicketRepository ticketRepository, BookingOrderService bookingOrderService) {
         this.ticketRepository = ticketRepository;
+        this.bookingOrderService = bookingOrderService;
     }
 
     /**
@@ -76,6 +78,8 @@ public class PaymentService {
         }
 
         LocalDateTime paidAt = LocalDateTime.now();
+        // Chốt đơn trước khi lưu vé để cùng một transaction chứa cả vé, combo và hóa đơn.
+        bookingOrderService.completeOrder(userId, showtimeId, held, paymentMethod, paymentRef, paidAt);
         for (Ticket ticket : held) {
             ticket.setStatus(TicketStatus.PAID);
             ticket.setPaidAt(paidAt);
@@ -83,6 +87,12 @@ public class PaymentService {
             ticket.setPaymentRef(paymentRef);
         }
         return ticketRepository.saveAll(held);
+    }
+
+    /** Tổng cần trả của cả đơn, gồm vé và bắp nước. */
+    @Transactional
+    public BigDecimal totalDue(Long userId, Long showtimeId) {
+        return bookingOrderService.prepareForPayment(userId, showtimeId).getTotalAmount();
     }
 
     /** Toàn bộ vé của một khách, mới nhất lên đầu. */

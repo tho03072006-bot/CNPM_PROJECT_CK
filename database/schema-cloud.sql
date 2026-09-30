@@ -1,4 +1,4 @@
-﻿-- ================================================================
+-- ================================================================
 -- UTE Cinema - Schema cho database dùng chung trên cloud
 --
 -- Khác gì so với database/schema.sql (bản chạy ở máy cá nhân):
@@ -140,4 +140,100 @@ GO
 IF NOT EXISTS (SELECT 1 FROM users WHERE email = 'admin@utecinema.local')
     INSERT INTO users (full_name, email, password_hash, role)
     VALUES (N'Quản trị viên', 'admin@utecinema.local', '$2a$10$0hP214zsHpy5UeMXorB1bOze53HL8258/nZV3SGW9qh7HqNWm/jqu', 'ADMIN');
+GO
+
+-- ----------------------------------------------------------------
+-- Bổ sung 30/09/2026: bắp nước, hóa đơn điện tử và chăm sóc khách hàng.
+-- Các lệnh đều chạy lại an toàn trên database đã có dữ liệu.
+-- ----------------------------------------------------------------
+IF OBJECT_ID('dbo.concession_products', 'U') IS NULL
+CREATE TABLE concession_products (
+    id              BIGINT IDENTITY(1,1) PRIMARY KEY,
+    code            VARCHAR(40)     NOT NULL UNIQUE,
+    name            NVARCHAR(150)   NOT NULL,
+    description     NVARCHAR(500)   NULL,
+    price           DECIMAL(10,2)   NOT NULL,
+    icon            NVARCHAR(12)    NOT NULL DEFAULT N'🍿',
+    active          BIT             NOT NULL DEFAULT 1,
+    display_order   INT             NOT NULL DEFAULT 0
+);
+GO
+
+IF OBJECT_ID('dbo.booking_orders', 'U') IS NULL
+CREATE TABLE booking_orders (
+    id                  BIGINT IDENTITY(1,1) PRIMARY KEY,
+    receipt_code        VARCHAR(40)      NOT NULL UNIQUE,
+    user_id             BIGINT           NOT NULL FOREIGN KEY REFERENCES users(id),
+    showtime_id         BIGINT           NOT NULL FOREIGN KEY REFERENCES showtimes(id),
+    customer_name       NVARCHAR(150)    NOT NULL,
+    customer_email      VARCHAR(150)     NOT NULL,
+    movie_title         NVARCHAR(200)    NOT NULL,
+    room_name           NVARCHAR(50)     NOT NULL,
+    showtime_start      DATETIME2        NOT NULL,
+    status              VARCHAR(20)      NOT NULL DEFAULT 'DRAFT',
+    ticket_subtotal     DECIMAL(12,2)    NOT NULL DEFAULT 0,
+    concession_subtotal DECIMAL(12,2)    NOT NULL DEFAULT 0,
+    total_amount        DECIMAL(12,2)    NOT NULL DEFAULT 0,
+    payment_method      VARCHAR(20)      NULL,
+    payment_ref         VARCHAR(100)     NULL,
+    created_at          DATETIME2        NOT NULL DEFAULT SYSUTCDATETIME(),
+    paid_at             DATETIME2        NULL
+);
+GO
+
+IF OBJECT_ID('dbo.booking_order_items', 'U') IS NULL
+CREATE TABLE booking_order_items (
+    id                  BIGINT IDENTITY(1,1) PRIMARY KEY,
+    booking_order_id    BIGINT          NOT NULL FOREIGN KEY REFERENCES booking_orders(id) ON DELETE CASCADE,
+    product_id          BIGINT          NOT NULL FOREIGN KEY REFERENCES concession_products(id),
+    product_name        NVARCHAR(150)   NOT NULL,
+    unit_price          DECIMAL(10,2)   NOT NULL,
+    quantity            INT             NOT NULL,
+    line_total          DECIMAL(12,2)   NOT NULL,
+    CONSTRAINT ck_booking_item_quantity CHECK (quantity BETWEEN 1 AND 10)
+);
+GO
+
+IF COL_LENGTH('dbo.tickets', 'booking_order_id') IS NULL
+    ALTER TABLE tickets ADD booking_order_id BIGINT NULL;
+GO
+IF NOT EXISTS (SELECT 1 FROM sys.foreign_keys WHERE name = 'fk_tickets_booking_order')
+    ALTER TABLE tickets ADD CONSTRAINT fk_tickets_booking_order
+        FOREIGN KEY (booking_order_id) REFERENCES booking_orders(id);
+GO
+
+IF OBJECT_ID('dbo.support_conversations', 'U') IS NULL
+CREATE TABLE support_conversations (
+    id                  BIGINT IDENTITY(1,1) PRIMARY KEY,
+    customer_id         BIGINT          NOT NULL FOREIGN KEY REFERENCES users(id),
+    assigned_staff_id   BIGINT          NULL FOREIGN KEY REFERENCES users(id),
+    subject             NVARCHAR(200)   NOT NULL,
+    category            VARCHAR(30)     NOT NULL,
+    status              VARCHAR(30)     NOT NULL DEFAULT 'WAITING_STAFF',
+    created_at          DATETIME2       NOT NULL DEFAULT SYSUTCDATETIME(),
+    updated_at          DATETIME2       NOT NULL DEFAULT SYSUTCDATETIME()
+);
+GO
+
+IF OBJECT_ID('dbo.support_messages', 'U') IS NULL
+CREATE TABLE support_messages (
+    id                  BIGINT IDENTITY(1,1) PRIMARY KEY,
+    conversation_id     BIGINT          NOT NULL FOREIGN KEY REFERENCES support_conversations(id) ON DELETE CASCADE,
+    sender_id           BIGINT          NOT NULL FOREIGN KEY REFERENCES users(id),
+    content             NVARCHAR(2000)  NOT NULL,
+    sent_at             DATETIME2       NOT NULL DEFAULT SYSUTCDATETIME()
+);
+GO
+
+IF NOT EXISTS (SELECT 1 FROM sys.indexes WHERE name = 'ix_booking_orders_user_id'
+               AND object_id = OBJECT_ID('dbo.booking_orders'))
+    CREATE INDEX ix_booking_orders_user_id ON booking_orders(user_id, created_at DESC);
+GO
+IF NOT EXISTS (SELECT 1 FROM sys.indexes WHERE name = 'ix_support_conversations_customer'
+               AND object_id = OBJECT_ID('dbo.support_conversations'))
+    CREATE INDEX ix_support_conversations_customer ON support_conversations(customer_id, updated_at DESC);
+GO
+IF NOT EXISTS (SELECT 1 FROM sys.indexes WHERE name = 'ix_support_conversations_status'
+               AND object_id = OBJECT_ID('dbo.support_conversations'))
+    CREATE INDEX ix_support_conversations_status ON support_conversations(status, updated_at DESC);
 GO

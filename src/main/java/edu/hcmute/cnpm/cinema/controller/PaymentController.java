@@ -3,9 +3,11 @@ package edu.hcmute.cnpm.cinema.controller;
 import edu.hcmute.cnpm.cinema.constants.Constants;
 import edu.hcmute.cnpm.cinema.entity.Ticket;
 import edu.hcmute.cnpm.cinema.entity.User;
+import edu.hcmute.cnpm.cinema.entity.BookingOrder;
 import edu.hcmute.cnpm.cinema.exception.BusinessException;
 import edu.hcmute.cnpm.cinema.repository.TicketRepository;
 import edu.hcmute.cnpm.cinema.service.MomoPaymentService;
+import edu.hcmute.cnpm.cinema.service.BookingOrderService;
 import edu.hcmute.cnpm.cinema.service.PaymentService;
 import edu.hcmute.cnpm.cinema.service.TicketMailService;
 import jakarta.servlet.http.HttpSession;
@@ -30,13 +32,16 @@ public class PaymentController {
     private final TicketMailService ticketMailService;
     private final TicketRepository ticketRepository;
     private final MomoPaymentService momoPaymentService;
+    private final BookingOrderService bookingOrderService;
 
     public PaymentController(PaymentService paymentService, TicketMailService ticketMailService,
-                             TicketRepository ticketRepository, MomoPaymentService momoPaymentService) {
+                             TicketRepository ticketRepository, MomoPaymentService momoPaymentService,
+                             BookingOrderService bookingOrderService) {
         this.paymentService = paymentService;
         this.ticketMailService = ticketMailService;
         this.ticketRepository = ticketRepository;
         this.momoPaymentService = momoPaymentService;
+        this.bookingOrderService = bookingOrderService;
     }
 
     @GetMapping("/{showtimeId}")
@@ -47,8 +52,12 @@ public class PaymentController {
         }
 
         List<Ticket> tickets = paymentService.findPayableTickets(customer.getId(), showtimeId);
+        BookingOrder order = tickets.isEmpty() ? null
+                : bookingOrderService.prepareForPayment(customer.getId(), showtimeId);
         model.addAttribute("tickets", tickets);
-        model.addAttribute("total", paymentService.sumPrice(tickets));
+        model.addAttribute("ticketSubtotal", paymentService.sumPrice(tickets));
+        model.addAttribute("order", order);
+        model.addAttribute("total", order == null ? BigDecimal.ZERO : order.getTotalAmount());
         model.addAttribute("showtimeId", showtimeId);
         model.addAttribute("momoEnabled", momoPaymentService.isEnabled());
         return "account/payment";
@@ -75,6 +84,7 @@ public class PaymentController {
                 ticketIds.add(ticket.getId());
             }
             redirectAttributes.addFlashAttribute("paidTicketIds", ticketIds);
+            redirectAttributes.addFlashAttribute("receiptCode", paid.get(0).getBookingOrder().getReceiptCode());
             return "redirect:/thanh-toan/hoan-tat";
         } catch (BusinessException exception) {
             redirectAttributes.addFlashAttribute(Constants.MODEL_ERROR_MESSAGE, exception.getMessage());
@@ -111,6 +121,12 @@ public class PaymentController {
         }
         model.addAttribute("tickets", tickets);
         model.addAttribute("total", paymentService.sumPrice(tickets));
+        Object receiptCode = model.getAttribute("receiptCode");
+        if (receiptCode == null && !tickets.isEmpty()) {
+            receiptCode = bookingOrderService.findReceiptCodeByTicketId(tickets.get(0).getId(), customer.getId())
+                    .orElse(null);
+        }
+        model.addAttribute("receiptCode", receiptCode);
         return "account/payment-success";
     }
 }

@@ -611,7 +611,30 @@ WHERE NOT EXISTS (
 );
 
 -- ---------------------------------------------------------------
--- 6. Báo cáo kết quả
+-- 6. Quầy bắp nước
+-- ---------------------------------------------------------------
+IF NOT EXISTS (SELECT 1 FROM concession_products WHERE code = 'POPCORN-M')
+    INSERT INTO concession_products (code, name, description, price, icon, active, display_order)
+    VALUES ('POPCORN-M', N'Bắp rang cỡ vừa', N'Bắp rang giòn, chọn vị ngọt hoặc phô mai tại quầy.', 55000, N'🍿', 1, 10);
+
+IF NOT EXISTS (SELECT 1 FROM concession_products WHERE code = 'POPCORN-L')
+    INSERT INTO concession_products (code, name, description, price, icon, active, display_order)
+    VALUES ('POPCORN-L', N'Bắp rang cỡ lớn', N'Phần bắp lớn phù hợp cho hai người.', 69000, N'🍿', 1, 20);
+
+IF NOT EXISTS (SELECT 1 FROM concession_products WHERE code = 'DRINK-M')
+    INSERT INTO concession_products (code, name, description, price, icon, active, display_order)
+    VALUES ('DRINK-M', N'Nước ngọt cỡ vừa', N'Pepsi, 7Up hoặc Mirinda; chọn loại khi nhận tại quầy.', 35000, N'🥤', 1, 30);
+
+IF NOT EXISTS (SELECT 1 FROM concession_products WHERE code = 'COMBO-1')
+    INSERT INTO concession_products (code, name, description, price, icon, active, display_order)
+    VALUES ('COMBO-1', N'Combo một người', N'1 bắp vừa và 1 nước vừa.', 79000, N'🍿🥤', 1, 40);
+
+IF NOT EXISTS (SELECT 1 FROM concession_products WHERE code = 'COMBO-2')
+    INSERT INTO concession_products (code, name, description, price, icon, active, display_order)
+    VALUES ('COMBO-2', N'Combo đôi', N'1 bắp lớn và 2 nước vừa.', 119000, N'🍿🥤', 1, 50);
+
+-- ---------------------------------------------------------------
+-- 7. Báo cáo kết quả
 -- ---------------------------------------------------------------
 SELECT
     (SELECT COUNT(*) FROM users)     AS so_nguoi_dung,
@@ -619,5 +642,6 @@ SELECT
     (SELECT COUNT(*) FROM rooms)     AS so_phong,
     (SELECT COUNT(*) FROM seats)     AS so_ghe,
     (SELECT COUNT(*) FROM showtimes) AS so_suat_chieu,
-    (SELECT COUNT(*) FROM tickets)   AS so_ve;
+    (SELECT COUNT(*) FROM tickets)   AS so_ve,
+    (SELECT COUNT(*) FROM concession_products) AS so_mon_bap_nuoc;
 GO

@@ -6,7 +6,7 @@
 
     <section class="module1-section-head" aria-labelledby="payment-title">
         <div>
-            <span class="module1-kicker">BƯỚC CUỐI</span>
+            <span class="module1-kicker">BƯỚC 3/3</span>
             <h1 id="payment-title">Xác nhận thanh toán</h1>
             <p class="text-muted" th:unless="${#lists.isEmpty(tickets)}">
                 Kiểm tra lại ghế và số tiền trước khi xác nhận.</p>
@@ -33,8 +33,19 @@
         <div class="card account-summary">
             <div class="account-summary-line">
                 <span th:text="|${#lists.size(tickets)} vé|">2 vé</span>
-                <strong th:text="|${#numbers.formatDecimal(total, 0, 'POINT', 0, 'COMMA')} đ|">230.000 đ</strong>
+                <strong th:text="|${#numbers.formatDecimal(ticketSubtotal, 0, 'POINT', 0, 'COMMA')} đ|">230.000 đ</strong>
             </div>
+            <div th:if="${order != null and !#lists.isEmpty(order.items)}" class="payment-order-items">
+                <div class="account-summary-line" th:each="item : ${order.items}">
+                    <span th:text="|${item.productName} × ${item.quantity}|">Combo × 1</span>
+                    <strong th:text="|${#numbers.formatDecimal(item.lineTotal, 0, 'POINT', 0, 'COMMA')} đ|">79.000 đ</strong>
+                </div>
+            </div>
+            <div class="account-summary-line concession-grand-total">
+                <span>Tổng thanh toán</span>
+                <strong th:text="|${#numbers.formatDecimal(total, 0, 'POINT', 0, 'COMMA')} đ|">309.000 đ</strong>
+            </div>
+            <a class="btn btn-ghost account-submit" th:href="@{/bap-nuoc/{id}(id=${showtimeId})}">Sửa lựa chọn bắp nước</a>
             <!--
               Ba cách trả, xếp theo thứ tự nên dùng. Quét mã QR đứng đầu vì khách không phải
               nhập thẻ. MoMo đang chạy môi trường thử: trang thanh toán và API là thật nhưng

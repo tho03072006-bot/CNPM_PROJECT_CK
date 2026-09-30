@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout" layout:decorate="~{layout/base}">
+<head><title>Phản hồi khách hàng</title></head>
+<body><div layout:fragment="content" class="support-chat-page">
+    <a class="module1-back-link" th:href="@{/nhan-vien/ho-tro}">← Hộp thư hỗ trợ</a>
+
+    <section class="support-chat-shell" aria-labelledby="conversation-title">
+        <header class="support-chat-header">
+            <div class="support-chat-avatar" aria-hidden="true"
+                 th:text="${#strings.substring(conversation.customer.fullName, 0, 1)}">K</div>
+            <div class="support-chat-heading">
+                <span class="support-category" th:text="${conversation.category.label}">Đặt vé</span>
+                <h1 id="conversation-title" th:text="${conversation.subject}">Tiêu đề</h1>
+                <p th:text="|${conversation.customer.fullName} · ${conversation.customer.email} · ${conversation.customer.phone ?: 'Chưa có số điện thoại'}|">Khách</p>
+            </div>
+            <span class="badge" th:classappend="${conversation.status.name() == 'RESOLVED'} ? 'badge-ok' : 'badge-accent'"
+                  th:text="${conversation.status.label}">Trạng thái</span>
+        </header>
+
+        <div class="support-chat-thread" id="support-chat-thread" aria-label="Nội dung trao đổi">
+            <div class="support-chat-day" th:text="|Trao đổi với ${conversation.customer.fullName}|">Trao đổi với khách hàng</div>
+            <article class="support-message-row" th:each="message : ${conversation.messages}"
+                     th:classappend="${message.sender.id == conversation.customer.id} ? 'is-other' : 'is-own'">
+                <div class="support-chat-avatar" aria-hidden="true"
+                     th:text="${message.sender.id == conversation.customer.id ? #strings.substring(conversation.customer.fullName, 0, 1) : 'UTE'}">K</div>
+                <div class="support-message-wrap">
+                    <div class="support-message-meta">
+                        <strong th:text="${message.sender.id == conversation.customer.id ? conversation.customer.fullName : 'Bạn · Nhân viên rạp'}">Người gửi</strong>
+                        <time th:text="${#temporals.format(message.sentAt, 'HH:mm · dd/MM/yyyy')}">10:00</time>
+                    </div>
+                    <div class="support-message-bubble"><p th:text="${message.content}">Nội dung</p></div>
+                </div>
+            </article>
+        </div>
+
+        <form class="support-chat-composer" th:if="${conversation.status.name() != 'RESOLVED'}"
+              th:action="@{/nhan-vien/ho-tro/{id}/tra-loi(id=${conversation.id})}" method="post">
+            <label class="sr-only" for="staff-reply">Phản hồi khách hàng</label>
+            <textarea id="staff-reply" class="form-control" name="content" maxlength="2000" required rows="1"
+                      placeholder="Nhập phản hồi cho khách hàng..."></textarea>
+            <button class="btn btn-accent support-send-button" type="submit" aria-label="Gửi phản hồi">
+                <span>Gửi</span><span aria-hidden="true">➤</span>
+            </button>
+        </form>
+    </section>
+
+    <form class="support-resolve-form" th:if="${conversation.status.name() != 'RESOLVED'}"
+          th:action="@{/nhan-vien/ho-tro/{id}/dong(id=${conversation.id})}" method="post">
+        <button class="btn btn-ghost" type="submit">✓ Đánh dấu đã giải quyết</button>
+    </form>
+
+    <script>
+        (function () {
+            var thread = document.getElementById('support-chat-thread');
+            if (thread) thread.scrollTop = thread.scrollHeight;
+        }());
+    </script>
+</div></body></html>

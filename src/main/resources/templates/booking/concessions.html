@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout" layout:decorate="~{layout/base}">
+<head><title>Chọn bắp nước</title></head>
+<body><div layout:fragment="content">
+
+    <section class="module1-section-head" aria-labelledby="concession-title">
+        <div>
+            <span class="module1-kicker">BƯỚC 2/3</span>
+            <h1 id="concession-title">Bạn có muốn mua bắp nước?</h1>
+            <p class="text-muted">Đặt trước để nhận nhanh tại quầy combo, không phải xếp hàng mua lại.</p>
+        </div>
+    </section>
+
+    <form th:object="${selectionForm}" th:action="@{/bap-nuoc/{id}(id=${showtimeId})}" method="post">
+        <div class="concession-layout">
+            <section class="concession-grid" aria-label="Danh sách bắp nước">
+                <article class="card concession-card" th:each="product : ${products}">
+                    <div class="concession-icon" aria-hidden="true" th:text="${product.icon}">🍿</div>
+                    <div class="concession-info">
+                        <h2 th:text="${product.name}">Combo bắp nước</h2>
+                        <p th:text="${product.description}">Mô tả</p>
+                        <strong th:text="|${#numbers.formatDecimal(product.price, 0, 'POINT', 0, 'COMMA')} đ|">79.000 đ</strong>
+                    </div>
+                    <label class="concession-quantity">
+                        <span>Số lượng</span>
+                        <select class="form-control" th:name="|quantities[${product.id}]|"
+                                th:attr="data-price=${product.price},aria-label=|Số lượng ${product.name}|">
+                            <option th:each="quantity : ${#numbers.sequence(0, 10)}"
+                                    th:value="${quantity}" th:text="${quantity}"
+                                    th:selected="${selectionForm.quantities[product.id] != null and selectionForm.quantities[product.id] == quantity}">0</option>
+                        </select>
+                    </label>
+                </article>
+            </section>
+
+            <aside class="card concession-summary">
+                <span class="module1-kicker">ĐƠN CỦA BẠN</span>
+                <h2 th:text="${order.movieTitle}">Tên phim</h2>
+                <p class="text-muted" th:text="|${order.roomName} · ${#temporals.format(order.showtimeStart, 'HH:mm dd/MM/yyyy')}|">Phòng · giờ</p>
+                <div class="account-summary-line">
+                    <span th:text="|${#lists.size(tickets)} vé|">2 vé</span>
+                    <strong th:text="|${#numbers.formatDecimal(order.ticketSubtotal, 0, 'POINT', 0, 'COMMA')} đ|">230.000 đ</strong>
+                </div>
+                <div class="account-summary-line">
+                    <span>Bắp nước</span>
+                    <strong id="concession-live-total">0 đ</strong>
+                </div>
+                <div class="account-summary-line concession-grand-total">
+                    <span>Tạm tính</span>
+                    <strong id="order-live-total" th:attr="data-ticket-total=${order.ticketSubtotal}">230.000 đ</strong>
+                </div>
+                <button class="btn btn-accent account-submit" type="submit">Tiếp tục thanh toán</button>
+                <p class="form-hint">Không muốn mua? Để số lượng bằng 0 rồi tiếp tục.</p>
+                <a class="btn btn-ghost account-submit" th:href="@{/booking/showtime/{id}(id=${showtimeId})}">Quay lại chọn ghế</a>
+            </aside>
+        </div>
+    </form>
+
+    <script>
+        (() => {
+            const selects = [...document.querySelectorAll('[data-price]')];
+            const concessionTotal = document.getElementById('concession-live-total');
+            const orderTotal = document.getElementById('order-live-total');
+            const ticketTotal = Number(orderTotal.dataset.ticketTotal || 0);
+            const formatter = new Intl.NumberFormat('vi-VN', {style: 'currency', currency: 'VND'});
+            function updateTotal() {
+                const foodTotal = selects.reduce((sum, select) => sum + Number(select.dataset.price) * Number(select.value), 0);
+                concessionTotal.textContent = formatter.format(foodTotal);
+                orderTotal.textContent = formatter.format(ticketTotal + foodTotal);
+            }
+            selects.forEach(select => select.addEventListener('change', updateTotal));
+            updateTotal();
+        })();
+    </script>
+</div></body></html>

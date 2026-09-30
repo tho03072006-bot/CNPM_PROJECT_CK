@@ -90,7 +90,7 @@ public class MomoPaymentService {
             throw new InvalidBookingException(
                     "Không còn ghế nào đang giữ cho suất chiếu này. Bạn hãy chọn ghế lại.");
         }
-        long amount = toVnd(paymentService.sumPrice(payable));
+        long amount = toVnd(paymentService.totalDue(userId, showtimeId));
         String orderId = newOrderId(showtimeId, userId);
         String orderInfo = "Thanh toan " + payable.size() + " ve UTE Cinema";
         return apiClient.createPayment(orderId, amount, orderInfo);
@@ -109,7 +109,7 @@ public class MomoPaymentService {
             throw new InvalidBookingException(
                     "Không còn ghế nào đang giữ cho suất chiếu này. Bạn hãy chọn ghế lại.");
         }
-        long amount = toVnd(paymentService.sumPrice(payable));
+        long amount = toVnd(paymentService.totalDue(userId, showtimeId));
         String orderId = newOrderId(showtimeId, userId);
         MomoCheckout checkout = apiClient.createQrPayment(orderId, amount,
                 "Thanh toan " + payable.size() + " ve UTE Cinema");
@@ -189,7 +189,7 @@ public class MomoPaymentService {
             return refundBecauseTicketsCannotBeIssued(showtimeId, userId, transId, amount,
                     "Ghế đã hết thời gian giữ trước khi MoMo xác nhận nên không xuất được vé.");
         }
-        if (toVnd(paymentService.sumPrice(payable)) != amount) {
+        if (toVnd(paymentService.totalDue(userId, showtimeId)) != amount) {
             return refundBecauseTicketsCannotBeIssued(showtimeId, userId, transId, amount,
                     "Số tiền đã trả không khớp với số ghế đang giữ nên không xuất được vé.");
         }

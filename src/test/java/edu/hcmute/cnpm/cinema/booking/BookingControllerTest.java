@@ -11,6 +11,7 @@ import edu.hcmute.cnpm.cinema.exception.InvalidBookingException;
 import edu.hcmute.cnpm.cinema.exception.ResourceNotFoundException;
 import edu.hcmute.cnpm.cinema.exception.SeatAlreadyTakenException;
 import edu.hcmute.cnpm.cinema.service.SeatBookingService;
+import edu.hcmute.cnpm.cinema.service.CustomerSupportService;
 import edu.hcmute.cnpm.cinema.service.SeatHoldService;
 import edu.hcmute.cnpm.cinema.service.SeatService;
 import org.junit.jupiter.api.DisplayName;
@@ -54,6 +55,8 @@ class BookingControllerTest {
     // nay phai gia lap them service do, neu khong Spring khong dung duoc controller.
     @MockitoBean
     private SeatHoldService seatHoldService;
+    @MockitoBean
+    private CustomerSupportService customerSupportService;
 
     @Test
     @DisplayName("Trang chọn ghế dùng layout và thành phần giao diện chung")
@@ -98,7 +101,7 @@ class BookingControllerTest {
                 .andExpect(content().string(containsString("data-held-seat-ids=\"1\"")))
                 .andExpect(content().string(containsString("A1")))
                 .andExpect(content().string(containsString("75.000 ₫")))
-                .andExpect(content().string(containsString("/thanh-toan/1")));
+                .andExpect(content().string(containsString("/bap-nuoc/1")));
     }
 
     @Test
