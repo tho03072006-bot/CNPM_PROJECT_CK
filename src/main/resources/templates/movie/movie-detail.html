@@ -52,9 +52,12 @@
                 <span th:text="|${#lists.size(entry.value)} suất chiếu|">2 suất chiếu</span>
             </div>
             <div class="module1-slot-list">
-                <article class="module1-slot" th:each="showtime : ${entry.value}">
+                <article class="module1-slot" th:each="showtime : ${entry.value}"
+                         th:classappend="|room-slot-${showtime.room.roomType.cssModifier}|">
                     <div class="module1-slot-time" th:text="${#temporals.format(showtime.startTime, 'HH:mm')}">18:00</div>
                     <div class="module1-slot-meta">
+                        <span class="room-badge" th:classappend="|room-badge-${showtime.room.roomType.cssModifier}|"
+                              th:text="${showtime.room.roomType.label}">Phòng thường</span>
                         <strong th:text="${showtime.room.name}">Phòng chiếu</strong>
                         <span th:text="|Giá từ ${#numbers.formatDecimal(showtime.basePrice, 0, 'POINT', 0, 'COMMA')} đ|">Giá vé</span>
                     </div>

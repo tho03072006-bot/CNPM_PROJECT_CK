@@ -42,7 +42,8 @@
                 <tbody>
                 <tr th:each="row : ${priceRows}"
                     th:classappend="${row.highlighted} ? ' is-deal' : ''">
-                    <th scope="row" th:text="${row.roomType}">Phòng thường</th>
+                    <th scope="row"><span class="room-badge" th:text="${row.roomType}"
+                        th:classappend="${row.roomType == 'Gold Class'} ? 'room-badge-gold' : (${row.roomType == 'Premium'} ? 'room-badge-premium' : 'room-badge-standard')">Phòng thường</span></th>
                     <td>
                         <span th:text="${row.dayGroup}">Thứ Hai, Thứ Ba, Thứ Năm</span>
                         <span class="badge badge-accent pricing-deal-tag" th:if="${row.highlighted}">Ưu đãi</span>

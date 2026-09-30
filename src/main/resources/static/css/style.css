@@ -126,6 +126,14 @@
     --seat-held-bg: #f0a828;
     --seat-booked-bg: #646e8a;
     --seat-selected-bg: #1b5fd0;
+
+    /* Loại ghế. Cố ý KHÔNG dùng vàng: vàng đã là màu "đang giữ", khách sẽ nhầm ghế VIP
+       với ghế có người giữ. VIP tím, ghế đôi hồng. Chữ màu --surface trên nền đậm đạt
+       6.4:1 (tím) và 5.3:1 (hồng). */
+    --seat-vip: #6d3fd1;
+    --seat-vip-tint: #efe8ff;
+    --seat-couple: #c2336f;
+    --seat-couple-tint: #fde8f0;
 }
 
 /* =====================================================================
@@ -169,6 +177,12 @@
     --seat-held-bg: #f0a828;
     --seat-booked-bg: #4a5878;
     --seat-selected-bg: #1b5fd0;
+
+    /* Bản sáng hơn cho nền tối; chữ --surface trên đó đạt 5.4:1 (tím) và 5.6:1 (hồng). */
+    --seat-vip: #9b7bf0;
+    --seat-vip-tint: #2a1f4d;
+    --seat-couple: #e2689b;
+    --seat-couple-tint: #3b1a2e;
 }
 
 /* Khi người dùng CHƯA tự chọn thì đi theo cài đặt hệ điều hành */
@@ -206,6 +220,11 @@
         --seat-available-border: #35456b;
         --seat-booked-bg: #4a5878;
         --seat-selected-bg: #1b5fd0;
+
+        --seat-vip: #9b7bf0;
+        --seat-vip-tint: #2a1f4d;
+        --seat-couple: #e2689b;
+        --seat-couple-tint: #3b1a2e;
     }
 }
 
@@ -1706,3 +1725,131 @@ main.container {
 /* Mọi khung cuộn ngang đều là khung định vị: phần tử position: absolute bên trong (nhãn
    .sr-only cho trình đọc màn hình, tooltip...) sẽ bị cắt theo khung thay vì làm cả trang tràn ngang. */
 .table-wrap, .pricing-table-wrap, .seat-map-scroll { position: relative; }
+
+/* =====================================================================
+   Bổ sung: phân biệt loại ghế, loại phòng và thanh toán bằng mã QR
+   ===================================================================== */
+
+/* ---- Nhãn loại phòng: dùng ở sơ đồ ghế, lịch chiếu, chi tiết phim, bảng giá ----
+   Viết hai class liền nhau (.room-badge.room-badge-gold) để thắng các luật kiểu
+   ".module1-slot-meta span { color }" có sẵn trong trang, không phải sửa luật của người khác. */
+.room-badge {
+    display: inline-flex;
+    align-items: center;
+    align-self: flex-start;
+    padding: 2px var(--space-3);
+    border: 1px solid var(--border-strong);
+    border-radius: var(--radius-pill);
+    font-size: var(--text-xs);
+    font-weight: 800;
+    letter-spacing: .06em;
+    text-transform: uppercase;
+    white-space: nowrap;
+    vertical-align: middle;
+}
+.room-badge.room-badge-standard { background: var(--surface-2); color: var(--text-muted); border-color: var(--border-strong); }
+.room-badge.room-badge-premium  { background: var(--tint-brand); color: var(--brand-500); border-color: var(--brand-300); }
+.room-badge.room-badge-gold     { background: var(--tint-accent); color: var(--accent-600); border-color: var(--accent-500); }
+[data-theme="dark"] .room-badge.room-badge-premium { color: var(--brand-300); }
+[data-theme="dark"] .room-badge.room-badge-gold    { color: var(--accent-400); }
+@media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) .room-badge.room-badge-premium { color: var(--brand-300); }
+    :root:not([data-theme="light"]) .room-badge.room-badge-gold    { color: var(--accent-400); }
+}
+
+/* Nhãn nhóm phòng trên trang lịch chiếu giờ là một nhãn màu; giữ bề rộng tối thiểu để các
+   hàng giờ chiếu vẫn thẳng cột. */
+.schedule-room-label.room-badge { min-width: 112px; justify-content: center; letter-spacing: .06em; }
+
+/* Suất chiếu ở trang chi tiết phim: phòng cao cấp có vạch màu bên trái. */
+.module1-slot.room-slot-premium { border-left: 4px solid var(--brand-500); }
+.module1-slot.room-slot-gold    { border-left: 4px solid var(--accent-500); }
+.module1-slot-meta .room-badge  { margin-bottom: var(--space-1); }
+
+/* ---- Đầu trang chọn ghế ---- */
+.seat-page-meta {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: center;
+    gap: var(--space-2);
+    margin: 0;
+    color: var(--text-muted);
+}
+.seat-page-room-note { margin: var(--space-2) auto var(--space-5); max-width: 62ch; font-size: var(--text-sm); }
+
+/* ---- Nhãn hàng ở hai đầu mỗi hàng ghế ---- */
+.seat-row-label {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: var(--text-xs);
+    font-weight: 800;
+    color: var(--text-muted);
+    user-select: none;
+}
+
+/* ---- Loại ghế ----
+   Không chỉ dựa vào màu: ghế VIP có dấu sao, ghế đôi có dấu tim và đáy bo tròn hơn, để
+   người mù màu vẫn phân biệt được. Chỉ tô màu loại ghế khi ghế còn trống và chưa chọn;
+   ghế đang chọn, đang giữ, đã bán vẫn dùng đúng màu trạng thái như cũ. */
+.seat-map .seat { position: relative; }
+.seat.seat-vip,
+.seat.seat-couple { padding-top: 9px; }
+.seat.seat-couple { border-radius: 9px 9px 14px 14px; }
+
+.seat.seat-vip.available:not(.selected)    { background: var(--seat-vip-tint);    border: 2px solid var(--seat-vip); }
+.seat.seat-couple.available:not(.selected) { background: var(--seat-couple-tint); border: 2px solid var(--seat-couple); }
+
+.seat.seat-vip::before,
+.seat.seat-couple::before {
+    position: absolute;
+    top: 2px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 9px;
+    line-height: 1;
+    pointer-events: none;
+}
+.seat.seat-vip::before    { content: "★"; color: var(--seat-vip); }
+.seat.seat-couple::before { content: "♥"; color: var(--seat-couple); }
+.seat.selected::before,
+.seat.held::before,
+.seat.booked::before { color: inherit; }
+
+/* ---- Chú thích: nhóm "Loại ghế" và nhóm "Tình trạng" ---- */
+.seat-legend-groups { display: grid; gap: var(--space-3); margin-top: var(--space-5); }
+.seat-legend-groups .seat-legend { margin-top: 0; }
+.seat-legend-title {
+    font-size: var(--text-xs);
+    font-weight: 800;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+    color: var(--text);
+}
+.seat-legend strong { color: var(--text); }
+
+.seat-legend .legend-type {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-style: normal;
+    font-size: 9px;
+    line-height: 1;
+    background: var(--seat-available-bg);
+}
+.seat-legend .legend-type-vip    { background: var(--seat-vip-tint);    border: 2px solid var(--seat-vip);    color: var(--seat-vip); }
+.seat-legend .legend-type-couple { background: var(--seat-couple-tint); border: 2px solid var(--seat-couple); color: var(--seat-couple); border-radius: 6px 6px 8px 8px; }
+.legend-type-vip::before    { content: "★"; }
+.legend-type-couple::before { content: "♥"; }
+
+/* ---- Luật chọn ghế, ngay dưới tổng tiền ---- */
+.seat-rules {
+    margin: var(--space-3) auto var(--space-4);
+    padding-left: var(--space-5);
+    max-width: 56ch;
+    text-align: left;
+    font-size: var(--text-sm);
+    color: var(--text-muted);
+}
+.seat-rules li + li { margin-top: var(--space-1); }

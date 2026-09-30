@@ -12,7 +12,18 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-/** Kiểm tra cách chọn ghế trước khi hệ thống tạo vé giữ chỗ. */
+/**
+ * Kiểm tra cách chọn ghế trước khi hệ thống tạo vé giữ chỗ.
+ *
+ * Chỉ giữ hai luật mà các rạp lớn (CGV, Lotte, Galaxy) đều áp dụng khi đặt vé trực tuyến:
+ * <ul>
+ *   <li>tối đa 8 chỗ một lượt, ghế đôi tính là 2 chỗ;</li>
+ *   <li>không để trống đúng MỘT ghế lẻ cạnh ghế vừa chọn (ở giữa hoặc sát mép hàng), vì
+ *       ghế lẻ đó gần như không bán được nữa.</li>
+ * </ul>
+ * Ngồi hàng nào, chọn mấy hàng, có ngồi liền nhau hay không là quyền của khách - trước đây
+ * bắt cùng hàng và liền nhau, đã bỏ theo yêu cầu kiểm thử ngày 28/09/2026.
+ */
 @Service
 public class SeatSelectionPolicy {
 
@@ -21,7 +32,6 @@ public class SeatSelectionPolicy {
     public void validateSelection(List<Seat> roomSeats, List<Seat> selectedSeats,
                                   Set<Long> unavailableSeatIds) {
         validateMaximumAdmissions(selectedSeats);
-        validateSeatsAreAdjacent(selectedSeats);
         validateNoNewSingleSeatGap(roomSeats, selectedSeats, unavailableSeatIds);
     }
 
@@ -34,30 +44,6 @@ public class SeatSelectionPolicy {
         if (admissionCount > MAX_ADMISSIONS_PER_BOOKING) {
             throw new InvalidBookingException("Mỗi lượt chỉ được đặt tối đa "
                     + MAX_ADMISSIONS_PER_BOOKING + " chỗ. Ghế đôi được tính là hai chỗ.");
-        }
-    }
-
-    private void validateSeatsAreAdjacent(List<Seat> selectedSeats) {
-        if (selectedSeats.size() <= 1) {
-            return;
-        }
-        String selectedRow = selectedSeats.getFirst().getSeatRow();
-        if (selectedRow == null || selectedSeats.stream()
-                .anyMatch(seat -> !selectedRow.equals(seat.getSeatRow()))) {
-            throw new InvalidBookingException(
-                    "Các ghế trong cùng lượt đặt phải nằm trên cùng một hàng.");
-        }
-
-        List<Seat> orderedSeats = selectedSeats.stream()
-                .sorted(Comparator.comparing(Seat::getSeatColumn))
-                .toList();
-        for (int index = 1; index < orderedSeats.size(); index++) {
-            Integer previousColumn = orderedSeats.get(index - 1).getSeatColumn();
-            Integer currentColumn = orderedSeats.get(index).getSeatColumn();
-            if (previousColumn == null || currentColumn == null || currentColumn != previousColumn + 1) {
-                throw new InvalidBookingException(
-                        "Các ghế trong cùng lượt đặt phải liền nhau, không được bỏ trống ghế ở giữa.");
-            }
         }
     }
 
