@@ -8,7 +8,7 @@
         <div class="account-intro">
             <span class="module1-kicker">UTE CINEMA</span>
             <h1 id="register-title">Tạo tài khoản</h1>
-            <p class="text-muted">Chỉ mất một phút. Có tài khoản rồi là giữ ghế được ngay.</p>
+            <p class="text-muted">Tạo tài khoản và xác thực email bằng OTP để bắt đầu đặt vé.</p>
         </div>
 
         <form class="card account-form" th:object="${registerForm}" th:action="@{/dang-ky}" method="post">
@@ -42,21 +42,25 @@
 
             <div class="form-field">
                 <label for="password">Mật khẩu</label>
-                <input class="form-control" id="password" type="password" th:field="*{password}"
-                       autocomplete="new-password" required minlength="6">
+                <div class="auth-password">
+                <input class="form-control" id="password" type="password" name="password"
+                       autocomplete="new-password" required minlength="6" maxlength="72">
+                <button hidden type="button" class="auth-toggle" data-password-toggle="password" aria-controls="password" aria-pressed="false">Hiện</button>
+                </div>
                 <span class="form-hint">Ít nhất 6 ký tự.</span>
                 <span class="form-error" th:if="${#fields.hasErrors('password')}" th:errors="*{password}"></span>
             </div>
 
             <div class="form-field">
                 <label for="confirmPassword">Nhập lại mật khẩu</label>
-                <input class="form-control" id="confirmPassword" type="password" th:field="*{confirmPassword}"
-                       autocomplete="new-password" required>
+                <input class="form-control" id="confirmPassword" type="password" name="confirmPassword"
+                       autocomplete="new-password" required maxlength="72">
                 <span class="form-error" th:if="${#fields.hasErrors('confirmPassword')}"
                       th:errors="*{confirmPassword}"></span>
             </div>
 
-            <button class="btn account-submit" type="submit">Tạo tài khoản</button>
+            <p class="form-hint">Dùng email bạn có thể nhận thư. Tài khoản được tạo sau khi nhập đúng mã OTP.</p>
+            <button class="btn account-submit" type="submit">Tiếp tục · Xác thực email</button>
 
             <p class="account-switch">
                 Đã có tài khoản?
@@ -64,5 +68,6 @@
             </p>
         </form>
     </section>
+    <script defer th:src="@{/js/account.js}"></script>
 
 </div></body></html>

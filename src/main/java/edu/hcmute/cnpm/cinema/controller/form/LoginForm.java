@@ -6,9 +6,12 @@ import jakarta.validation.constraints.NotBlank;
 public class LoginForm {
 
     @NotBlank(message = "Bạn hãy nhập email.")
+    @jakarta.validation.constraints.Email(message = "Email chưa đúng định dạng.")
+    @jakarta.validation.constraints.Size(max = 150, message = "Email không được dài quá 150 ký tự.")
     private String email;
 
     @NotBlank(message = "Bạn hãy nhập mật khẩu.")
+    @jakarta.validation.constraints.Size(max = 72, message = "Mật khẩu không được dài quá 72 ký tự.")
     private String password;
 
     /**

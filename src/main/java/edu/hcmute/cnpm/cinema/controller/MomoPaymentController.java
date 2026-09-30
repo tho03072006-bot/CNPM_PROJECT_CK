@@ -8,6 +8,7 @@ import edu.hcmute.cnpm.cinema.exception.BusinessException;
 import edu.hcmute.cnpm.cinema.service.MomoPaymentService;
 import edu.hcmute.cnpm.cinema.service.PaymentService;
 import edu.hcmute.cnpm.cinema.service.QrCodeService;
+import edu.hcmute.cnpm.cinema.service.PaymentOtpService;
 import jakarta.servlet.http.HttpSession;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -47,24 +48,31 @@ public class MomoPaymentController {
     private final MomoPaymentService momoPaymentService;
     private final PaymentService paymentService;
     private final QrCodeService qrCodeService;
+    private final PaymentOtpService paymentOtp;
 
     public MomoPaymentController(MomoPaymentService momoPaymentService, PaymentService paymentService,
-                                 QrCodeService qrCodeService) {
+                                 QrCodeService qrCodeService, PaymentOtpService paymentOtp) {
         this.momoPaymentService = momoPaymentService;
         this.paymentService = paymentService;
         this.qrCodeService = qrCodeService;
+        this.paymentOtp = paymentOtp;
     }
 
     /** Khách chọn "Thẻ ATM / thẻ quốc tế": tạo giao dịch rồi chuyển thẳng sang trang của MoMo. */
     @PostMapping("/{showtimeId}/momo")
     public String startPayment(@PathVariable Long showtimeId, HttpSession session,
+                               @RequestParam(required = false) String code,
                                RedirectAttributes redirectAttributes) {
         User customer = SessionUsers.current(session);
         if (customer == null) {
             return SessionUsers.redirectToLogin("/thanh-toan/" + showtimeId);
         }
         try {
-            return "redirect:" + momoPaymentService.startPayment(customer.getId(), showtimeId);
+            String url = paymentOtp.verify((String) session.getAttribute(PaymentController.PAYMENT_OTP),
+                    customer.getId(), showtimeId, "momo", code,
+                    () -> momoPaymentService.startPayment(customer.getId(), showtimeId));
+            session.removeAttribute(PaymentController.PAYMENT_OTP);
+            return "redirect:" + url;
         } catch (BusinessException exception) {
             redirectAttributes.addFlashAttribute(Constants.MODEL_ERROR_MESSAGE, exception.getMessage());
             return "redirect:/thanh-toan/" + showtimeId;
@@ -74,13 +82,17 @@ public class MomoPaymentController {
     /** Khách chọn "Quét mã QR MoMo": tạo giao dịch rồi mở trang hiện mã QR của rạp. */
     @PostMapping("/{showtimeId}/momo-qr")
     public String startQrPayment(@PathVariable Long showtimeId, HttpSession session,
+                                 @RequestParam(required = false) String code,
                                  RedirectAttributes redirectAttributes) {
         User customer = SessionUsers.current(session);
         if (customer == null) {
             return SessionUsers.redirectToLogin("/thanh-toan/" + showtimeId);
         }
         try {
-            MomoQrPayment qrPayment = momoPaymentService.startQrPayment(customer.getId(), showtimeId);
+            MomoQrPayment qrPayment = paymentOtp.verify((String) session.getAttribute(PaymentController.PAYMENT_OTP),
+                    customer.getId(), showtimeId, "momo-qr", code,
+                    () -> momoPaymentService.startQrPayment(customer.getId(), showtimeId));
+            session.removeAttribute(PaymentController.PAYMENT_OTP);
             rememberQrPayment(session, qrPayment);
             return "redirect:/thanh-toan/momo/qr/" + qrPayment.orderId();
         } catch (BusinessException exception) {

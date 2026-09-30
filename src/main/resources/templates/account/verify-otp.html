@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout" layout:decorate="~{layout/base}">
+<head><title th:text="${otpTitle}">Xác thực OTP</title></head>
+<body><div layout:fragment="content">
+    <section class="account-panel" aria-labelledby="otp-title">
+        <div class="account-intro">
+            <span class="module1-kicker">UTE CINEMA · XÁC THỰC EMAIL</span>
+            <h1 id="otp-title" th:text="${otpTitle}">Xác thực</h1>
+            <p class="text-muted" th:text="${otpDescription}"></p>
+        </div>
+        <div class="card account-form">
+            <div class="auth-otp-address">
+                <span class="badge badge-brand">Mã gồm 6 chữ số</span>
+                <p>Email nhận mã: <strong th:text="${otpView.email}"></strong></p>
+                <p class="form-hint">Không thấy email? Kiểm tra Thư rác hoặc gửi lại mã bên dưới.</p>
+            </div>
+            <div class="auth-order" th:if="${paymentTotal != null}">
+                <strong th:text="|${#lists.size(paymentTickets)} vé · ${#numbers.formatDecimal(paymentTotal, 0, 'POINT', 0, 'COMMA')} đ|"></strong>
+                <p class="form-hint">Ghế vẫn chỉ được giữ trong 5 phút kể từ lúc chọn. OTP không gia hạn giữ ghế.</p>
+            </div>
+            <form th:action="@{${otpAction}}" method="post" class="auth-otp-form">
+                <div class="form-field">
+                    <label for="code">Mã OTP</label>
+                    <input id="code" name="code" class="form-control auth-otp-input" type="text"
+                           inputmode="numeric" autocomplete="one-time-code" pattern="[0-9]{6}" minlength="6"
+                           maxlength="6" required autofocus placeholder="000000" aria-describedby="otp-help otp-clock">
+                    <span id="otp-help" class="form-hint" th:text="|Còn ${otpView.remainingAttempts} lần nhập mã. Mỗi mã chỉ dùng một lần.|"></span>
+                    <span id="otp-clock" class="form-hint" data-otp-expiry th:attr="data-seconds=${secondsLeft}"
+                          th:text="|Mã còn hiệu lực ${secondsLeft} giây.|"></span>
+                </div>
+                <button class="btn account-submit" type="submit" th:text="${otpSubmit}">Xác thực</button>
+            </form>
+            <form th:action="@{${otpResend}}" method="post">
+                <button class="btn btn-ghost account-submit" type="submit" data-otp-resend
+                        th:attr="data-seconds=${resendSeconds}">Gửi lại mã</button>
+            </form>
+            <p class="account-switch"><a th:href="@{${otpBack}}">Quay lại để thay đổi thông tin</a></p>
+        </div>
+    </section>
+    <script defer th:src="@{/js/account.js}"></script>
+</div></body></html>

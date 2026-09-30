@@ -36,30 +36,28 @@
                 <strong th:text="|${#numbers.formatDecimal(total, 0, 'POINT', 0, 'COMMA')} đ|">230.000 đ</strong>
             </div>
             <!--
-              Ba cách trả, xếp theo thứ tự nên dùng. Quét mã QR đứng đầu vì khách không phải
-              nhập thẻ. MoMo đang chạy môi trường thử: trang thanh toán và API là thật nhưng
-              tiền không đi thật. Thiếu cấu hình MoMo thì chỉ còn trả tại quầy.
+              Vé online thanh toán qua QR hoặc thẻ. Cả hai đều phải xác thực OTP trước khi
+              tạo giao dịch; vé chỉ được xuất sau khi MoMo xác nhận đã nhận tiền.
             -->
             <div class="payment-options">
-                <form th:if="${momoEnabled}" th:action="@{/thanh-toan/{id}/momo-qr(id=${showtimeId})}" method="post">
-                    <button class="btn btn-accent account-submit" type="submit">Quét mã QR bằng app MoMo</button>
+                <p class="form-hint">Mỗi phương thức cần xác thực bằng mã OTP gửi tới email tài khoản trước khi tiếp tục.</p>
+                <div id="payment-unavailable" class="alert" role="status" th:unless="${momoEnabled}">
+                    Thanh toán trực tuyến hiện chưa sẵn sàng. Vui lòng thử lại sau.
+                </div>
+                <form th:action="@{/thanh-toan/{id}/otp(id=${showtimeId})}" method="post">
+                    <input type="hidden" name="method" value="momo-qr">
+                    <button class="btn btn-accent account-submit" type="submit" th:disabled="${!momoEnabled}">Quét mã QR bằng app MoMo</button>
                 </form>
-                <p class="text-muted account-summary-note" th:if="${momoEnabled}">
+                <p class="text-muted account-summary-note">
                     Nhanh nhất: mã QR hiện ngay trên trang này, mở app MoMo quét rồi bấm xác nhận là xong,
                     không phải nhập thông tin thẻ.
                 </p>
-                <form th:if="${momoEnabled}" th:action="@{/thanh-toan/{id}/momo(id=${showtimeId})}" method="post">
-                    <button class="btn btn-ghost account-submit" type="submit">Thẻ ATM hoặc thẻ quốc tế qua MoMo</button>
-                </form>
-                <p class="text-muted account-summary-note" th:if="${momoEnabled}">
-                    Chuyển sang trang MoMo để nhập thông tin thẻ, trả xong sẽ tự quay lại đây.
-                </p>
-                <form th:action="@{/thanh-toan/{id}(id=${showtimeId})}" method="post">
-                    <button class="btn account-submit" type="submit"
-                            th:classappend="${momoEnabled} ? 'btn-ghost' : 'btn-accent'">Trả tiền mặt tại quầy</button>
+                <form th:action="@{/thanh-toan/{id}/otp(id=${showtimeId})}" method="post">
+                    <input type="hidden" name="method" value="momo">
+                    <button class="btn btn-ghost account-submit" type="submit" th:disabled="${!momoEnabled}">Thẻ ATM hoặc thẻ quốc tế qua MoMo</button>
                 </form>
                 <p class="text-muted account-summary-note">
-                    Chọn trả tại quầy là vé được xác nhận ngay, bạn trả tiền khi tới rạp.
+                    Chuyển sang trang MoMo để nhập thông tin thẻ, trả xong sẽ tự quay lại đây.
                 </p>
                 <p class="payment-sandbox-note" th:if="${momoEnabled}">
                     Rạp đang dùng môi trường thử của MoMo nên tiền không bị trừ thật.

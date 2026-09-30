@@ -42,6 +42,9 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @DisplayName("M4.9 - Luong dat ve tu dau den cuoi")
 class BookingFlowEndToEndTest extends IntegrationTestBase {
 
+    @org.springframework.test.context.bean.override.mockito.MockitoBean
+    private edu.hcmute.cnpm.cinema.service.MailDelivery mailDelivery;
+
     @Autowired
     private MockMvc mockMvc;
 
@@ -92,8 +95,34 @@ class BookingFlowEndToEndTest extends IntegrationTestBase {
                 .andExpect(content().string(containsString("Xác nhận thanh toán")));
 
         // ---------- Module 3: xac nhan tra tien ----------
-        mockMvc.perform(post("/thanh-toan/" + showtime.getId()).session(session))
+        java.util.concurrent.atomic.AtomicReference<String> otpCode = new java.util.concurrent.atomic.AtomicReference<>();
+        org.mockito.Mockito.when(mailDelivery.send(org.mockito.ArgumentMatchers.anyString(),
+                org.mockito.ArgumentMatchers.anyString(), org.mockito.ArgumentMatchers.anyString())).thenAnswer(invocation -> {
+            var matcher = java.util.regex.Pattern.compile("[0-9]{6}").matcher((String) invocation.getArgument(2));
+            if (matcher.find()) otpCode.set(matcher.group());
+            return true;
+        });
+        org.mockito.Mockito.when(momoApiClient.createQrPayment(org.mockito.ArgumentMatchers.anyString(),
+                org.mockito.ArgumentMatchers.anyLong(), org.mockito.ArgumentMatchers.anyString()))
+                .thenReturn(new edu.hcmute.cnpm.cinema.dto.payment.MomoCheckout(
+                        "https://test-payment.momo.vn/pay", "momo://test-qr"));
+        mockMvc.perform(post("/thanh-toan/" + showtime.getId() + "/otp").session(session).param("method", "momo-qr"))
                 .andExpect(status().is3xxRedirection());
+        mockMvc.perform(get("/thanh-toan/" + showtime.getId() + "/otp").session(session))
+                .andExpect(status().isOk()).andExpect(content().string(containsString("Xác thực thanh toán")));
+        String qrPage = mockMvc.perform(post("/thanh-toan/" + showtime.getId() + "/momo-qr")
+                        .session(session).param("code", otpCode.get()))
+                .andExpect(status().is3xxRedirection()).andReturn().getResponse().getRedirectedUrl();
+        assertThat(qrPage).startsWith("/thanh-toan/momo/qr/");
+        assertThat(ticketRepository.findByUserIdOrderByHeldAtDesc(customer.getId()))
+                .allMatch(ticket -> ticket.getStatus() == TicketStatus.HELD);
+        String orderId = qrPage.substring(qrPage.lastIndexOf('/') + 1);
+        long amount = held.stream().map(Ticket::getPrice).reduce(java.math.BigDecimal.ZERO, java.math.BigDecimal::add).longValueExact();
+        org.mockito.Mockito.when(momoApiClient.queryPayment(orderId))
+                .thenReturn(new edu.hcmute.cnpm.cinema.dto.payment.MomoQueryResult(0, "Thành công", "4115000001", amount));
+        mockMvc.perform(get(qrPage + "/trang-thai").session(session)).andExpect(status().isOk())
+                .andExpect(org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath("$.state").value("PAID"));
+        mockMvc.perform(get(qrPage + "/xong").session(session)).andExpect(status().is3xxRedirection());
 
         List<Ticket> afterPayment = ticketRepository.findByUserIdOrderByHeldAtDesc(customer.getId());
         assertThat(afterPayment).hasSize(2);

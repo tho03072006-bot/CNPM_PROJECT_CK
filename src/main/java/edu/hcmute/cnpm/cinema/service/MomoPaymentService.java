@@ -83,7 +83,7 @@ public class MomoPaymentService {
     /** Tạo giao dịch MoMo cho các ghế khách đang giữ, trả về địa chỉ trang thanh toán của MoMo. */
     public String startPayment(Long userId, Long showtimeId) {
         if (!isEnabled()) {
-            throw new BusinessException("Rạp chưa bật thanh toán qua MoMo. Bạn chọn trả tại quầy nhé.");
+            throw new BusinessException("Thanh toán trực tuyến hiện chưa sẵn sàng. Vui lòng thử lại sau.");
         }
         List<Ticket> payable = paymentService.findPayableTickets(userId, showtimeId);
         if (payable.isEmpty()) {
@@ -102,7 +102,7 @@ public class MomoPaymentService {
      */
     public MomoQrPayment startQrPayment(Long userId, Long showtimeId) {
         if (!isEnabled()) {
-            throw new BusinessException("Rạp chưa bật thanh toán qua MoMo. Bạn chọn trả tại quầy nhé.");
+            throw new BusinessException("Thanh toán trực tuyến hiện chưa sẵn sàng. Vui lòng thử lại sau.");
         }
         List<Ticket> payable = paymentService.findPayableTickets(userId, showtimeId);
         if (payable.isEmpty()) {
