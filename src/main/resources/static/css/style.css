@@ -1468,8 +1468,7 @@ main.container {
 .pricing-block { margin-bottom: var(--space-7); }
 .pricing-block-title { margin: 0 0 var(--space-4); font-size: var(--text-xl); }
 
-/* Bảng có 4 cột, trên điện thoại cho cuộn ngang trong khung riêng thay vì
-   bóp chữ nhỏ lại. */
+/* Trên điện thoại bảng cuộn ngang trong khung riêng thay vì bóp chữ nhỏ lại. */
 .pricing-table-wrap {
     overflow-x: auto;
     border: 1px solid var(--border);
@@ -1496,22 +1495,6 @@ main.container {
 
 .pricing-table tbody tr.is-deal { background: var(--tint-accent); }
 .pricing-deal-tag { margin-left: var(--space-2); }
-
-/* Dung lai .badge-ok / .badge-danger co san thay vi tu che mau: hai class do
-   da co ban mau rieng cho che do toi va da qua dot ra soat tuong phan.
-   Chi them phan cho phep xuong dong, vi .badge mac dinh khong xuong dong. */
-.pricing-check { white-space: normal; }
-.pricing-check.is-none { color: var(--text-muted); font-size: var(--text-xs); font-weight: 600; }
-
-.pricing-note {
-    margin: var(--space-3) 0 0;
-    color: var(--text-muted);
-    font-size: var(--text-sm);
-}
-
-.pricing-faq { margin: 0; padding-left: var(--space-5); display: grid; gap: var(--space-3); }
-.pricing-faq li { color: var(--text-muted); }
-.pricing-faq strong { color: var(--text); }
 
 .pricing-actions { display: flex; flex-wrap: wrap; gap: var(--space-3); margin-top: var(--space-5); }
 
@@ -1692,7 +1675,9 @@ main.container {
 }
 
 /* ---- Ô đổi vai trò trong bảng người dùng ---- */
-.user-role-form { display: flex; gap: var(--space-2); align-items: center; }
+/* position: relative để nhãn .sr-only (position: absolute) nằm gọn trong khung cuộn của bảng.
+   Thiếu dòng này nhãn ẩn tính vị trí theo cả trang và làm trang tràn ngang trên điện thoại. */
+.user-role-form { position: relative; display: flex; gap: var(--space-2); align-items: center; }
 .user-role-form .form-control { width: auto; min-width: 9rem; padding: var(--space-2) var(--space-3); }
 
 /* =====================================================================
@@ -1714,3 +1699,10 @@ main.container {
 .staff-checkin { margin: 0 0 var(--space-4); }
 
 .stats-note { margin: calc(var(--space-4) * -1) 0 var(--space-6); font-size: var(--text-sm); }
+
+/* Nút trên trang lỗi: xếp ngang, tự xuống dòng trên điện thoại. */
+.error-actions { display: flex; flex-wrap: wrap; justify-content: center; gap: var(--space-3); }
+
+/* Mọi khung cuộn ngang đều là khung định vị: phần tử position: absolute bên trong (nhãn
+   .sr-only cho trình đọc màn hình, tooltip...) sẽ bị cắt theo khung thay vì làm cả trang tràn ngang. */
+.table-wrap, .pricing-table-wrap, .seat-map-scroll { position: relative; }
