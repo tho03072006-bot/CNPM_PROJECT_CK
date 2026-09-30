@@ -56,9 +56,11 @@
             <div class="module1-slot-list">
                 <article class="module1-slot" th:each="showtime : ${entry.value}"
                          th:with="availability=${availabilityByShowtimeId[showtime.id]}"
-                         th:classappend="${availability.soldOut} ? ' is-soldout' : ''">
+                         th:classappend="|room-slot-${showtime.room.roomType.cssModifier}${availability.soldOut ? ' is-soldout' : ''}|">
                     <div class="module1-slot-time" th:text="${#temporals.format(showtime.startTime, 'HH:mm')}">18:00</div>
                     <div class="module1-slot-meta">
+                        <span class="room-badge" th:classappend="|room-badge-${showtime.room.roomType.cssModifier}|"
+                              th:text="${showtime.room.roomType.label}">Phòng thường</span>
                         <strong th:text="${showtime.room.name}">Phòng chiếu</strong>
                         <span th:text="|Kết thúc ${#temporals.format(showtime.endTime, 'HH:mm')}${showtime.endTime.toLocalDate().isAfter(showtime.startTime.toLocalDate()) ? ' (+1 ngày)' : ''} · Giá từ ${#numbers.formatDecimal(showtime.basePrice, 0, 'POINT', 0, 'COMMA')} đ|">Giờ kết thúc và giá vé</span>
                         <span class="module1-seat-status"

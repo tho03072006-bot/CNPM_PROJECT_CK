@@ -2,6 +2,7 @@ package edu.hcmute.cnpm.cinema.controller;
 
 import edu.hcmute.cnpm.cinema.constants.Constants;
 import edu.hcmute.cnpm.cinema.controller.form.ShowtimeForm;
+import edu.hcmute.cnpm.cinema.exception.BusinessException;
 import edu.hcmute.cnpm.cinema.exception.InvalidBookingException;
 import edu.hcmute.cnpm.cinema.service.MovieService;
 import edu.hcmute.cnpm.cinema.service.RoomService;
@@ -73,7 +74,14 @@ public class AdminShowtimeController {
             showtimeService.createShowtime(form.getMovieId(), form.getRoomId(),
                     form.getStartTime(), form.getBasePrice());
         } catch (InvalidBookingException exception) {
+            // Trùng giờ hoặc giờ chiếu đã qua: lời nhắc nằm ngay dưới ô giờ bắt đầu.
             errors.rejectValue("startTime", "showtime.schedule", exception.getMessage());
+            addChoices(model);
+            return "movie/showtime-form";
+        } catch (BusinessException exception) {
+            // Lỗi nghiệp vụ khác (phim đã ngừng chiếu, suất đã bán vé...) hiện ở đầu form,
+            // dữ liệu vừa nhập vẫn còn.
+            model.addAttribute(Constants.MODEL_ERROR_MESSAGE, exception.getMessage());
             addChoices(model);
             return "movie/showtime-form";
         }
@@ -101,7 +109,15 @@ public class AdminShowtimeController {
             showtimeService.updateShowtime(id, form.getMovieId(), form.getRoomId(),
                     form.getStartTime(), form.getBasePrice());
         } catch (InvalidBookingException exception) {
+            // Trùng giờ hoặc giờ chiếu đã qua: lời nhắc nằm ngay dưới ô giờ bắt đầu.
             errors.rejectValue("startTime", "showtime.schedule", exception.getMessage());
+            model.addAttribute("showtimeId", id);
+            addChoices(model);
+            return "movie/showtime-form";
+        } catch (BusinessException exception) {
+            // Lỗi nghiệp vụ khác (phim đã ngừng chiếu, suất đã bán vé...) hiện ở đầu form,
+            // dữ liệu vừa nhập vẫn còn.
+            model.addAttribute(Constants.MODEL_ERROR_MESSAGE, exception.getMessage());
             model.addAttribute("showtimeId", id);
             addChoices(model);
             return "movie/showtime-form";
@@ -112,8 +128,12 @@ public class AdminShowtimeController {
 
     @PostMapping("/{id}/delete")
     public String delete(@PathVariable Long id, RedirectAttributes redirectAttributes) {
-        showtimeService.deleteShowtime(id);
-        redirectAttributes.addFlashAttribute(Constants.MODEL_SUCCESS_MESSAGE, "Đã xoá suất chiếu.");
+        try {
+            showtimeService.deleteShowtime(id);
+            redirectAttributes.addFlashAttribute(Constants.MODEL_SUCCESS_MESSAGE, "Đã xoá suất chiếu.");
+        } catch (BusinessException exception) {
+            redirectAttributes.addFlashAttribute(Constants.MODEL_ERROR_MESSAGE, exception.getMessage());
+        }
         return "redirect:/admin/showtimes";
     }
 

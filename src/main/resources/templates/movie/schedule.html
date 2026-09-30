@@ -101,7 +101,8 @@
 
                 <!-- Mỗi loại phòng một hàng giờ chiếu, thứ tự do ScheduleService sắp sẵn. -->
                 <div class="schedule-room-group" th:each="group : ${entry.showtimesByRoomType}">
-                    <span class="schedule-room-label" th:text="${group.key}">Phòng thường</span>
+                    <span class="schedule-room-label room-badge" th:text="${group.key}"
+                          th:classappend="|room-badge-${group.value[0].room.roomType.cssModifier}|">Phòng thường</span>
                     <div class="schedule-times">
                         <a class="schedule-time" th:each="showtime : ${group.value}"
                            th:with="availability=${availabilityByShowtimeId[showtime.id]}"

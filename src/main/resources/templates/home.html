@@ -17,7 +17,9 @@
         </p>
         <div class="hero-actions">
             <a class="btn btn-accent" th:href="@{/movies}">Xem phim đang chiếu</a>
-            <a class="btn btn-ghost" th:href="@{/login}">Đăng nhập</a>
+            <!-- Chưa đăng nhập thì mời đăng nhập; đăng nhập rồi thì đưa tới vé của mình. -->
+            <a class="btn btn-ghost" th:if="${session.LOGGED_IN_USER == null}" th:href="@{/dang-nhap}">Đăng nhập</a>
+            <a class="btn btn-ghost" th:if="${session.LOGGED_IN_USER != null}" th:href="@{/ve-cua-toi}">Vé của tôi</a>
         </div>
     </section>
 

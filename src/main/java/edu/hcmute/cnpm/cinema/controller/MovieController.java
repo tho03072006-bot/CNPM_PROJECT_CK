@@ -37,6 +37,8 @@ public class MovieController {
                        @RequestParam(name = "genre", required = false) String genre,
                        Model model) {
         model.addAttribute("movies", movieService.findActiveMovies(keyword, genre));
+        // Tổng phim đang chiếu, để ô đếm ở đầu trang không đổi theo kết quả lọc.
+        model.addAttribute("activeMovieCount", movieService.findActiveMovies().size());
         model.addAttribute("genres", movieService.findActiveGenres());
         model.addAttribute("keyword", keyword == null ? "" : keyword.trim());
         model.addAttribute("selectedGenre", genre == null ? "" : genre.trim());

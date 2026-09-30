@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout" layout:decorate="~{layout/base}">
+<head><title>Quét mã MoMo</title></head>
+<body><div layout:fragment="content">
+
+    <section class="module1-section-head" aria-labelledby="qr-title">
+        <div>
+            <span class="module1-kicker">BƯỚC CUỐI</span>
+            <h1 id="qr-title">Quét mã để thanh toán</h1>
+            <p class="text-muted">Trang này tự chuyển sang vé của bạn ngay khi MoMo báo đã nhận tiền.</p>
+        </div>
+    </section>
+
+    <!--
+      Mã QR do máy chủ vẽ từ dữ liệu MoMo trả về (QrCodeService), không nạp thư viện ngoài.
+      JavaScript bên dưới hỏi /trang-thai vài giây một lần. Tắt JavaScript thì vẫn còn nút
+      "Tôi đã thanh toán" để tự kiểm tra.
+    -->
+    <div class="momo-qr" id="momo-qr"
+         th:attr="data-status-url=@{/thanh-toan/momo/qr/{id}/trang-thai(id=${qrPayment.orderId})},data-seconds-left=${secondsLeft}">
+
+        <div class="card momo-qr-card">
+            <span class="momo-qr-brand">MoMo</span>
+            <div class="momo-qr-frame" th:utext="${qrSvg}"></div>
+            <p class="momo-qr-amount"
+               th:text="|${#numbers.formatInteger(qrPayment.amount, 1, 'POINT')} đ|">150.000 đ</p>
+            <p class="momo-qr-timer">
+                Ghế còn được giữ
+                <strong id="qr-countdown" role="timer" aria-live="off">05:00</strong>
+            </p>
+            <p id="qr-status" class="momo-qr-status" role="status" aria-live="polite">
+                <svg class="spinner" viewBox="0 0 48 48" aria-hidden="true" focusable="false">
+                    <g fill="currentColor">
+                        <rect x="21" y="1" width="6" height="11" rx="2"/>
+                        <rect x="21" y="36" width="6" height="11" rx="2"/>
+                        <rect x="1" y="21" width="11" height="6" rx="2"/>
+                        <rect x="36" y="21" width="11" height="6" rx="2"/>
+                        <g transform="rotate(45 24 24)">
+                            <rect x="21" y="1" width="6" height="11" rx="2"/>
+                            <rect x="21" y="36" width="6" height="11" rx="2"/>
+                            <rect x="1" y="21" width="11" height="6" rx="2"/>
+                            <rect x="36" y="21" width="11" height="6" rx="2"/>
+                        </g>
+                    </g>
+                    <circle cx="24" cy="24" r="14" fill="var(--surface)"/>
+                </svg>
+                <span id="qr-status-text">Đang chờ bạn quét mã…</span>
+            </p>
+        </div>
+
+        <div class="card momo-qr-help">
+            <h2 class="momo-qr-help-title">Cách trả tiền</h2>
+            <ol class="momo-qr-steps">
+                <li>Mở app MoMo trên điện thoại, chọn <strong>Quét mã</strong>.</li>
+                <li>Đưa camera vào mã QR, kiểm tra đúng số tiền.</li>
+                <li>Bấm <strong>Xác nhận</strong>. Trang này sẽ tự mở vé cho bạn.</li>
+            </ol>
+
+            <p class="momo-qr-seats" th:unless="${#lists.isEmpty(tickets)}">
+                <span th:text="|${#lists.size(tickets)} vé ·|">2 vé ·</span>
+                <th:block th:each="ticket, it : ${tickets}">
+                    <span th:text="|${ticket.seat.seatRow}${ticket.seat.seatColumn}${it.last ? '' : ','}|">A1</span>
+                </th:block>
+            </p>
+
+            <p class="payment-sandbox-note">
+                Rạp đang dùng <strong>môi trường thử của MoMo</strong>: mã này chỉ quét được bằng app
+                <strong>MoMo Test</strong> dành cho nhà phát triển, app MoMo thường không nhận. Tiền không bị trừ thật.
+                Chưa có app đó thì quay lại chọn trả bằng thẻ.
+            </p>
+
+            <div class="account-actions">
+                <a class="btn" th:href="@{/thanh-toan/momo/qr/{id}/xong(id=${qrPayment.orderId})}">Tôi đã thanh toán</a>
+                <a class="btn btn-ghost" th:href="@{/thanh-toan/{id}(id=${qrPayment.showtimeId})}">Chọn cách trả khác</a>
+            </div>
+        </div>
+    </div>
+
+    <script th:inline="none">
+        (() => {
+            const root = document.getElementById('momo-qr');
+            const statusUrl = root.dataset.statusUrl;
+            const countdown = document.getElementById('qr-countdown');
+            const statusBox = document.getElementById('qr-status');
+            const statusText = document.getElementById('qr-status-text');
+            const deadline = Date.now() + Number(root.dataset.secondsLeft) * 1000;
+            // Hết giờ giữ ghế vẫn hỏi thêm một lúc: khách có thể vừa bấm xác nhận sát giờ.
+            const stopAskingAt = deadline + 60 * 1000;
+            const POLL_MS = 3000;
+            let finished = false;
+
+            function formatRemaining(seconds) {
+                return String(Math.floor(seconds / 60)).padStart(2, '0') + ':' + String(seconds % 60).padStart(2, '0');
+            }
+
+            function show(message, tone) {
+                statusText.textContent = message;
+                statusBox.className = 'momo-qr-status' + (tone ? ' is-' + tone : '');
+            }
+
+            function finish(message, tone, redirectUrl) {
+                finished = true;
+                show(message, tone);
+                if (redirectUrl) setTimeout(() => { window.location.href = redirectUrl; }, tone === 'ok' ? 600 : 2500);
+            }
+
+            const timerId = setInterval(() => {
+                const remaining = Math.max(0, Math.round((deadline - Date.now()) / 1000));
+                countdown.textContent = remaining > 0 ? formatRemaining(remaining) : 'Đã hết giờ';
+                if (remaining <= 0) {
+                    root.classList.add('is-expired');
+                    clearInterval(timerId);
+                }
+            }, 1000);
+            countdown.textContent = formatRemaining(Math.max(0, Math.round((deadline - Date.now()) / 1000)));
+
+            // Chờ lượt hỏi trước trả lời xong mới hẹn lượt sau, để không bao giờ có hai lượt
+            // cùng xác nhận một giao dịch.
+            async function askMomo() {
+                if (finished) return;
+                if (Date.now() > stopAskingAt) {
+                    finish('Đã hết thời gian giữ ghế. Nếu bạn đã trả tiền, bấm "Tôi đã thanh toán" để kiểm tra.', 'danger');
+                    return;
+                }
+                try {
+                    const response = await fetch(statusUrl, {
+                        credentials: 'same-origin',
+                        headers: {'Accept': 'application/json', 'X-Requested-With': 'XMLHttpRequest'}
+                    });
+                    const result = await response.json();
+                    if (result.state === 'PAID') return finish(result.message, 'ok', result.redirectUrl);
+                    if (result.state === 'FAILED' || result.state === 'REFUNDED') {
+                        return finish(result.message, 'danger', result.redirectUrl);
+                    }
+                    if (result.state === 'ERROR' && result.redirectUrl) {
+                        return finish(result.message, 'danger', result.redirectUrl);
+                    }
+                    show(result.state === 'ERROR' ? result.message + ' Đang thử lại…' : 'Đang chờ bạn quét mã…', null);
+                } catch (error) {
+                    show('Mất kết nối một chút, đang thử lại…', null);
+                }
+                setTimeout(askMomo, POLL_MS);
+            }
+            setTimeout(askMomo, POLL_MS);
+        })();
+    </script>
+
+</div></body></html>

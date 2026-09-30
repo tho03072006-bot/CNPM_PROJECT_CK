@@ -11,6 +11,7 @@ import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMock
 import org.springframework.test.web.servlet.MockMvc;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.redirectedUrl;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 /**
@@ -32,10 +33,12 @@ class AdminAccessIntegrationTest extends IntegrationTestBase {
     };
 
     @Test
-    @DisplayName("Chua dang nhap thi bi tu choi o moi trang quan tri")
-    void shouldForbid_whenNotLoggedIn() throws Exception {
+    @DisplayName("Chua dang nhap thi khong vao duoc trang quan tri, bi dua sang trang dang nhap")
+    void shouldRedirectToLogin_whenNotLoggedIn() throws Exception {
         for (String path : ADMIN_PATHS) {
-            mockMvc.perform(get(path)).andExpect(status().isForbidden());
+            mockMvc.perform(get(path))
+                    .andExpect(status().is3xxRedirection())
+                    .andExpect(redirectedUrl("/dang-nhap?next=" + java.net.URLEncoder.encode(path, java.nio.charset.StandardCharsets.UTF_8)));
         }
     }
 

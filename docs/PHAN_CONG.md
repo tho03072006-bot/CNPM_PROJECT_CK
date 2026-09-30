@@ -73,6 +73,27 @@ Tóm tắt các việc mà 3 bạn kia **phải chờ**, nên Thọ làm sớm:
 | M4.9 | Test luồng đặt vé end-to-end | Xong, xem `BookingFlowEndToEndTest` |
 | M4.10 | Tài liệu kiểm thử | Xong, xem [`KE_HOACH_KIEM_THU.md`](KE_HOACH_KIEM_THU.md) |
 
+## Làm thêm sau khi xong 33 đầu việc (27–28/09/2026)
+
+Không nằm trong kế hoạch ban đầu, làm thêm để sản phẩm dùng được trọn vẹn cho cả bốn nhóm người dùng.
+
+| Tính năng | Ai dùng | Trang |
+|---|---|---|
+| Tìm phim theo tên (không dấu), lọc theo thể loại | Mọi người | `/movies` |
+| Sửa hồ sơ, đổi mật khẩu | Người đã đăng nhập | `/tai-khoan/sua`, `/tai-khoan/doi-mat-khau` |
+| Quên mật khẩu qua email | Người chưa đăng nhập | `/quen-mat-khau` |
+| Thanh toán qua ví MoMo (môi trường thử) | Khách hàng | Trang thanh toán |
+| Thanh toán bằng mã QR MoMo ngay trên trang của rạp | Khách hàng | `/thanh-toan/momo/qr/{mã đơn}` |
+| Sơ đồ ghế phân biệt ghế thường / VIP / đôi, chọn ghế tự do như rạp thật | Khách hàng | `/booking/showtime/{id}` |
+| Nhãn loại phòng Phòng thường / Premium / Gold Class | Mọi người | Lịch chiếu, chi tiết phim, sơ đồ ghế, bảng giá |
+| Huỷ vé đã thanh toán, hoàn tiền theo chính sách | Khách hàng | `/ve-cua-toi` |
+| Soát vé, ghi nhận khách vào phòng | Nhân viên, quản trị | `/nhan-vien/soat-ve` |
+| Quản lý người dùng, cấp vai trò | Quản trị | `/admin/users` |
+| Mở bán lại phim đã ngừng chiếu | Quản trị | `/admin/movies` |
+
+Cách làm và lý do thiết kế: ADR-3 trong [`DATABASE.md`](DATABASE.md), test ở mục 3 và 9 của
+[`KE_HOACH_KIEM_THU.md`](KE_HOACH_KIEM_THU.md).
+
 ---
 
 ## Trước khi bắt đầu code — làm đủ 4 bước này

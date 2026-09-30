@@ -3,6 +3,7 @@ package edu.hcmute.cnpm.cinema.service;
 import edu.hcmute.cnpm.cinema.dto.schedule.MovieSchedule;
 import edu.hcmute.cnpm.cinema.dto.schedule.ScheduleDate;
 import edu.hcmute.cnpm.cinema.entity.Movie;
+import edu.hcmute.cnpm.cinema.entity.RoomType;
 import edu.hcmute.cnpm.cinema.entity.Showtime;
 import edu.hcmute.cnpm.cinema.repository.ShowtimeRepository;
 import org.springframework.stereotype.Service;
@@ -14,7 +15,6 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
 
 /**
@@ -29,9 +29,9 @@ public class ScheduleService {
     /** Số ngày lịch chiếu cho khách chọn trên dải ngày. */
     public static final int SCHEDULE_DAYS = 7;
 
-    public static final String ROOM_TYPE_STANDARD = "Phòng thường";
-    public static final String ROOM_TYPE_PREMIUM = "Premium";
-    public static final String ROOM_TYPE_GOLD = "Gold Class";
+    public static final String ROOM_TYPE_STANDARD = RoomType.STANDARD.getLabel();
+    public static final String ROOM_TYPE_PREMIUM = RoomType.PREMIUM.getLabel();
+    public static final String ROOM_TYPE_GOLD = RoomType.GOLD.getLabel();
 
     /** Thứ tự hiển thị các nhóm phòng, từ phổ thông tới cao cấp. */
     private static final List<String> ROOM_TYPE_ORDER =
@@ -155,17 +155,11 @@ public class ScheduleService {
      * cũng đặt tên theo đúng quy ước này.
      *
      * Để {@code public static} vì trang bảng giá vé cũng phải phân loại phòng y
-     * hệt cách này - hai nơi làm khác nhau là bảng giá hiện sai.
+     * hệt cách này - hai nơi làm khác nhau là bảng giá hiện sai. Quy tắc thật nằm ở
+     * {@link RoomType#fromRoomName}, dùng chung với sơ đồ ghế và vé.
      */
     public static String resolveRoomType(String roomName) {
-        String name = roomName == null ? "" : roomName.toUpperCase(Locale.ROOT);
-        if (name.contains("GOLD CLASS")) {
-            return ROOM_TYPE_GOLD;
-        }
-        if (name.contains("PREMIUM")) {
-            return ROOM_TYPE_PREMIUM;
-        }
-        return ROOM_TYPE_STANDARD;
+        return RoomType.fromRoomName(roomName).getLabel();
     }
 
     /** Chỉ hiện suất chiếu của phim còn đang chiếu. */

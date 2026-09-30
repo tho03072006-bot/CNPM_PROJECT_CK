@@ -24,7 +24,34 @@
     <div class="account-ticket-list" th:unless="${#lists.isEmpty(tickets)}">
         <th:block th:each="ticket : ${tickets}">
             <div th:replace="~{account/ticket-fragment :: ticketCard(${ticket})}"></div>
+            <!-- Nút huỷ chỉ hiện ở vé còn huỷ được theo chính sách hoàn tiền. -->
+            <p class="ticket-cancel-row" th:if="${refundQuotes.containsKey(ticket.id)}">
+                <a class="btn btn-ghost btn-sm" th:href="@{/ve-cua-toi/{id}/huy(id=${ticket.id})}"
+                   th:text="|Huỷ vé #${ticket.id} · hoàn ${refundQuotes[ticket.id].refundPercent}%|">Huỷ vé</a>
+            </p>
         </th:block>
     </div>
+
+    <!-- Vé đã huỷ: bị xoá khỏi danh sách vé (ghế trả lại cho người khác), còn biên nhận ở đây. -->
+    <section class="pricing-block" th:unless="${#lists.isEmpty(refunds)}" aria-labelledby="refund-title">
+        <h2 id="refund-title" class="pricing-block-title">Vé đã huỷ</h2>
+        <div class="table-wrap">
+            <table class="admin-table">
+                <caption class="sr-only">Các vé bạn đã huỷ và số tiền được hoàn</caption>
+                <thead><tr>
+                    <th scope="col">Mã vé</th><th scope="col">Phim</th><th scope="col">Suất</th>
+                    <th scope="col">Ghế</th><th scope="col">Hoàn lại</th><th scope="col">Hình thức</th>
+                </tr></thead>
+                <tbody><tr th:each="refund : ${refunds}">
+                    <td th:text="|#${refund.originalTicketId}|">#12</td>
+                    <td th:text="${refund.movieTitle}">Tên phim</td>
+                    <td th:text="${#temporals.format(refund.showtimeStart, 'HH:mm dd/MM/yyyy')}">19:00 27/09/2026</td>
+                    <td th:text="|${refund.roomName} · ${refund.seatLabel}|">Cinema 1 · A1</td>
+                    <td th:text="|${#numbers.formatDecimal(refund.refundAmount, 0, 'POINT', 0, 'COMMA')} đ (${refund.refundPercent}%)|">115.000 đ</td>
+                    <td th:text="${refund.refundRef != null} ? 'Hoàn về MoMo' : 'Nhận tại quầy'">Hoàn về MoMo</td>
+                </tr></tbody>
+            </table>
+        </div>
+    </section>
 
 </div></body></html>

@@ -11,11 +11,7 @@
         </div>
         <a class="btn" th:href="@{/admin/showtimes/new}">+ Thêm suất chiếu</a>
     </div>
-    <nav class="module1-admin-nav" aria-label="Quản lý lịch chiếu">
-        <a th:href="@{/admin/movies}">Phim</a>
-        <a th:href="@{/admin/rooms}">Phòng chiếu</a>
-        <a th:href="@{/admin/showtimes}" aria-current="page">Suất chiếu</a>
-    </nav>
+    <nav th:replace="~{fragments/admin-nav :: adminNav('showtimes')}"></nav>
     <form class="card module1-filter-panel module1-showtime-filter" method="get"
           th:action="@{/admin/showtimes}" aria-label="Lọc suất chiếu">
         <div class="form-field">

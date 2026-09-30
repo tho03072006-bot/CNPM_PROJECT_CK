@@ -3,8 +3,11 @@ package edu.hcmute.cnpm.cinema.controller;
 import edu.hcmute.cnpm.cinema.constants.Constants;
 import edu.hcmute.cnpm.cinema.entity.Role;
 import edu.hcmute.cnpm.cinema.entity.User;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
 
+import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.net.URLEncoder;
 
@@ -35,6 +38,22 @@ public final class SessionUsers {
      *
      * Đăng nhập xong khách quay lại đúng chỗ cũ thay vì bị đá về trang chủ.
      */
+    /**
+     * Dùng trong bộ chặn quyền (interceptor), nơi không trả về được chuỗi "redirect:".
+     * Chỉ nhớ trang cũ với yêu cầu GET: gửi form (POST) sau khi phiên hết hạn thì quay
+     * lại địa chỉ POST cũng không dùng được.
+     */
+    public static void sendToLogin(HttpServletRequest request, HttpServletResponse response) throws IOException {
+        String loginUrl = request.getContextPath() + "/dang-nhap";
+        if ("GET".equalsIgnoreCase(request.getMethod())) {
+            String path = request.getRequestURI().substring(request.getContextPath().length());
+            String query = request.getQueryString();
+            String next = query == null ? path : path + "?" + query;
+            loginUrl += "?next=" + URLEncoder.encode(next, StandardCharsets.UTF_8);
+        }
+        response.sendRedirect(loginUrl);
+    }
+
     public static String redirectToLogin(String nextPath) {
         if (nextPath == null || nextPath.isBlank()) {
             return "redirect:/dang-nhap";

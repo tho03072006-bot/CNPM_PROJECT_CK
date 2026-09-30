@@ -2,6 +2,7 @@ package edu.hcmute.cnpm.cinema.controller;
 
 import edu.hcmute.cnpm.cinema.constants.Constants;
 import edu.hcmute.cnpm.cinema.controller.form.RoomForm;
+import edu.hcmute.cnpm.cinema.exception.BusinessException;
 import edu.hcmute.cnpm.cinema.entity.Room;
 import edu.hcmute.cnpm.cinema.entity.Seat;
 import edu.hcmute.cnpm.cinema.service.RoomService;
@@ -54,11 +55,16 @@ public class AdminRoomController {
 
     @PostMapping
     public String create(@Valid @ModelAttribute("roomForm") RoomForm form, BindingResult errors,
-                         RedirectAttributes redirectAttributes) {
+                         Model model, RedirectAttributes redirectAttributes) {
         if (errors.hasErrors()) {
             return "movie/room-form";
         }
-        roomService.createRoom(form.getName(), form.getTotalRows(), form.getTotalColumns());
+        try {
+            roomService.createRoom(form.getName(), form.getTotalRows(), form.getTotalColumns());
+        } catch (BusinessException exception) {
+            model.addAttribute(Constants.MODEL_ERROR_MESSAGE, exception.getMessage());
+            return "movie/room-form";
+        }
         redirectAttributes.addFlashAttribute(Constants.MODEL_SUCCESS_MESSAGE, "Đã thêm phòng và sinh ghế thành công.");
         return "redirect:/admin/rooms";
     }
@@ -77,15 +83,25 @@ public class AdminRoomController {
             model.addAttribute("roomId", id);
             return "movie/room-form";
         }
-        roomService.updateRoom(id, form.getName(), form.getTotalRows(), form.getTotalColumns());
+        try {
+            roomService.updateRoom(id, form.getName(), form.getTotalRows(), form.getTotalColumns());
+        } catch (BusinessException exception) {
+            model.addAttribute(Constants.MODEL_ERROR_MESSAGE, exception.getMessage());
+            model.addAttribute("roomId", id);
+            return "movie/room-form";
+        }
         redirectAttributes.addFlashAttribute(Constants.MODEL_SUCCESS_MESSAGE, "Đã cập nhật phòng chiếu.");
         return "redirect:/admin/rooms";
     }
 
     @PostMapping("/{id}/delete")
     public String delete(@PathVariable Long id, RedirectAttributes redirectAttributes) {
-        roomService.deleteRoom(id);
-        redirectAttributes.addFlashAttribute(Constants.MODEL_SUCCESS_MESSAGE, "Đã xoá phòng chiếu.");
+        try {
+            roomService.deleteRoom(id);
+            redirectAttributes.addFlashAttribute(Constants.MODEL_SUCCESS_MESSAGE, "Đã xoá phòng chiếu.");
+        } catch (BusinessException exception) {
+            redirectAttributes.addFlashAttribute(Constants.MODEL_ERROR_MESSAGE, exception.getMessage());
+        }
         return "redirect:/admin/rooms";
     }
 }

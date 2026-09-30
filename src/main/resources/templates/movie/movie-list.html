@@ -10,7 +10,8 @@
             <p>Khám phá phim đang chiếu, xem lịch chiếu và chọn buổi xem phù hợp với bạn.</p>
         </div>
         <div class="module1-hero-count" aria-label="Số phim đang chiếu">
-            <strong th:text="${#lists.size(movies)}">5</strong>
+            <!-- Đếm mọi phim đang chiếu, không đếm theo kết quả lọc. -->
+            <strong th:text="${activeMovieCount}">5</strong>
             <span>phim đang chiếu</span>
         </div>
     </section>
@@ -39,7 +40,7 @@
     <div class="module1-section-head">
         <div>
             <span class="module1-kicker">TRÊN MÀN ẢNH</span>
-            <h2>Chọn phim của bạn</h2>
+            <h2 th:text="${filtering} ? 'Kết quả tìm kiếm' : 'Chọn phim của bạn'">Chọn phim của bạn</h2>
         </div>
         <p class="text-muted" th:unless="${#lists.isEmpty(movies)}"
            th:text="|Tìm thấy ${#lists.size(movies)} phim phù hợp|">5 phim phù hợp</p>

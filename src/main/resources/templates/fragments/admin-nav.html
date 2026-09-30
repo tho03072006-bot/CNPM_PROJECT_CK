@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<body>
+<!--
+  Thanh điều hướng giữa các trang quản trị. Trước đây mỗi trang tự chép một bản,
+  thêm trang mới là phải sửa từng chỗ, và trang thống kê bị bỏ sót nên vào rồi
+  không có đường quay lại. Giờ gom về đây, thêm trang mới chỉ sửa một chỗ.
+
+  Cách dùng: <nav th:replace="~{fragments/admin-nav :: adminNav('movies')}"></nav>
+  Tham số là trang đang mở: movies | rooms | showtimes | users | stats
+-->
+<nav th:fragment="adminNav(current)" class="module1-admin-nav" aria-label="Các trang quản trị">
+    <a th:href="@{/admin/movies}" th:attr="aria-current=${current == 'movies'} ? 'page' : null">Phim</a>
+    <a th:href="@{/admin/rooms}" th:attr="aria-current=${current == 'rooms'} ? 'page' : null">Phòng chiếu</a>
+    <a th:href="@{/admin/showtimes}" th:attr="aria-current=${current == 'showtimes'} ? 'page' : null">Suất chiếu</a>
+    <a th:href="@{/admin/users}" th:attr="aria-current=${current == 'users'} ? 'page' : null">Người dùng</a>
+    <a th:href="@{/admin/thong-ke}" th:attr="aria-current=${current == 'stats'} ? 'page' : null">Thống kê</a>
+</nav>
+</body>
+</html>

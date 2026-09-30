@@ -41,6 +41,7 @@ public class AdminStatsController {
         model.addAttribute("topMovies", statsService.findTopMovies(days, TOP_MOVIE_LIMIT));
         model.addAttribute("totalRevenue", statsService.sumRevenue(revenueByDay));
         model.addAttribute("totalTickets", statsService.sumTickets(revenueByDay));
+        model.addAttribute("refundSummary", statsService.summarizeRefunds(days));
         return "admin/stats";
     }
 

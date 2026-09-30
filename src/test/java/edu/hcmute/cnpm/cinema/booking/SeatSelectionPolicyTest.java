@@ -36,26 +36,37 @@ class SeatSelectionPolicyTest {
     }
 
     @Test
-    @DisplayName("Từ chối các ghế nằm trên hai hàng khác nhau")
-    void shouldRejectSelection_whenSeatsAreInDifferentRows() {
-        List<Seat> roomSeats = new ArrayList<>(createRow("A", 3, "NORMAL"));
-        roomSeats.addAll(createRow("B", 3, "NORMAL", 10L));
+    @DisplayName("Cho phép chọn ghế ở nhiều hàng khác nhau trong cùng một lượt")
+    void shouldAcceptSelection_whenSeatsAreInDifferentRows() {
+        List<Seat> roomSeats = new ArrayList<>(createRow("A", 4, "NORMAL"));
+        roomSeats.addAll(createRow("B", 4, "NORMAL", 10L));
 
-        assertThatThrownBy(() -> seatSelectionPolicy.validateSelection(
-                roomSeats, List.of(roomSeats.get(0), roomSeats.get(3)), Set.of()))
-                .isInstanceOf(InvalidBookingException.class)
-                .hasMessageContaining("cùng một hàng");
+        // A1-A2 và B3-B4: mỗi hàng còn lại hai ghế liền nhau, không có ghế lẻ.
+        assertThatCode(() -> seatSelectionPolicy.validateSelection(
+                roomSeats, List.of(roomSeats.get(0), roomSeats.get(1), roomSeats.get(6), roomSeats.get(7)), Set.of()))
+                .doesNotThrowAnyException();
     }
 
     @Test
-    @DisplayName("Từ chối lựa chọn bỏ trống ghế ở giữa")
-    void shouldRejectSelection_whenSelectedSeatsAreNotAdjacent() {
+    @DisplayName("Cho phép chọn các ghế cách xa nhau trên cùng hàng nếu không để lại ghế lẻ")
+    void shouldAcceptSelection_whenSeatsAreApartWithoutSingleGap() {
+        List<Seat> roomSeats = createRow("A", 8, "NORMAL");
+
+        // A1 và A8 ở hai mép: ở giữa còn sáu ghế liền nhau.
+        assertThatCode(() -> seatSelectionPolicy.validateSelection(
+                roomSeats, List.of(roomSeats.get(0), roomSeats.get(7)), Set.of()))
+                .doesNotThrowAnyException();
+    }
+
+    @Test
+    @DisplayName("Từ chối chừa đúng một ghế trống kẹp giữa hai ghế vừa chọn")
+    void shouldRejectSelection_whenSkippingExactlyOneSeatBetweenSelectedSeats() {
         List<Seat> roomSeats = createRow("A", 5, "NORMAL");
 
         assertThatThrownBy(() -> seatSelectionPolicy.validateSelection(
                 roomSeats, List.of(roomSeats.get(0), roomSeats.get(2)), Set.of()))
                 .isInstanceOf(InvalidBookingException.class)
-                .hasMessageContaining("liền nhau");
+                .hasMessageContaining("ghế A2 trống một mình");
     }
 
     @Test

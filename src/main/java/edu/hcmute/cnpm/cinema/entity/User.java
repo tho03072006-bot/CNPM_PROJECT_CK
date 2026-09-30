@@ -1,6 +1,8 @@
 package edu.hcmute.cnpm.cinema.entity;
 
 import jakarta.persistence.*;
+import org.hibernate.annotations.Nationalized;
+
 import java.time.LocalDateTime;
 
 @Entity
@@ -11,6 +13,9 @@ public class User {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    // Họ tên người Việt phải lưu Unicode (NVARCHAR). Thiếu @Nationalized thì database do
+    // Hibernate tự tạo (database test, CI) sinh cột varchar, "Trần Văn Mới" thành "Tr?n Van M?i".
+    @Nationalized
     @Column(name = "full_name", nullable = false, length = 150)
     private String fullName;
 

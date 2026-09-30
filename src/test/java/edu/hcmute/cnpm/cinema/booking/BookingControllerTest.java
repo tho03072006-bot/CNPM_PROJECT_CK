@@ -68,7 +68,7 @@ class BookingControllerTest {
                 .andExpect(content().string(containsString("seat-map-scroll")))
                 .andExpect(content().string(containsString("Bạn cần đăng nhập")))
                 .andExpect(content().string(containsString("Tối đa 8 chỗ")))
-                .andExpect(content().string(containsString("không tạo thêm một ghế trống đơn độc")))
+                .andExpect(content().string(containsString("Không để trống đúng một ghế lẻ")))
                 .andExpect(content().string(containsString("/booking/showtime/1/hold")));
     }
 
