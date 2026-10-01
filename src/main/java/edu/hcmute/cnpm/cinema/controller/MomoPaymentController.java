@@ -29,6 +29,7 @@ import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.List;
 
 /**
  * Thanh toán qua ví MoMo, hai cách:
@@ -61,13 +62,14 @@ public class MomoPaymentController {
     /** Khách chọn "Thẻ ATM / thẻ quốc tế": tạo giao dịch rồi chuyển thẳng sang trang của MoMo. */
     @PostMapping("/{showtimeId}/momo")
     public String startPayment(@PathVariable Long showtimeId, HttpSession session,
+                               @RequestParam(required = false) List<Long> ticketIds,
                                RedirectAttributes redirectAttributes) {
         User customer = SessionUsers.current(session);
         if (customer == null) {
             return SessionUsers.redirectToLogin("/thanh-toan/" + showtimeId);
         }
         try {
-            return "redirect:" + momoPaymentService.startPayment(customer.getId(), showtimeId);
+            return "redirect:" + momoPaymentService.startPayment(customer.getId(), showtimeId, ticketIds);
         } catch (BusinessException exception) {
             redirectAttributes.addFlashAttribute(Constants.MODEL_ERROR_MESSAGE, exception.getMessage());
             return "redirect:/thanh-toan/" + showtimeId;
@@ -77,13 +79,14 @@ public class MomoPaymentController {
     /** Khách chọn "Quét mã QR MoMo": tạo giao dịch rồi mở trang hiện mã QR của rạp. */
     @PostMapping("/{showtimeId}/momo-qr")
     public String startQrPayment(@PathVariable Long showtimeId, HttpSession session,
+                                 @RequestParam(required = false) List<Long> ticketIds,
                                  RedirectAttributes redirectAttributes) {
         User customer = SessionUsers.current(session);
         if (customer == null) {
             return SessionUsers.redirectToLogin("/thanh-toan/" + showtimeId);
         }
         try {
-            MomoQrPayment qrPayment = momoPaymentService.startQrPayment(customer.getId(), showtimeId);
+            MomoQrPayment qrPayment = momoPaymentService.startQrPayment(customer.getId(), showtimeId, ticketIds);
             rememberQrPayment(session, qrPayment);
             return "redirect:/thanh-toan/momo/qr/" + qrPayment.orderId();
         } catch (BusinessException exception) {

@@ -53,6 +53,7 @@
             -->
             <div class="payment-options">
                 <form th:if="${momoEnabled}" th:action="@{/thanh-toan/{id}/momo-qr(id=${showtimeId})}" method="post">
+                    <input th:each="ticket : ${tickets}" type="hidden" name="ticketIds" th:value="${ticket.id}">
                     <button class="btn btn-accent account-submit" type="submit">Quét mã QR bằng app MoMo</button>
                 </form>
                 <p class="text-muted account-summary-note" th:if="${momoEnabled}">
@@ -60,12 +61,14 @@
                     không phải nhập thông tin thẻ.
                 </p>
                 <form th:if="${momoEnabled}" th:action="@{/thanh-toan/{id}/momo(id=${showtimeId})}" method="post">
+                    <input th:each="ticket : ${tickets}" type="hidden" name="ticketIds" th:value="${ticket.id}">
                     <button class="btn btn-ghost account-submit" type="submit">Thẻ ATM hoặc thẻ quốc tế qua MoMo</button>
                 </form>
                 <p class="text-muted account-summary-note" th:if="${momoEnabled}">
                     Chuyển sang trang MoMo để nhập thông tin thẻ, trả xong sẽ tự quay lại đây.
                 </p>
                 <form th:action="@{/thanh-toan/{id}(id=${showtimeId})}" method="post">
+                    <input th:each="ticket : ${tickets}" type="hidden" name="ticketIds" th:value="${ticket.id}">
                     <button class="btn account-submit" type="submit"
                             th:classappend="${momoEnabled} ? 'btn-ghost' : 'btn-accent'">Trả tiền mặt tại quầy</button>
                 </form>

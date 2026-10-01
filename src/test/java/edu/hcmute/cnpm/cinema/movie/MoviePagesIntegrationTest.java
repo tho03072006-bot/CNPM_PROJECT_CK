@@ -134,6 +134,22 @@ class MoviePagesIntegrationTest extends IntegrationTestBase {
                 .andExpect(model().attributeHasFieldErrors("movieForm", "posterUrl"));
     }
 
+    @org.junit.jupiter.params.ParameterizedTest
+    @org.junit.jupiter.params.provider.NullAndEmptySource
+    @org.junit.jupiter.params.provider.ValueSource(strings = {" ", "T12", "18+"})
+    @DisplayName("Không lưu phim mới khi thiếu hoặc sai phân loại độ tuổi")
+    void shouldRejectMovie_whenAgeRatingIsMissingOrInvalid(String rating) throws Exception {
+        User admin = new User();
+        admin.setRole(Role.ADMIN);
+        var request = MockMvcRequestBuilders.post("/admin/movies")
+                .sessionAttr(Constants.SESSION_USER, admin)
+                .param("title", "Phim không hợp lệ").param("durationMin", "100");
+        if (rating != null) request.param("ageRating", rating);
+        mockMvc.perform(request).andExpect(status().isOk())
+                .andExpect(model().attributeHasFieldErrors("movieForm", "ageRating"));
+        assertThat(movieRepository.findAll()).isEmpty();
+    }
+
     @Test
     @DisplayName("Trang chi tiết và trang quản trị hiển thị suất chiếu sắp tới")
     void shouldRenderUpcomingShowtime_whenOpeningMovieAndAdminPages() throws Exception {
@@ -169,7 +185,7 @@ class MoviePagesIntegrationTest extends IntegrationTestBase {
                         .sessionAttr(Constants.SESSION_USER, admin)
                         .param("title", "Bão Giữa Trời Quang")
                         .param("genre", "Tâm lý")
-                        .param("durationMin", "120"))
+                        .param("durationMin", "120").param("ageRating", "T13"))
                 .andExpect(status().is3xxRedirection())
                 .andExpect(redirectedUrl("/admin/movies"));
         Movie movie = movieRepository.findAll().getFirst();
@@ -209,7 +225,7 @@ class MoviePagesIntegrationTest extends IntegrationTestBase {
         mockMvc.perform(MockMvcRequestBuilders.post("/admin/movies/{id}", movie.getId())
                         .sessionAttr(Constants.SESSION_USER, admin)
                         .param("title", "Tên mới")
-                        .param("durationMin", "100"))
+                        .param("durationMin", "100").param("ageRating", "T13"))
                 .andExpect(status().is3xxRedirection());
         assertThat(movieRepository.findById(movie.getId()).orElseThrow().getTitle()).isEqualTo("Tên mới");
 

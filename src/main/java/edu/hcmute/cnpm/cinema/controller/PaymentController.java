@@ -16,6 +16,7 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
@@ -65,6 +66,7 @@ public class PaymentController {
 
     @PostMapping("/{showtimeId}")
     public String confirmPayment(@PathVariable Long showtimeId, HttpSession session,
+                                 @RequestParam(required = false) List<Long> ticketIds,
                                  RedirectAttributes redirectAttributes) {
         User customer = SessionUsers.current(session);
         if (customer == null) {
@@ -72,18 +74,18 @@ public class PaymentController {
         }
 
         try {
-            List<Ticket> paid = paymentService.confirmPayment(customer.getId(), showtimeId);
+            List<Ticket> paid = paymentService.confirmCounterPayment(customer.getId(), showtimeId, ticketIds);
             BigDecimal total = paymentService.sumPrice(paid);
 
             // Gửi thư sau khi đã ghi nhận thanh toán. Hàm này không bao giờ ném lỗi
             // nên server mail chập chờn cũng không làm khách mất vé.
             ticketMailService.sendTicketConfirmation(customer, paid, total);
 
-            List<Long> ticketIds = new ArrayList<>();
+            List<Long> paidTicketIds = new ArrayList<>();
             for (Ticket ticket : paid) {
-                ticketIds.add(ticket.getId());
+                paidTicketIds.add(ticket.getId());
             }
-            redirectAttributes.addFlashAttribute("paidTicketIds", ticketIds);
+            redirectAttributes.addFlashAttribute("paidTicketIds", paidTicketIds);
             redirectAttributes.addFlashAttribute("receiptCode", paid.get(0).getBookingOrder().getReceiptCode());
             return "redirect:/thanh-toan/hoan-tat";
         } catch (BusinessException exception) {

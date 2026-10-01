@@ -50,8 +50,8 @@ import java.util.regex.Pattern;
 public class MomoPaymentService {
 
     private static final Logger log = LoggerFactory.getLogger(MomoPaymentService.class);
-    /** Mã đơn gửi MoMo: UTE-<suất chiếu>-<khách>-<thời điểm>. Kẹp sẵn hai mã để lúc quay về biết vé của ai. */
-    private static final Pattern ORDER_ID_PATTERN = Pattern.compile("^UTE-(\\d+)-(\\d+)-(\\d+)$");
+    /** Mã đơn gắn với vé đầu tiên của lượt giữ; callback cũ không thể thanh toán lượt mới. */
+    private static final Pattern ORDER_ID_PATTERN = Pattern.compile("^UTE-(\\d+)-(\\d+)-(\\d+)(?:-(\\d+))?$");
     /**
      * Mã MoMo trả về khi giao dịch chưa xong: 1000 là đã tạo, đang chờ khách xác nhận; 7000 và
      * 7002 là đang xử lý; 9000 là đã được xác nhận, chờ trừ tiền. Mã khác là thất bại hẳn.
@@ -82,16 +82,21 @@ public class MomoPaymentService {
 
     /** Tạo giao dịch MoMo cho các ghế khách đang giữ, trả về địa chỉ trang thanh toán của MoMo. */
     public String startPayment(Long userId, Long showtimeId) {
+        return createPayment(userId, showtimeId, null);
+    }
+
+    private String createPayment(Long userId, Long showtimeId, List<Long> expectedIds) {
         if (!isEnabled()) {
             throw new BusinessException("Rạp chưa bật thanh toán qua MoMo. Bạn chọn trả tại quầy nhé.");
         }
-        List<Ticket> payable = paymentService.findPayableTickets(userId, showtimeId);
+        PaymentService.Checkout snapshot = paymentService.prepareCheckout(userId, showtimeId, expectedIds);
+        List<Ticket> payable = snapshot.tickets();
         if (payable.isEmpty()) {
             throw new InvalidBookingException(
                     "Không còn ghế nào đang giữ cho suất chiếu này. Bạn hãy chọn ghế lại.");
         }
-        long amount = toVnd(paymentService.totalDue(userId, showtimeId));
-        String orderId = newOrderId(showtimeId, userId);
+        long amount = toVnd(snapshot.total());
+        String orderId = newOrderId(showtimeId, userId, payable);
         String orderInfo = "Thanh toan " + payable.size() + " ve UTE Cinema";
         return apiClient.createPayment(orderId, amount, orderInfo);
     }
@@ -101,16 +106,21 @@ public class MomoPaymentService {
      * mở app MoMo quét mã; trang tự hỏi {@link #checkQrPayment} xem đã trả chưa.
      */
     public MomoQrPayment startQrPayment(Long userId, Long showtimeId) {
+        return createQrPayment(userId, showtimeId, null);
+    }
+
+    private MomoQrPayment createQrPayment(Long userId, Long showtimeId, List<Long> expectedIds) {
         if (!isEnabled()) {
             throw new BusinessException("Rạp chưa bật thanh toán qua MoMo. Bạn chọn trả tại quầy nhé.");
         }
-        List<Ticket> payable = paymentService.findPayableTickets(userId, showtimeId);
+        PaymentService.Checkout snapshot = paymentService.prepareCheckout(userId, showtimeId, expectedIds);
+        List<Ticket> payable = snapshot.tickets();
         if (payable.isEmpty()) {
             throw new InvalidBookingException(
                     "Không còn ghế nào đang giữ cho suất chiếu này. Bạn hãy chọn ghế lại.");
         }
-        long amount = toVnd(paymentService.totalDue(userId, showtimeId));
-        String orderId = newOrderId(showtimeId, userId);
+        long amount = toVnd(snapshot.total());
+        String orderId = newOrderId(showtimeId, userId, payable);
         MomoCheckout checkout = apiClient.createQrPayment(orderId, amount,
                 "Thanh toan " + payable.size() + " ve UTE Cinema");
         return new MomoQrPayment(orderId, showtimeId, userId, amount,
@@ -125,14 +135,14 @@ public class MomoPaymentService {
      */
     public MomoPaymentResult checkQrPayment(String orderId, Long userId) {
         Matcher order = ORDER_ID_PATTERN.matcher(orderId == null ? "" : orderId);
-        if (!isEnabled() || userId == null || !order.matches() || !userId.equals(Long.valueOf(order.group(2)))) {
+        if (!isEnabled() || userId == null || !order.matches() || !userId.equals(identifier(order.group(2)))) {
             throw new BusinessException("Không tìm thấy giao dịch MoMo này trong tài khoản của bạn.");
         }
-        Long showtimeId = Long.valueOf(order.group(1));
+        Long showtimeId = identifier(order.group(1));
 
         MomoQueryResult status = apiClient.queryPayment(orderId);
         if (status.resultCode() == 0) {
-            return settle(showtimeId, userId, status.transId(), status.amount());
+            return settle(showtimeId, userId, anchor(order), status.transId(), status.amount());
         }
         if (PENDING_RESULT_CODES.contains(status.resultCode())) {
             return new MomoPaymentResult(Outcome.PENDING, showtimeId, userId, List.of(),
@@ -155,7 +165,7 @@ public class MomoPaymentService {
         if (!order.matches()) {
             throw new BusinessException("Mã đơn MoMo không phải của UTE Cinema.");
         }
-        Long showtimeId = Long.valueOf(order.group(1));
+        Long showtimeId = identifier(order.group(1));
         Long userId = Long.valueOf(order.group(2));
         String transId = value(params, "transId");
 
@@ -165,21 +175,21 @@ public class MomoPaymentService {
                             + "). Ghế vẫn được giữ trong thời gian còn lại, bạn có thể thử lại.");
         }
 
-        return settle(showtimeId, userId, transId, Long.parseLong(value(params, "amount")));
+        return settle(showtimeId, userId, anchor(order), transId, Long.parseLong(value(params, "amount")));
     }
 
     /**
      * MoMo đã xác nhận khách trả {@code amount} đồng (mã giao dịch {@code transId}): xuất vé,
      * hoặc hoàn tiền nếu không xuất được. Dùng chung cho trang kết quả, IPN và thanh toán QR.
      */
-    private MomoPaymentResult settle(Long showtimeId, Long userId, String transId, long amount) {
+    private MomoPaymentResult settle(Long showtimeId, Long userId, Long anchorId, String transId, long amount) {
         List<Ticket> alreadyPaid = ticketRepository.findByPaymentRef(transId);
         if (!alreadyPaid.isEmpty()) {
             return paidResult(Outcome.ALREADY_PAID, showtimeId, userId, alreadyPaid);
         }
 
         List<Ticket> payable = paymentService.findPayableTickets(userId, showtimeId);
-        if (payable.isEmpty()) {
+        if (anchorId == null || payable.isEmpty() || !anchorId.equals(payable.stream().map(Ticket::getId).min(Long::compareTo).orElse(null))) {
             // Hết ghế đang giữ có thể vì một lần gọi khác (IPN, tab khác, lượt hỏi QR trước)
             // vừa xuất vé cho đúng giao dịch này. Kiểm lại trước khi hoàn tiền.
             List<Ticket> paidMeanwhile = ticketRepository.findByPaymentRef(transId);
@@ -189,13 +199,9 @@ public class MomoPaymentService {
             return refundBecauseTicketsCannotBeIssued(showtimeId, userId, transId, amount,
                     "Ghế đã hết thời gian giữ trước khi MoMo xác nhận nên không xuất được vé.");
         }
-        if (toVnd(paymentService.totalDue(userId, showtimeId)) != amount) {
-            return refundBecauseTicketsCannotBeIssued(showtimeId, userId, transId, amount,
-                    "Số tiền đã trả không khớp với số ghế đang giữ nên không xuất được vé.");
-        }
-
         try {
-            List<Ticket> paid = paymentService.confirmPayment(userId, showtimeId, PaymentMethod.MOMO, transId);
+            List<Ticket> paid = paymentService.confirmPayment(userId, showtimeId, PaymentMethod.MOMO, transId,
+                    payable.stream().map(Ticket::getId).toList(), anchorId, amount);
             userRepository.findById(userId).ifPresent(customer ->
                     ticketMailService.sendTicketConfirmation(customer, paid, paymentService.sumPrice(paid)));
             return paidResult(Outcome.PAID, showtimeId, userId, paid);
@@ -244,7 +250,7 @@ public class MomoPaymentService {
     private MomoPaymentResult refundBecauseTicketsCannotBeIssued(Long showtimeId, Long userId, String transId,
                                                                  long amount, String reason) {
         try {
-            String refundRef = apiClient.refund("UTE-HOAN-" + transId + "-" + System.currentTimeMillis(),
+            String refundRef = apiClient.refund("UTE-HOAN-" + transId,
                     transId, amount, "Hoan tien do khong xuat duoc ve UTE Cinema");
             log.warn("Da tu hoan {} d cho giao dich MoMo {} (ma hoan {}): {}", amount, transId, refundRef, reason);
             return new MomoPaymentResult(Outcome.REFUNDED, showtimeId, userId, List.of(),
@@ -262,8 +268,33 @@ public class MomoPaymentService {
                 tickets.stream().map(Ticket::getId).toList(), "Thanh toán qua MoMo thành công.");
     }
 
-    private static String newOrderId(Long showtimeId, Long userId) {
-        return "UTE-" + showtimeId + "-" + userId + "-" + System.currentTimeMillis();
+    private static Long identifier(String value) {
+        try {
+            long id = Long.parseLong(value);
+            if (id > 0) return id;
+        } catch (NumberFormatException ignored) { }
+        throw new BusinessException("Mã giao dịch MoMo không hợp lệ.");
+    }
+
+    private static Long anchor(Matcher order) {
+        // Legacy orders lack a hold identity and must never charge a replacement hold.
+        return order.group(4) == null ? null : identifier(order.group(3));
+    }
+
+    private static String newOrderId(Long showtimeId, Long userId, List<Ticket> payable) {
+        return "UTE-" + showtimeId + "-" + userId + "-"
+                + payable.stream().map(Ticket::getId).min(Long::compareTo).orElseThrow()
+                + "-" + (java.util.UUID.randomUUID().getMostSignificantBits() & Long.MAX_VALUE);
+    }
+
+    public String startPayment(Long userId, Long showtimeId, List<Long> expectedIds) {
+        if (expectedIds == null) throw new InvalidBookingException("Thiếu mã lượt giữ ghế. Vui lòng tải lại trang.");
+        return createPayment(userId, showtimeId, expectedIds);
+    }
+
+    public MomoQrPayment startQrPayment(Long userId, Long showtimeId, List<Long> expectedIds) {
+        if (expectedIds == null) throw new InvalidBookingException("Thiếu mã lượt giữ ghế. Vui lòng tải lại trang.");
+        return createQrPayment(userId, showtimeId, expectedIds);
     }
 
     /** Ghế giữ sớm nhất hết hạn lúc nào - đó là hạn chót để trả tiền cho cả lượt. */

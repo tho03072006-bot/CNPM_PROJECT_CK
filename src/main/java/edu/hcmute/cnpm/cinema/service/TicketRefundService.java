@@ -42,12 +42,14 @@ public class TicketRefundService {
     public static final int MIN_CANCEL_HOURS = 2;
     public static final int PARTIAL_REFUND_PERCENT = 50;
 
+    private final BookingLockService locks;
     private final TicketRepository ticketRepository;
     private final TicketRefundRepository refundRepository;
     private final MomoApiClient momoApiClient;
 
     public TicketRefundService(TicketRepository ticketRepository, TicketRefundRepository refundRepository,
-                               MomoApiClient momoApiClient) {
+                               MomoApiClient momoApiClient, BookingLockService locks) {
+        this.locks = locks;
         this.ticketRepository = ticketRepository;
         this.refundRepository = refundRepository;
         this.momoApiClient = momoApiClient;
@@ -91,6 +93,9 @@ public class TicketRefundService {
      */
     @Transactional
     public TicketRefund cancelPaidTicket(Long userId, Long ticketId, LocalDateTime now) {
+        Long showtimeId = ticketRepository.findShowtimeIdByTicketId(ticketId)
+                .orElseThrow(() -> new ResourceNotFoundException("vé", ticketId));
+        locks.lock(showtimeId);
         RefundQuote quote = quote(userId, ticketId, now);
         Ticket ticket = quote.getTicket();
         TicketRefund refund = snapshot(ticket, quote, now);

@@ -19,6 +19,10 @@ import edu.hcmute.cnpm.cinema.service.SeatService;
 import edu.hcmute.cnpm.cinema.support.TestDataFactory;
 
 import java.time.LocalDateTime;
+import edu.hcmute.cnpm.cinema.service.BookingClock;
+import edu.hcmute.cnpm.cinema.service.BookingLockService;
+import edu.hcmute.cnpm.cinema.service.BookingConsentPolicy;
+import java.util.Optional;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
@@ -36,12 +40,14 @@ class BookingTestFixture {
             roomRepository, seatRepository, showtimeRepository);
     final SeatPricingService seatPricingService = new SeatPricingService();
     final SeatSelectionPolicy seatSelectionPolicy = new SeatSelectionPolicy();
-    final SeatHoldService seatHoldService = new SeatHoldService(ticketRepository);
+    final BookingClock clock = new BookingClock();
+    final BookingLockService locks = new BookingLockService(showtimeRepository);
+    final SeatHoldService seatHoldService = new SeatHoldService(ticketRepository, locks, clock);
     final SeatService seatService = new SeatService(showtimeRepository, seatRepository,
-            ticketRepository, seatPricingService);
+            ticketRepository, seatPricingService, clock);
     final SeatBookingService seatBookingService = new SeatBookingService(seatService,
             seatPricingService, seatSelectionPolicy, seatHoldService,
-            seatRepository, ticketRepository, userRepository);
+            seatRepository, ticketRepository, userRepository, locks, clock, new BookingConsentPolicy());
     final Movie movie;
     final Room room;
     final Seat seat;
@@ -63,6 +69,7 @@ class BookingTestFixture {
         seat.setId(1L);
         showtime = testDataFactory.createShowtime(movie, room, LocalDateTime.now().plusDays(1));
         showtime.setId(1L);
+        when(showtimeRepository.findByIdForBookingUpdate(1L)).thenReturn(Optional.of(showtime));
         customer = testDataFactory.createCustomer("module2@test.local");
         customer.setId(1L);
     }

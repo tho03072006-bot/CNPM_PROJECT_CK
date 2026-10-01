@@ -65,7 +65,7 @@ class SeatBookingServiceTest {
         when(fixture.userRepository.findByIdForBookingUpdate(1L)).thenReturn(Optional.empty());
         assertThatThrownBy(() -> fixture.seatBookingService.holdSeats(1L, createRequest(1L), fixture.customer))
                 .isInstanceOf(InvalidBookingException.class);
-        verifyNoInteractions(fixture.ticketRepository);
+        verify(fixture.ticketRepository, org.mockito.Mockito.never()).saveAndFlush(any(Ticket.class));
     }
 
     @Test
@@ -101,7 +101,7 @@ class SeatBookingServiceTest {
     void shouldRejectBookingWithoutSavingTickets_whenOneSeatDoesNotExist() {
         assertThatThrownBy(() -> fixture.seatBookingService.holdSeats(1L, createRequest(1L, 99L), fixture.customer))
                 .isInstanceOf(ResourceNotFoundException.class);
-        verifyNoInteractions(fixture.ticketRepository);
+        verify(fixture.ticketRepository, org.mockito.Mockito.never()).saveAndFlush(any(Ticket.class));
     }
 
     @Test
@@ -112,7 +112,7 @@ class SeatBookingServiceTest {
         fixture.seat.setRoom(otherRoom);
         assertThatThrownBy(() -> fixture.seatBookingService.holdSeats(1L, createRequest(1L), fixture.customer))
                 .isInstanceOf(InvalidBookingException.class).hasMessageContaining("không thuộc phòng");
-        verifyNoInteractions(fixture.ticketRepository);
+        verify(fixture.ticketRepository, org.mockito.Mockito.never()).saveAndFlush(any(Ticket.class));
     }
 
     @Test
@@ -121,22 +121,22 @@ class SeatBookingServiceTest {
         fixture.seat.setSeatType("OTHER");
         assertThatThrownBy(() -> fixture.seatBookingService.holdSeats(1L, createRequest(1L), fixture.customer))
                 .isInstanceOf(InvalidBookingException.class);
-        verifyNoInteractions(fixture.ticketRepository);
+        verify(fixture.ticketRepository, org.mockito.Mockito.never()).saveAndFlush(any(Ticket.class));
     }
 
     @Test
-    @DisplayName("Không cho một tài khoản mở hai lượt giữ ghế cho cùng suất chiếu")
-    void shouldRejectBooking_whenCustomerAlreadyHasActiveHold() {
+    @DisplayName("Gửi lại cùng lựa chọn trả lượt giữ hiện có, không gia hạn")
+    void shouldReturnExistingHold_whenCustomerRetriesSameSelection() {
         Ticket activeTicket = fixture.testDataFactory
                 .newHeldTicket(fixture.showtime, fixture.seat, fixture.customer);
         activeTicket.setId(10L);
         when(fixture.ticketRepository.findByUserIdAndShowtimeIdAndStatus(
                 1L, 1L, TicketStatus.HELD)).thenReturn(List.of(activeTicket));
 
-        assertThatThrownBy(() -> fixture.seatBookingService
-                .holdSeats(1L, createRequest(1L), fixture.customer))
-                .isInstanceOf(InvalidBookingException.class)
-                .hasMessageContaining("đang có một lượt giữ ghế");
+        HoldSeatsResponse response = fixture.seatBookingService.holdSeats(1L, createRequest(1L), fixture.customer);
+        assertThat(response.getTicketIds()).containsExactly(10L);
+        assertThat(response.getExpiresAt()).isEqualTo(activeTicket.getHeldAt().plusMinutes(5));
+        verify(fixture.ticketRepository, org.mockito.Mockito.never()).saveAndFlush(any(Ticket.class));
     }
 
     @Test
@@ -180,6 +180,8 @@ class SeatBookingServiceTest {
 
     private HoldSeatsRequest createRequest(Long... seatIds) {
         HoldSeatsRequest request = new HoldSeatsRequest();
+        request.setAgeConfirmed(true);
+        request.setTermsAccepted(true);
         request.setSeatIds(Arrays.asList(seatIds));
         return request;
     }

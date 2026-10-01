@@ -96,7 +96,7 @@ class MomoPaymentIntegrationTest extends IntegrationTestBase {
 
         assertThat(payUrl).isEqualTo("https://test-payment.momo.vn/pay?t=abc");
         verify(momoApiClient).createPayment(
-                argThat(orderId -> orderId.matches("UTE-" + showtime.getId() + "-" + customer.getId() + "-\\d+")),
+                argThat(orderId -> orderId.matches("UTE-" + showtime.getId() + "-" + customer.getId() + "-\\d+-\\d+")),
                 eq(150000L), anyString());
     }
 
@@ -193,7 +193,7 @@ class MomoPaymentIntegrationTest extends IntegrationTestBase {
 
         MomoQrPayment qrPayment = momoPaymentService.startQrPayment(customer.getId(), showtime.getId());
 
-        assertThat(qrPayment.orderId()).matches("UTE-" + showtime.getId() + "-" + customer.getId() + "-\\d+");
+        assertThat(qrPayment.orderId()).matches("UTE-" + showtime.getId() + "-" + customer.getId() + "-\\d+-\\d+");
         assertThat(qrPayment.amount()).isEqualTo(150000L);
         assertThat(qrPayment.qrCodeUrl()).isEqualTo(QR_CHECKOUT.qrCodeUrl());
         LocalDateTime heldAt = heldTickets.getFirst().getHeldAt();
@@ -245,7 +245,8 @@ class MomoPaymentIntegrationTest extends IntegrationTestBase {
         MockHttpSession session = new MockHttpSession();
         session.setAttribute(Constants.SESSION_USER, customer);
 
-        String qrPage = mockMvc.perform(post("/thanh-toan/{id}/momo-qr", showtime.getId()).session(session))
+        String qrPage = mockMvc.perform(post("/thanh-toan/{id}/momo-qr", showtime.getId()).session(session)
+                .param("ticketIds", heldTickets.stream().map(ticket -> ticket.getId().toString()).toArray(String[]::new)))
                 .andExpect(status().is3xxRedirection())
                 .andReturn().getResponse().getRedirectedUrl();
         assertThat(qrPage).startsWith("/thanh-toan/momo/qr/UTE-" + showtime.getId() + "-" + customer.getId() + "-");
@@ -271,14 +272,14 @@ class MomoPaymentIntegrationTest extends IntegrationTestBase {
     }
 
     private String orderIdOf(User owner) {
-        return "UTE-" + showtime.getId() + "-" + owner.getId() + "-1790000000000";
+        return "UTE-" + showtime.getId() + "-" + owner.getId() + "-" + heldTickets.getFirst().getId() + "-1790000000000";
     }
 
     /** Dựng kết quả MoMo gửi về và ký bằng khoá test, đúng thứ tự trường MoMo quy định. */
     private Map<String, String> signedResult(long amount, String resultCode) {
         Map<String, String> params = new LinkedHashMap<>();
         params.put("partnerCode", momoProperties.getPartnerCode());
-        params.put("orderId", "UTE-" + showtime.getId() + "-" + customer.getId() + "-1790000000000");
+        params.put("orderId", "UTE-" + showtime.getId() + "-" + customer.getId() + "-" + heldTickets.getFirst().getId() + "-1790000000000");
         params.put("requestId", params.get("orderId"));
         params.put("amount", String.valueOf(amount));
         params.put("orderInfo", "Thanh toan 2 ve UTE Cinema");
