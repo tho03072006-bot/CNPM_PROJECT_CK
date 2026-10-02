@@ -33,17 +33,45 @@
         <div class="card account-summary">
             <div class="account-summary-line">
                 <span th:text="|${#lists.size(tickets)} vé|">2 vé</span>
-                <strong th:text="|${#numbers.formatDecimal(ticketSubtotal, 0, 'POINT', 0, 'COMMA')} đ|">230.000 đ</strong>
+                <strong th:text="|${@money.number(ticketSubtotal)} đ|">230.000 đ</strong>
             </div>
             <div th:if="${order != null and !#lists.isEmpty(order.items)}" class="payment-order-items">
                 <div class="account-summary-line" th:each="item : ${order.items}">
                     <span th:text="|${item.productName} × ${item.quantity}|">Combo × 1</span>
-                    <strong th:text="|${#numbers.formatDecimal(item.lineTotal, 0, 'POINT', 0, 'COMMA')} đ|">79.000 đ</strong>
+                    <strong th:text="|${@money.number(item.lineTotal)} đ|">79.000 đ</strong>
                 </div>
+            </div>
+            <section class="voucher-panel" aria-labelledby="voucher-title">
+                <h2 id="voucher-title">Voucher / Ưu đãi</h2>
+                <p class="form-hint">Mỗi đơn dùng một mã, áp dụng cho tiền vé. Bắp nước không được giảm.
+                    <a th:href="@{/uu-dai}">Xem điều kiện ưu đãi</a></p>
+                <form class="voucher-form" th:action="@{/thanh-toan/{id}/uu-dai(id=${showtimeId})}" method="post">
+                    <input type="hidden" name="walletCsrf" th:value="${walletCsrf}">
+                    <input th:each="ticket : ${tickets}" type="hidden" name="ticketIds" th:value="${ticket.id}">
+                    <label for="voucher-code">Mã ưu đãi</label>
+                    <input id="voucher-code" class="form-control" name="voucherCode" maxlength="40"
+                           list="voucher-options" placeholder="Nhập hoặc chọn mã" th:value="${order.voucherCode}">
+                    <datalist id="voucher-options">
+                        <option th:each="offer : ${offers}" th:value="${offer.code}" th:text="${offer.title}"></option>
+                    </datalist>
+                    <button class="btn btn-ghost" type="submit">Áp dụng</button>
+                </form>
+                <form th:if="${order.voucherCode != null}" th:action="@{/thanh-toan/{id}/uu-dai(id=${showtimeId})}" method="post">
+                    <input type="hidden" name="walletCsrf" th:value="${walletCsrf}">
+                    <input th:each="ticket : ${tickets}" type="hidden" name="ticketIds" th:value="${ticket.id}">
+                    <input type="hidden" name="voucherCode" value="">
+                    <button class="btn btn-ghost btn-sm" type="submit">Bỏ mã ưu đãi</button>
+                </form>
+                <p class="form-hint">Nếu thay đổi đơn hàng hoặc mã hết hiệu lực, hệ thống kiểm tra lại điều kiện.
+                    Khi đổi mã, hãy tạo lại giao dịch thanh toán để dùng số tiền mới.</p>
+            </section>
+            <div class="account-summary-line" th:if="${order.discountAmount.signum() > 0}">
+                <span th:text="|Ưu đãi ${order.voucherCode}|">Ưu đãi</span>
+                <strong th:text="|−${@money.number(order.discountAmount)} đ|"></strong>
             </div>
             <div class="account-summary-line concession-grand-total">
                 <span>Tổng thanh toán</span>
-                <strong th:text="|${#numbers.formatDecimal(total, 0, 'POINT', 0, 'COMMA')} đ|">309.000 đ</strong>
+                <strong th:text="|${@money.number(total)} đ|">309.000 đ</strong>
             </div>
             <a class="btn btn-ghost account-submit" th:href="@{/bap-nuoc/{id}(id=${showtimeId})}">Sửa lựa chọn bắp nước</a>
             <!--

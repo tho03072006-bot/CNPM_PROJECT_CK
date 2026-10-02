@@ -49,8 +49,9 @@ public class AccountController {
         return "account/profile";
     }
 
-    @GetMapping("/ve-cua-toi")
-    public String showMyTickets(HttpSession session, Model model) {
+    @GetMapping({"/ve-cua-toi", "/lich-su-dat-ve"})
+    public String showMyTickets(HttpSession session, Model model, jakarta.servlet.http.HttpServletRequest request) {
+        model.addAttribute("ticketPageTitle", request.getRequestURI().endsWith("/lich-su-dat-ve") ? "Lịch sử đặt vé" : "Vé của tôi");
         User sessionUser = SessionUsers.current(session);
         if (sessionUser == null) {
             return SessionUsers.redirectToLogin("/ve-cua-toi");

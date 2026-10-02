@@ -52,6 +52,9 @@ public class TicketRefund {
     @Column(name = "paid_price", nullable = false, precision = 10, scale = 2)
     private BigDecimal paidPrice;
 
+    @Column(name = "original_price", precision = 12, scale = 2)
+    private BigDecimal originalPrice;
+
     @Column(name = "refund_percent", nullable = false)
     private Integer refundPercent;
 
@@ -102,6 +105,8 @@ public class TicketRefund {
     public void setShowtimeStart(LocalDateTime showtimeStart) { this.showtimeStart = showtimeStart; }
     public BigDecimal getPaidPrice() { return paidPrice; }
     public void setPaidPrice(BigDecimal paidPrice) { this.paidPrice = paidPrice; }
+    public BigDecimal getOriginalPrice() { return originalPrice == null ? paidPrice : originalPrice; }
+    public void setOriginalPrice(BigDecimal originalPrice) { this.originalPrice = originalPrice; }
     public Integer getRefundPercent() { return refundPercent; }
     public void setRefundPercent(Integer refundPercent) { this.refundPercent = refundPercent; }
     public BigDecimal getRefundAmount() { return refundAmount; }

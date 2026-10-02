@@ -59,6 +59,13 @@ public class BookingOrder {
     @Column(name = "total_amount", nullable = false, precision = 12, scale = 2)
     private BigDecimal totalAmount = BigDecimal.ZERO;
 
+    @Column(name = "voucher_code", length = 40)
+    private String voucherCode;
+
+    @org.hibernate.annotations.ColumnDefault("0")
+    @Column(name = "discount_amount", nullable = false, precision = 12, scale = 2)
+    private BigDecimal discountAmount = BigDecimal.ZERO;
+
     @Enumerated(EnumType.STRING)
     @Column(name = "payment_method", length = 20)
     private PaymentMethod paymentMethod;
@@ -116,6 +123,10 @@ public class BookingOrder {
     public void setConcessionSubtotal(BigDecimal concessionSubtotal) { this.concessionSubtotal = concessionSubtotal; }
     public BigDecimal getTotalAmount() { return totalAmount; }
     public void setTotalAmount(BigDecimal totalAmount) { this.totalAmount = totalAmount; }
+    public String getVoucherCode() { return voucherCode; }
+    public void setVoucherCode(String voucherCode) { this.voucherCode = voucherCode; }
+    public BigDecimal getDiscountAmount() { return discountAmount; }
+    public void setDiscountAmount(BigDecimal discountAmount) { this.discountAmount = discountAmount; }
     public PaymentMethod getPaymentMethod() { return paymentMethod; }
     public void setPaymentMethod(PaymentMethod paymentMethod) { this.paymentMethod = paymentMethod; }
     public String getPaymentRef() { return paymentRef; }

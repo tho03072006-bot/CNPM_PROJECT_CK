@@ -1,125 +1,52 @@
 <!DOCTYPE html>
 <html lang="vi" xmlns:th="http://www.thymeleaf.org"
       xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout" layout:decorate="~{layout/base}">
-<head><title>Hóa đơn điện tử</title></head>
+<head><title>Hóa đơn thanh toán</title></head>
 <body><div layout:fragment="content">
-    <!--
-      Bố cục theo hóa đơn bán hàng thật: đơn vị bán, số hóa đơn, người mua, bảng hàng hóa
-      có STT / ĐVT, số tiền viết bằng chữ và chữ ký hai bên. Cố ý chỉ có chữ, không hình trang trí.
-      Tờ hóa đơn luôn nền trắng chữ đen ở cả chế độ tối, in ra giấy A4 cũng y như trên màn hình.
-    -->
-    <div class="receipt-toolbar receipt-actions">
-        <a class="btn btn-ghost receipt-back" th:href="@{/ve-cua-toi}">← Về Vé của tôi</a>
-        <button class="btn btn-accent" type="button" onclick="window.print()">In hóa đơn</button>
-    </div>
-
-    <article class="receipt invoice-paper" aria-labelledby="receipt-title">
-        <header class="invoice-seller">
-            <div class="invoice-seller-info">
-                <span class="invoice-seller-label">Đơn vị bán hàng</span>
-                <strong th:text="${receipt.sellerName()}">Rạp chiếu phim UTE Cinema</strong>
-                <span>Địa chỉ: <span th:text="${receipt.sellerAddress()}">Số 1 Võ Văn Ngân</span></span>
-                <span>Email hỗ trợ: <span th:text="${receipt.sellerEmail()}">hotro@utecinema.local</span></span>
+    <article class="receipt receipt-card card" aria-labelledby="receipt-title">
+        <header class="receipt-head">
+            <div>
+                <span class="module1-kicker">UTE CINEMA</span>
+                <h1 id="receipt-title">Hóa đơn thanh toán</h1>
+                <p class="text-muted">Mã hóa đơn: <strong th:text="${order.receiptCode}">UTE-...</strong></p>
             </div>
-            <dl class="invoice-serial">
-                <div><dt>Số hóa đơn</dt><dd class="invoice-number" th:text="${receipt.invoiceNumber()}">0000042</dd></div>
-                <div><dt>Mã tra cứu</dt><dd th:text="${order.receiptCode}">UTE-...</dd></div>
-            </dl>
+            <span class="badge badge-ok">Đã thanh toán</span>
         </header>
-
-        <div class="invoice-title">
-            <h1 id="receipt-title">Hóa đơn thanh toán</h1>
-            <p class="invoice-subtitle">(Bản thể hiện của hóa đơn điện tử)</p>
-            <p class="invoice-date">
-                Ngày <strong th:text="${#temporals.format(order.paidAt, 'dd')}">02</strong>
-                tháng <strong th:text="${#temporals.format(order.paidAt, 'MM')}">10</strong>
-                năm <strong th:text="${#temporals.format(order.paidAt, 'yyyy')}">2026</strong>
-            </p>
-            <span class="invoice-stamp">Đã thanh toán</span>
-        </div>
-
-        <dl class="invoice-parties">
-            <div><dt>Họ tên người mua:</dt><dd th:text="${order.customerName}">Nguyễn Văn A</dd></div>
-            <div><dt>Email:</dt><dd th:text="${order.customerEmail}">email</dd></div>
-            <div><dt>Hình thức thanh toán:</dt><dd th:text="${receipt.paymentMethodLabel()}">Tiền mặt tại quầy</dd></div>
-            <div><dt>Thời điểm thanh toán:</dt><dd th:text="${#temporals.format(order.paidAt, 'HH:mm:ss dd/MM/yyyy')}">12:39 02/10/2026</dd></div>
-            <div th:if="${order.paymentRef != null}"><dt>Mã giao dịch MoMo:</dt><dd th:text="${order.paymentRef}">123</dd></div>
+        <dl class="receipt-meta">
+            <div><dt>Khách hàng</dt><dd th:text="${order.customerName}">Nguyễn Văn A</dd></div>
+            <div><dt>Email</dt><dd th:text="${order.customerEmail}">email</dd></div>
+            <div><dt>Thanh toán lúc</dt><dd th:text="${#temporals.format(order.paidAt, 'HH:mm dd/MM/yyyy')}">10:00</dd></div>
+            <div><dt>Phương thức</dt><dd th:text="${receipt.paymentMethodLabel()}">MoMo</dd></div>
         </dl>
-
-        <section class="invoice-showtime" aria-label="Thông tin suất chiếu">
-            <div class="invoice-showtime-movie"><span>Phim</span><strong th:text="${order.movieTitle}">Tên phim</strong></div>
-            <div><span>Suất chiếu</span><strong th:text="${#temporals.format(order.showtimeStart, 'HH:mm · dd/MM/yyyy')}">10:40 · 03/10/2026</strong></div>
-            <div><span>Phòng chiếu</span><strong th:text="${order.roomName}">Cinema 7</strong></div>
-            <div><span>Ghế</span><strong th:text="${receipt.seats()}">C5</strong></div>
+        <section class="receipt-showtime">
+            <h2 th:text="${order.movieTitle}">Tên phim</h2>
+            <p th:text="|${order.roomName} · ${#temporals.format(order.showtimeStart, 'HH:mm dd/MM/yyyy')}|">Phòng · giờ</p>
+            <p>Ghế: <strong th:text="${receipt.seats()}">A1</strong></p>
         </section>
-
-        <p class="invoice-currency">Đơn vị tính: đồng</p>
-        <div class="invoice-table-wrap">
-            <table class="invoice-table">
-                <thead>
-                <tr>
-                    <th scope="col">STT</th>
-                    <th scope="col">Tên hàng hóa, dịch vụ</th>
-                    <th scope="col">ĐVT</th>
-                    <th scope="col">Số lượng</th>
-                    <th scope="col">Đơn giá</th>
-                    <th scope="col">Thành tiền</th>
-                </tr>
-                <tr class="invoice-column-index" aria-hidden="true">
-                    <td>1</td><td>2</td><td>3</td><td>4</td><td>5</td><td>6 = 4 × 5</td>
-                </tr>
-                </thead>
+        <div class="table-wrap">
+            <table class="admin-table receipt-table">
+                <thead><tr><th scope="col">Nội dung</th><th scope="col">SL</th><th scope="col">Đơn giá</th><th scope="col">Thành tiền</th></tr></thead>
                 <tbody>
                 <tr th:each="line : ${receipt.lines()}" th:classappend="${line.refunded()} ? 'is-refunded' : ''">
-                    <td th:text="${line.number()}">1</td>
-                    <td class="invoice-item">
-                        <strong th:text="${line.description()}">Vé xem phim - Ghế C5</strong>
-                        <small th:text="${line.detail()}">Ghế thường</small>
-                    </td>
-                    <td th:text="${line.unit()}">Vé</td>
+                    <td><strong th:text="${line.description()}">Vé ghế A1</strong><small class="text-muted" th:text="${line.detail()}">Ghế thường</small></td>
                     <td th:text="${line.quantity()}">1</td>
-                    <td th:text="${#numbers.formatDecimal(line.unitPrice(), 0, 'POINT', 0, 'COMMA')}">225.000</td>
-                    <td th:text="${#numbers.formatDecimal(line.amount(), 0, 'POINT', 0, 'COMMA')}">225.000</td>
+                    <td th:text="|${@money.number(line.unitPrice())} đ|">100.000 đ</td>
+                    <td th:text="|${@money.number(line.amount())} đ|">100.000 đ</td>
                 </tr>
                 </tbody>
             </table>
         </div>
-
-        <div class="invoice-summary">
-            <dl class="invoice-totals">
-                <div><dt>Cộng tiền vé</dt><dd th:text="${#numbers.formatDecimal(order.ticketSubtotal, 0, 'POINT', 0, 'COMMA')}">225.000</dd></div>
-                <div><dt>Cộng tiền bắp nước</dt><dd th:text="${#numbers.formatDecimal(order.concessionSubtotal, 0, 'POINT', 0, 'COMMA')}">55.000</dd></div>
-                <div class="invoice-grand-total">
-                    <dt>Tổng cộng thanh toán</dt>
-                    <dd th:text="|${#numbers.formatDecimal(order.totalAmount, 0, 'POINT', 0, 'COMMA')} đ|">280.000 đ</dd>
-                </div>
-            </dl>
-            <p class="invoice-words">
-                <span>Số tiền viết bằng chữ:</span>
-                <em th:text="${receipt.amountInWords()}">Hai trăm tám mươi nghìn đồng chẵn.</em>
-            </p>
+        <div class="receipt-totals">
+            <div><span>Tiền vé</span><strong th:text="|${@money.number(order.ticketSubtotal)} đ|">200.000 đ</strong></div>
+            <div><span>Bắp nước</span><strong th:text="|${@money.number(order.concessionSubtotal)} đ|">79.000 đ</strong></div>
+            <div th:if="${order.discountAmount.signum() > 0}"><span th:text="|Ưu đãi (${order.voucherCode})|">Ưu đãi</span><strong th:text="|−${@money.number(order.discountAmount)} đ|">−20.000 đ</strong></div>
+            <div class="receipt-total"><span>Tổng cộng</span><strong th:text="|${@money.number(order.totalAmount)} đ|">259.000 đ</strong></div>
         </div>
-
-        <div class="invoice-signatures">
-            <div class="invoice-sign">
-                <strong>Người mua hàng</strong>
-                <span>(Ký, ghi rõ họ tên)</span>
-                <span class="invoice-sign-name" th:text="${order.customerName}">Nguyễn Văn A</span>
-            </div>
-            <div class="invoice-sign">
-                <strong>Người bán hàng</strong>
-                <span>(Xác nhận điện tử)</span>
-                <div class="invoice-esign">
-                    <b>Đã xác nhận thanh toán</b>
-                    <span>Bởi: <span th:text="${receipt.sellerName()}">UTE Cinema</span></span>
-                    <span>Ngày: <span th:text="${#temporals.format(order.paidAt, 'dd/MM/yyyy HH:mm')}">02/10/2026</span></span>
-                </div>
-            </div>
+        <p class="text-muted">Số tiền viết bằng chữ: <span th:text="${receipt.amountInWords()}"></span></p>
+        <p class="receipt-note">Vui lòng đưa mã vé tại cửa phòng chiếu và nhận bắp nước tại quầy combo.</p>
+        <div class="account-actions receipt-actions">
+            <button class="btn btn-accent" type="button" onclick="window.print()">In hóa đơn</button>
+            <a class="btn btn-ghost" th:href="@{/ve-cua-toi}">Về Vé của tôi</a>
         </div>
-
-        <footer class="invoice-footer">
-            <p>Xuất trình mã vé tại cửa phòng chiếu và đọc mã tra cứu ở quầy combo để nhận bắp nước.</p>
-            <p class="invoice-thanks">Cảm ơn quý khách và hẹn gặp lại!</p>
-        </footer>
     </article>
 </div></body></html>

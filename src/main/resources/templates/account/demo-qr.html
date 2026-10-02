@@ -17,7 +17,7 @@
                 <div class="momo-qr-frame" th:utext="${qrSvg}"></div>
                 <p class="wallet-qr-caption">Mở camera điện thoại, quét mã và chạm vào liên kết.</p>
             </div>
-            <p class="momo-qr-amount" th:text="|${#numbers.formatInteger(merchant.payment.amount,1,'POINT')} đ|">—</p>
+            <p class="momo-qr-amount" th:text="|${@money.number(merchant.payment.amount)} đ|">—</p>
             <p>Thời gian còn lại <strong id="wallet-countdown" role="timer">Đang xác minh…</strong></p>
             <p id="wallet-status" role="status" aria-live="polite" th:text="${merchant.payment.message}">Đang chờ…</p>
             <div class="alert alert-error" id="wallet-message" role="status" hidden></div>

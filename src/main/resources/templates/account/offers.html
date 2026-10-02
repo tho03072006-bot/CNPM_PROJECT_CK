@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout" layout:decorate="~{layout/base}">
+<head><title>Ưu đãi</title></head>
+<body><div layout:fragment="content">
+    <section class="module1-section-head">
+        <div><span class="module1-kicker">UTE CINEMA</span><h1>Ưu đãi</h1>
+            <p class="text-muted">Nhập hoặc chọn mã tại bước thanh toán. Mỗi đơn áp dụng một mã cho tiền vé, không bao gồm bắp nước.</p></div>
+    </section>
+    <div class="module1-empty" th:if="${#lists.isEmpty(offers)}">
+        <h2>Chưa có ưu đãi đang áp dụng</h2><p>Hãy quay lại để xem các chương trình mới của rạp.</p>
+    </div>
+    <div class="offers-grid">
+        <article class="card offer-card" th:each="offer : ${offers}">
+            <h2 th:text="${offer.title}">Ưu đãi vé xem phim</h2>
+            <p>Mã: <strong class="offer-code" th:text="${offer.code}">UTE10</strong></p>
+            <p th:if="${offer.percent > 0}" th:text="|Giảm ${offer.percent}% tiền vé, tối đa ${@money.number(offer.maximum)} đ.|">Giảm 10%</p>
+            <p th:if="${offer.percent == 0}" th:text="|Giảm ${@money.number(offer.amount)} đ tiền vé, tối đa ${@money.number(offer.maximum)} đ.|">Giảm 20.000 đ</p>
+            <p th:text="|Tiền vé tối thiểu ${@money.number(offer.minimum)} đ.|">Điều kiện</p>
+            <p class="text-muted" th:if="${offer.startsOn != null}" th:text="|Từ ${#temporals.format(offer.startsOn, 'dd/MM/yyyy')}|"></p>
+            <p class="text-muted" th:if="${offer.endsOn != null}" th:text="|Đến hết ${#temporals.format(offer.endsOn, 'dd/MM/yyyy')}|"></p>
+            <p class="text-muted" th:if="${offer.endsOn == null}">Áp dụng đến khi có thông báo mới.</p>
+            <p class="form-hint">Không cộng dồn các mã. Khoản giảm được phân bổ vào từng vé; khi hủy vé, tiền hoàn dựa trên giá thực trả.</p>
+            <a class="btn btn-ghost" th:href="@{/lich-chieu}">Chọn suất chiếu</a>
+        </article>
+    </div>
+</div></body></html>

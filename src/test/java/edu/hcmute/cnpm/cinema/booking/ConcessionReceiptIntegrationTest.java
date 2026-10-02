@@ -78,8 +78,8 @@ class ConcessionReceiptIntegrationTest extends IntegrationTestBase {
                         "Hai trăm ba mươi ba nghìn đồng chẵn.")))
                 .andExpect(content().string(org.hamcrest.Matchers.containsString("Vé xem phim - Ghế A1")))
                 .andReturn().getResponse().getContentAsString();
-        // Tờ hóa đơn cố ý chỉ có chữ: không logo, không mã QR (thanh menu phía trên thì vẫn có logo).
-        String paper = html.substring(html.indexOf("invoice-paper"), html.indexOf("</article>"));
+        // Kiểm tra mẫu hóa đơn dạng thẻ được khôi phục và vẫn có các dòng tiền đầy đủ.
+        String paper = html.substring(html.indexOf("receipt-card"), html.indexOf("</article>"));
         assertThat(paper).doesNotContain("<svg");
 
         assertThat(concessionProductRepository.findById(combo.getId()).orElseThrow().getStockQuantity())

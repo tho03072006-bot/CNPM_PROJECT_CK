@@ -34,6 +34,7 @@ public class BookingOrderService {
     private final UserRepository userRepository;
     private final ShowtimeRepository showtimeRepository;
     private final ConcessionInventoryService inventoryService;
+    private final PromotionService promotionService;
 
     public BookingOrderService(BookingOrderRepository bookingOrderRepository,
                                ConcessionProductRepository productRepository,
@@ -42,7 +43,8 @@ public class BookingOrderService {
                                ShowtimeRepository showtimeRepository,
                                ConcessionInventoryService inventoryService,
                                BookingLockService locks,
-                               BookingClock clock) {
+                               BookingClock clock, PromotionService promotionService) {
+        this.promotionService = promotionService;
         this.locks = locks;
         this.clock = clock;
         this.bookingOrderRepository = bookingOrderRepository;
@@ -94,15 +96,30 @@ public class BookingOrderService {
         items.sort(Comparator.comparing(item -> item.getProduct().getDisplayOrder()));
         order.replaceItems(items);
         order.setConcessionSubtotal(concessionSubtotal);
-        order.setTotalAmount(order.getTicketSubtotal().add(concessionSubtotal));
+        promotionService.recalculate(order);
         return bookingOrderRepository.save(order);
     }
 
     /** Bảo đảm đường dẫn thanh toán trực tiếp vẫn có một đơn không kèm bắp nước. */
     @Transactional
     public BookingOrder prepareForPayment(Long userId, Long showtimeId) {
+        locks.lock(showtimeId);
         List<Ticket> heldTickets = findValidHeldTickets(userId, showtimeId);
         return prepareDraft(userId, showtimeId, heldTickets);
+    }
+
+    @Transactional
+    public BookingOrder applyVoucher(Long userId, Long showtimeId, String code, List<Long> expectedIds) {
+        locks.lock(showtimeId);
+        List<Ticket> tickets = findValidHeldTickets(userId, showtimeId);
+        if (expectedIds == null) throw new InvalidBookingException("Thiếu mã lượt giữ ghế. Vui lòng tải lại trang.");
+        HoldIdentity.requireMatch(expectedIds, tickets.stream().map(Ticket::getId).toList());
+        BookingOrder order = prepareDraft(userId, showtimeId, tickets);
+        String normalized = promotionService.normalize(code);
+        if (!normalized.isEmpty()) promotionService.discount(normalized, order.getTicketSubtotal());
+        order.setVoucherCode(normalized.isEmpty() ? null : normalized);
+        promotionService.recalculate(order);
+        return bookingOrderRepository.save(order);
     }
 
     @Transactional(readOnly = true)
@@ -128,6 +145,7 @@ public class BookingOrderService {
         BookingOrder order = prepareDraft(userId, showtimeId, tickets);
         // Hết hàng thì ném lỗi ở đây, cả lần thanh toán bị hủy (MoMo tự hoàn tiền).
         inventoryService.deductForPaidOrder(order);
+        promotionService.allocateDiscount(order, tickets);
         order.setStatus(BookingOrderStatus.PAID);
         order.setPaymentMethod(paymentMethod);
         order.setPaymentRef(paymentRef);
@@ -184,7 +202,13 @@ public class BookingOrderService {
                 .filter(Objects::nonNull)
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
         order.setTicketSubtotal(ticketSubtotal);
-        order.setTotalAmount(ticketSubtotal.add(order.getConcessionSubtotal()));
+        // Lượt giữ mới không tự hưởng mã đã chọn ở lượt cũ.
+        Long draftId = order.getId();
+        if (tickets.stream().anyMatch(ticket -> ticket.getBookingOrder() == null
+                || !Objects.equals(ticket.getBookingOrder().getId(), draftId))) {
+            order.setVoucherCode(null);
+        }
+        promotionService.recalculate(order);
         order = bookingOrderRepository.save(order);
         for (Ticket ticket : tickets) {
             ticket.setBookingOrder(order);

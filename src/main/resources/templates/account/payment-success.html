@@ -20,8 +20,8 @@
 
     <div class="card account-summary">
         <div class="account-summary-line">
-            <span th:text="|${#lists.size(tickets)} vé|">2 vé</span>
-            <strong th:text="|${#numbers.formatDecimal(total, 0, 'POINT', 0, 'COMMA')} đ|">230.000 đ</strong>
+            <span>Tổng thanh toán</span>
+            <strong th:text="|${@money.number(total)} đ|">230.000 đ</strong>
         </div>
         <p class="text-muted account-summary-note">
             Một bản xác nhận cũng đã được gửi tới email của bạn, nếu rạp có cấu hình gửi thư.

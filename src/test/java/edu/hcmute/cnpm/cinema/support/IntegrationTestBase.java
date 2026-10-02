@@ -112,6 +112,7 @@ public abstract class IntegrationTestBase {
 
     /** Xoa du lieu theo dung thu tu khoa ngoai: refund -> ticket -> showtime -> seat -> room -> movie -> user. */
     protected void cleanDatabase() {
+        jdbcTemplate.update("DELETE FROM vouchers");
         demoPaymentRepository.deleteAllInBatch();
         supportMessageRepository.deleteAllInBatch();
         supportConversationRepository.deleteAllInBatch();

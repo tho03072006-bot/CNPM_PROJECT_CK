@@ -6,7 +6,7 @@
     const el = id => document.getElementById(id);
     const buttons = [...form.querySelectorAll('[data-seat-id]')];
     const selected = new Set();
-    const money = new Intl.NumberFormat('vi-VN', {style: 'currency', currency: 'VND'});
+    const money = window.CinemaMoney;
     const max = Number(form.dataset.maxAdmissions);
     const channel = typeof BroadcastChannel === 'function' ? new BroadcastChannel('cinema-seats') : null;
     let state = null, busy = false, syncing = false, reliable = false, editingIds = null;

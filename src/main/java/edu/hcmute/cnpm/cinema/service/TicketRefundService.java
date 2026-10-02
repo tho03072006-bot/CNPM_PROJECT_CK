@@ -160,6 +160,7 @@ public class TicketRefundService {
         refund.setSeatLabel(ticket.getSeat().getSeatRow() + ticket.getSeat().getSeatColumn());
         refund.setShowtimeStart(ticket.getShowtime().getStartTime());
         refund.setPaidPrice(ticket.getPrice());
+        refund.setOriginalPrice(ticket.getOriginalPrice());
         refund.setRefundPercent(quote.getRefundPercent());
         refund.setRefundAmount(quote.getRefundAmount());
         // Vé trả trước ngày có cột payment_method để trống: coi như trả tại quầy.

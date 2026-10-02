@@ -11,6 +11,7 @@ import edu.hcmute.cnpm.cinema.service.BookingOrderService;
 import edu.hcmute.cnpm.cinema.service.PaymentService;
 import edu.hcmute.cnpm.cinema.service.PaymentOtpService;
 import edu.hcmute.cnpm.cinema.service.OtpService;
+import edu.hcmute.cnpm.cinema.service.PromotionService;
 import jakarta.servlet.http.HttpSession;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -19,7 +20,6 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.util.ArrayList;
@@ -38,6 +38,7 @@ public class PaymentController {
     private final BookingOrderService bookingOrderService;
     private final PaymentOtpService paymentOtp;
     private final OtpService otp;
+    private final PromotionService promotionService;
     static final String PAYMENT_OTP = "paymentOtp";
     private static final String PAYMENT_METHOD = "paymentOtpMethod";
 
@@ -46,7 +47,9 @@ public class PaymentController {
                              BookingOrderService bookingOrderService,
                              edu.hcmute.cnpm.cinema.config.DemoWalletSettings demoWalletSettings,
                              DemoWalletSessions demoWalletSessions,
-                             PaymentOtpService paymentOtp, OtpService otp) {
+                             PaymentOtpService paymentOtp, OtpService otp,
+                             PromotionService promotionService) {
+        this.promotionService = promotionService;
         this.demoWalletSettings = demoWalletSettings;
         this.demoWalletSessions = demoWalletSessions;
         this.paymentService = paymentService;
@@ -70,12 +73,33 @@ public class PaymentController {
         model.addAttribute("tickets", tickets);
         model.addAttribute("ticketSubtotal", paymentService.sumPrice(tickets));
         model.addAttribute("order", order);
+        model.addAttribute("offers", promotionService.availableOffers());
         model.addAttribute("total", order == null ? java.math.BigDecimal.ZERO : order.getTotalAmount());
         model.addAttribute("showtimeId", showtimeId);
         model.addAttribute("momoEnabled", momoPaymentService.isEnabled() && !demoWalletSettings.isEnabled());
         model.addAttribute("demoWalletEnabled", demoWalletSettings.isEnabled());
         model.addAttribute("walletCsrf", demoWalletSessions.csrf(session));
         return "account/payment";
+    }
+
+    @PostMapping("/{showtimeId}/uu-dai")
+    public String applyVoucher(@PathVariable Long showtimeId, @RequestParam(defaultValue = "") String voucherCode,
+                               @RequestParam(required = false) List<Long> ticketIds,
+                               @RequestParam String walletCsrf, HttpSession session, RedirectAttributes flash) {
+        User user = SessionUsers.current(session);
+        if (user == null) return SessionUsers.redirectToLogin("/thanh-toan/" + showtimeId);
+        try {
+            demoWalletSessions.verify(session, walletCsrf);
+            BookingOrder order = bookingOrderService.applyVoucher(user.getId(), showtimeId, voucherCode, ticketIds);
+            otp.cancel((String) session.getAttribute(PAYMENT_OTP));
+            session.removeAttribute(PAYMENT_OTP);
+            session.removeAttribute(PAYMENT_METHOD);
+            flash.addFlashAttribute(Constants.MODEL_SUCCESS_MESSAGE, order.getVoucherCode() == null
+                    ? "Đã bỏ mã ưu đãi." : "Đã áp dụng mã " + order.getVoucherCode() + ". Tổng tiền đã được cập nhật.");
+        } catch (BusinessException e) {
+            flash.addFlashAttribute(Constants.MODEL_ERROR_MESSAGE, e.getMessage());
+        }
+        return "redirect:/thanh-toan/" + showtimeId;
     }
 
     @PostMapping("/{showtimeId}")
@@ -129,7 +153,7 @@ public class PaymentController {
                     "Tiếp tục tới MoMo");
             var tickets = paymentService.findPayableTickets(user.getId(), showtimeId);
             if (tickets.isEmpty()) throw new BusinessException("Đã hết thời gian giữ ghế. Hãy chọn ghế lại.");
-            model.addAttribute("paymentTotal", paymentService.sumPrice(tickets));
+            model.addAttribute("paymentTotal", paymentService.totalDue(user.getId(), showtimeId));
             model.addAttribute("paymentTickets", tickets);
             return "account/verify-otp";
         } catch (BusinessException e) {
@@ -183,6 +207,9 @@ public class PaymentController {
                     .orElse(null);
         }
         model.addAttribute("receiptCode", receiptCode);
+        if (receiptCode instanceof String code) {
+            model.addAttribute("total", bookingOrderService.findReceiptForUser(code, customer).getTotalAmount());
+        }
         return "account/payment-success";
     }
 }

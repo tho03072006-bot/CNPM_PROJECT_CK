@@ -1,5 +1,6 @@
 package edu.hcmute.cnpm.cinema.service;
 
+import edu.hcmute.cnpm.cinema.util.MoneyFormatter;
 import edu.hcmute.cnpm.cinema.dto.receipt.ReceiptLine;
 import edu.hcmute.cnpm.cinema.dto.receipt.ReceiptView;
 import edu.hcmute.cnpm.cinema.entity.*;
@@ -8,13 +9,10 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
-import java.text.DecimalFormat;
-import java.text.DecimalFormatSymbols;
 import java.time.Duration;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Locale;
 import java.util.StringJoiner;
 
 /**
@@ -57,7 +55,7 @@ public class ReceiptService {
             Seat seat = ticket.getSeat();
             String seatCode = seat.getSeatRow() + seat.getSeatColumn();
             seats.add(seatCode);
-            BigDecimal price = ticket.getPrice() == null ? BigDecimal.ZERO : ticket.getPrice();
+            BigDecimal price = ticket.getOriginalPrice() == null ? BigDecimal.ZERO : ticket.getOriginalPrice();
             lines.add(new ReceiptLine(lines.size() + 1, "Vé xem phim - Ghế " + seatCode,
                     seatTypeLabel(seat.getSeatType()), "Vé", 1, price, price, false));
         }
@@ -68,7 +66,7 @@ public class ReceiptService {
             lines.add(new ReceiptLine(lines.size() + 1, "Vé xem phim - Ghế " + refund.getSeatLabel(),
                     "Đã hủy lúc " + refund.getRefundedAt().format(REFUND_TIME) + ", hoàn lại "
                             + formatMoney(refund.getRefundAmount()),
-                    "Vé", 1, refund.getPaidPrice(), refund.getPaidPrice(), true));
+                    "Vé", 1, refund.getOriginalPrice(), refund.getOriginalPrice(), true));
         }
         for (BookingOrderItem item : order.getItems()) {
             lines.add(new ReceiptLine(lines.size() + 1, item.getProductName(), "Nhận tại quầy bắp nước", "Phần",
@@ -108,7 +106,6 @@ public class ReceiptService {
     }
 
     private static String formatMoney(BigDecimal amount) {
-        DecimalFormat format = new DecimalFormat("#,##0", DecimalFormatSymbols.getInstance(Locale.forLanguageTag("vi-VN")));
-        return format.format(amount == null ? BigDecimal.ZERO : amount) + " đ";
+        return MoneyFormatter.format(amount);
     }
 }
