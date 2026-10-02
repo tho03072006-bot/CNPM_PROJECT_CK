@@ -46,13 +46,16 @@ public class MomoPaymentController {
     /** Giữ tối đa chừng này mã QR trong session; khách bấm tạo mã nhiều lần thì bỏ mã cũ nhất. */
     private static final int MAX_QR_PAYMENTS_IN_SESSION = 5;
 
+    private final edu.hcmute.cnpm.cinema.config.DemoWalletSettings demoWalletSettings;
     private final MomoPaymentService momoPaymentService;
     private final PaymentService paymentService;
     private final QrCodeService qrCodeService;
     private final BookingOrderService bookingOrderService;
 
     public MomoPaymentController(MomoPaymentService momoPaymentService, PaymentService paymentService,
-                                 QrCodeService qrCodeService, BookingOrderService bookingOrderService) {
+                                 QrCodeService qrCodeService, BookingOrderService bookingOrderService,
+                                 edu.hcmute.cnpm.cinema.config.DemoWalletSettings demoWalletSettings) {
+        this.demoWalletSettings=demoWalletSettings;
         this.momoPaymentService = momoPaymentService;
         this.paymentService = paymentService;
         this.qrCodeService = qrCodeService;
@@ -69,6 +72,7 @@ public class MomoPaymentController {
             return SessionUsers.redirectToLogin("/thanh-toan/" + showtimeId);
         }
         try {
+            if(demoWalletSettings.isEnabled()) return "redirect:/thanh-toan/"+showtimeId;
             return "redirect:" + momoPaymentService.startPayment(customer.getId(), showtimeId, ticketIds);
         } catch (BusinessException exception) {
             redirectAttributes.addFlashAttribute(Constants.MODEL_ERROR_MESSAGE, exception.getMessage());
@@ -86,6 +90,7 @@ public class MomoPaymentController {
             return SessionUsers.redirectToLogin("/thanh-toan/" + showtimeId);
         }
         try {
+            if(demoWalletSettings.isEnabled()) return "redirect:/thanh-toan/"+showtimeId;
             MomoQrPayment qrPayment = momoPaymentService.startQrPayment(customer.getId(), showtimeId, ticketIds);
             rememberQrPayment(session, qrPayment);
             return "redirect:/thanh-toan/momo/qr/" + qrPayment.orderId();

@@ -29,6 +29,8 @@ import java.util.List;
 @RequestMapping("/thanh-toan")
 public class PaymentController {
 
+    private final edu.hcmute.cnpm.cinema.config.DemoWalletSettings demoWalletSettings;
+    private final DemoWalletSessions demoWalletSessions;
     private final PaymentService paymentService;
     private final TicketMailService ticketMailService;
     private final TicketRepository ticketRepository;
@@ -37,7 +39,9 @@ public class PaymentController {
 
     public PaymentController(PaymentService paymentService, TicketMailService ticketMailService,
                              TicketRepository ticketRepository, MomoPaymentService momoPaymentService,
-                             BookingOrderService bookingOrderService) {
+                             BookingOrderService bookingOrderService, edu.hcmute.cnpm.cinema.config.DemoWalletSettings demoWalletSettings,
+                             DemoWalletSessions demoWalletSessions) {
+        this.demoWalletSettings=demoWalletSettings;this.demoWalletSessions=demoWalletSessions;
         this.paymentService = paymentService;
         this.ticketMailService = ticketMailService;
         this.ticketRepository = ticketRepository;
@@ -60,7 +64,9 @@ public class PaymentController {
         model.addAttribute("order", order);
         model.addAttribute("total", order == null ? BigDecimal.ZERO : order.getTotalAmount());
         model.addAttribute("showtimeId", showtimeId);
-        model.addAttribute("momoEnabled", momoPaymentService.isEnabled());
+        model.addAttribute("momoEnabled", momoPaymentService.isEnabled() && !demoWalletSettings.isEnabled());
+        model.addAttribute("demoWalletEnabled",demoWalletSettings.isEnabled());
+        model.addAttribute("walletCsrf",demoWalletSessions.csrf(session));
         return "account/payment";
     }
 

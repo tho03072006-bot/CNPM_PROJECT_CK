@@ -2474,3 +2474,44 @@ main.container {
     .receipt { border: 0 !important; box-shadow: none !important; padding: 0 !important; }
     .receipt-meta div, .receipt-showtime, .receipt-note { background: #fff !important; border: 1px solid #bbb; }
 }
+
+/* © Nhóm 8 — Ví MoMo giả lập; dùng chung bảng màu sáng/tối của rạp. */
+.wallet-shell { width: min(100% - 32px, 560px); margin: 32px auto; }
+.wallet-header { display: flex; align-items: center; gap: var(--space-3); margin-bottom: var(--space-5); }
+.wallet-header h1 { font-size: var(--text-xl); margin: 0; }
+.wallet-header p { margin: var(--space-1) 0 0; font-size: var(--text-sm); }
+.wallet-header > div { flex: 1; min-width: 0; }
+.wallet-mark { display: grid; place-items: center; width: 52px; height: 52px; flex-shrink: 0; background: var(--momo-500); color: var(--qr-bg); border-radius: var(--radius-lg); font-size: var(--text-xl); font-weight: 800; }
+.wallet-subtitle { display: block; font-size: var(--text-sm); color: var(--text-muted); margin-top: var(--space-1); }
+.wallet-panel { padding: var(--space-5); margin-top: var(--space-4); }
+.wallet-summary { margin: var(--space-5) 0; }
+.wallet-summary > div { display: grid; grid-template-columns: 110px minmax(0,1fr); gap: var(--space-3); padding: var(--space-3) 0; border-bottom: 1px solid var(--border); }
+.wallet-summary dt { color: var(--text-muted); }
+.wallet-summary dd { margin: 0; overflow-wrap: anywhere; }
+.wallet-consent { display: flex; align-items: flex-start; gap: var(--space-3); margin: var(--space-5) 0; line-height: 1.6; }
+.wallet-consent input { margin-top: 6px; width: 20px; height: 20px; flex-shrink: 0; }
+.wallet-footer { color: var(--text-muted); text-align: center; font-size: var(--text-xs); line-height: 1.8; margin-top: var(--space-5); padding-bottom: var(--space-5); }
+.wallet-home-link { display: block; text-align: center; margin-top: var(--space-4); }
+#demo-wallet [hidden] { display: none !important; }
+@media (max-width: 400px) {
+    .wallet-panel { padding: var(--space-4); }
+    .wallet-header { gap: var(--space-2); }
+    .wallet-summary > div { grid-template-columns: 90px minmax(0,1fr); }
+}
+
+/* Thanh toán ví online: ưu tiên QR lớn; liên kết chỉ là lựa chọn dự phòng. */
+.wallet-checkout { grid-template-columns: minmax(0, 1fr); }
+.wallet-checkout > .card { min-width: 0; }
+.wallet-checkout-card .momo-qr-frame { width: min(100%, 420px); aspect-ratio: 1; }
+.wallet-qr-title { margin: 0 0 var(--space-4); font-size: var(--text-xl); }
+.wallet-qr-caption { margin: var(--space-3) 0 0; color: var(--text-muted); }
+.wallet-link-backup { margin: var(--space-4) 0; padding: var(--space-3); border: 1px solid var(--border); border-radius: var(--radius-md); }
+.wallet-link-backup summary { cursor: pointer; font-weight: 600; }
+.wallet-link-backup[open] summary { margin-bottom: var(--space-3); }
+.wallet-link-backup label { display: block; margin-bottom: var(--space-2); }
+.wallet-link-backup .form-control { width: 100%; min-width: 0; }
+.wallet-link-backup .account-actions { flex-wrap: wrap; }
+.wallet-link-backup p { margin-top: var(--space-3); font-size: var(--text-sm); }
+@media (min-width: 960px) {
+    .wallet-checkout { grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr); }
+}

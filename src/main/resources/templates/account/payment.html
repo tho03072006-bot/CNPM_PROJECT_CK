@@ -46,12 +46,14 @@
                 <strong th:text="|${#numbers.formatDecimal(total, 0, 'POINT', 0, 'COMMA')} đ|">309.000 đ</strong>
             </div>
             <a class="btn btn-ghost account-submit" th:href="@{/bap-nuoc/{id}(id=${showtimeId})}">Sửa lựa chọn bắp nước</a>
-            <!--
-              Ba cách trả, xếp theo thứ tự nên dùng. Quét mã QR đứng đầu vì khách không phải
-              nhập thẻ. MoMo đang chạy môi trường thử: trang thanh toán và API là thật nhưng
-              tiền không đi thật. Thiếu cấu hình MoMo thì chỉ còn trả tại quầy.
-            -->
+            <!-- Chọn ví MoMo giả lập khi bật chế độ demo; MoMo Sandbox dùng cấu hình riêng. -->
             <div class="payment-options">
+                <form th:if="${demoWalletEnabled}" th:action="@{/thanh-toan/{id}/demo-wallet(id=${showtimeId})}" method="post">
+                    <input type="hidden" name="walletCsrf" th:value="${walletCsrf}">
+                    <input th:each="ticket : ${tickets}" type="hidden" name="ticketIds" th:value="${ticket.id}">
+                    <button class="btn btn-accent account-submit" type="submit">MoMo — Giả lập Nhóm 8</button>
+                </form>
+                <p class="payment-sandbox-note" th:if="${demoWalletEnabled}">Quét QR bằng camera điện thoại để mở ví web. Giao dịch mô phỏng, không phát sinh tiền thật. © Nhóm 8.</p>
                 <form th:if="${momoEnabled}" th:action="@{/thanh-toan/{id}/momo-qr(id=${showtimeId})}" method="post">
                     <input th:each="ticket : ${tickets}" type="hidden" name="ticketIds" th:value="${ticket.id}">
                     <button class="btn btn-accent account-submit" type="submit">Quét mã QR bằng app MoMo</button>

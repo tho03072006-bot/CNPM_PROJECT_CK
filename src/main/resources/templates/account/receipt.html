@@ -17,7 +17,7 @@
             <div><dt>Khách hàng</dt><dd th:text="${order.customerName}">Nguyễn Văn A</dd></div>
             <div><dt>Email</dt><dd th:text="${order.customerEmail}">email</dd></div>
             <div><dt>Thanh toán lúc</dt><dd th:text="${#temporals.format(order.paidAt, 'HH:mm dd/MM/yyyy')}">10:00</dd></div>
-            <div><dt>Phương thức</dt><dd th:text="${order.paymentMethod.name() == 'MOMO'} ? 'Ví MoMo' : 'Tiền mặt tại quầy'">MoMo</dd></div>
+            <div><dt>Phương thức</dt><dd th:text="${order.paymentMethod != null ? order.paymentMethod.displayName : 'Tiền mặt tại quầy'}">MoMo</dd></div>
         </dl>
 
         <section class="receipt-showtime">
