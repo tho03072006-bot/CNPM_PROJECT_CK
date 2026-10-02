@@ -78,7 +78,7 @@ class BookingFlowEndToEndTest extends IntegrationTestBase {
                         .session(session)
                         .contentType(MediaType.APPLICATION_JSON)
                         .accept(MediaType.APPLICATION_JSON)
-                        .content("{\"seatIds\":[" + seatA1.getId() + "," + seatA2.getId() + "]}"))
+                        .content("{\"seatIds\":[" + seatA1.getId() + "," + seatA2.getId() + "] ,\"ageConfirmed\":true,\"termsAccepted\":true}"))
                 .andExpect(status().isOk())
                 .andExpect(content().string(containsString("\"success\":true")));
 
@@ -92,7 +92,8 @@ class BookingFlowEndToEndTest extends IntegrationTestBase {
                 .andExpect(content().string(containsString("Xác nhận thanh toán")));
 
         // ---------- Module 3: xac nhan tra tien ----------
-        mockMvc.perform(post("/thanh-toan/" + showtime.getId()).session(session))
+        mockMvc.perform(post("/thanh-toan/" + showtime.getId()).session(session)
+                .param("ticketIds", ticketRepository.findAll().stream().map(ticket -> ticket.getId().toString()).toArray(String[]::new)))
                 .andExpect(status().is3xxRedirection());
 
         List<Ticket> afterPayment = ticketRepository.findByUserIdOrderByHeldAtDesc(customer.getId());
@@ -130,7 +131,7 @@ class BookingFlowEndToEndTest extends IntegrationTestBase {
         mockMvc.perform(post("/booking/showtime/" + showtime.getId() + "/hold")
                         .contentType(MediaType.APPLICATION_JSON)
                         .accept(MediaType.APPLICATION_JSON)
-                        .content("{\"seatIds\":[" + seat.getId() + "]}"))
+                        .content("{\"seatIds\":[" + seat.getId() + "] ,\"ageConfirmed\":true,\"termsAccepted\":true}"))
                 .andExpect(status().is4xxClientError());
 
         assertThat(ticketRepository.count())

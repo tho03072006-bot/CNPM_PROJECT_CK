@@ -134,7 +134,7 @@ class SeatHoldServiceIntegrationTest extends IntegrationTestBase {
         Fixture fixture = createFixture();
         Ticket held = saveHeldTicket(fixture, LocalDateTime.now());
 
-        int released = seatHoldService.cancelHold(fixture.customer.getId(), fixture.showtime.getId());
+        int released = seatHoldService.cancelHold(fixture.customer.getId(), fixture.showtime.getId(), java.util.List.of(held.getId()));
 
         assertThat(released).isEqualTo(1);
         assertThat(ticketRepository.findById(held.getId())).isEmpty();
@@ -146,9 +146,9 @@ class SeatHoldServiceIntegrationTest extends IntegrationTestBase {
         Fixture fixture = createFixture();
 
         assertThatThrownBy(() ->
-                seatHoldService.cancelHold(fixture.customer.getId(), fixture.showtime.getId()))
+                seatHoldService.cancelHold(fixture.customer.getId(), fixture.showtime.getId(), java.util.List.of(999L)))
                 .isInstanceOf(InvalidBookingException.class)
-                .hasMessageContaining("không có ghế nào đang giữ");
+                .hasMessageContaining("đã thay đổi");
     }
 
     // ===== tien ich dung chung cho cac test o tren =====

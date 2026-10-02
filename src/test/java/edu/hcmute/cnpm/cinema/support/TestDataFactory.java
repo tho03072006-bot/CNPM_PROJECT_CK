@@ -131,4 +131,13 @@ public class TestDataFactory {
         ticket.setHeldAt(LocalDateTime.now());
         return ticket;
     }
+    @org.springframework.beans.factory.annotation.Autowired
+    private edu.hcmute.cnpm.cinema.repository.ConcessionProductRepository concessionProducts;
+
+    /** Tạo sản phẩm dùng trong test tổng tiền của ví mô phỏng. */
+    public edu.hcmute.cnpm.cinema.entity.ConcessionProduct createConcessionProduct(String code, BigDecimal price) {
+        var product = new edu.hcmute.cnpm.cinema.entity.ConcessionProduct();
+        product.setCode(code);product.setName("Bắp nước test");product.setPrice(price);
+        return concessionProducts.saveAndFlush(product);
+    }
 }

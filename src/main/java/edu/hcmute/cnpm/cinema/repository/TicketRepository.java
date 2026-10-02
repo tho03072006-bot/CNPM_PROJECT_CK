@@ -15,6 +15,9 @@ public interface TicketRepository extends JpaRepository<Ticket, Long> {
     // Dùng để vẽ seat-map: lấy các ghế đã bị giữ/đặt cho một suất chiếu.
     List<Ticket> findByShowtimeIdAndStatusIn(Long showtimeId, List<TicketStatus> statuses);
 
+    @Query("select t.showtime.id from Ticket t where t.id = :id")
+    java.util.Optional<Long> findShowtimeIdByTicketId(@Param("id") Long id);
+
     boolean existsByShowtimeId(Long showtimeId);
 
     /** Đếm ghế đang bị chiếm cho nhiều suất trong một truy vấn, tránh N+1 ở trang lịch chiếu. */
@@ -40,6 +43,22 @@ public interface TicketRepository extends JpaRepository<Ticket, Long> {
 
     /** Vé đang giữ đã đến hạn - dùng cho tác vụ dọn vé hết hạn của Module 2 (ADR-2). */
     List<Ticket> findByStatusAndHeldAtLessThanEqual(TicketStatus status, LocalDateTime heldBefore);
+
+    @Query("select distinct t.showtime.id from Ticket t where t.status = :status "
+            + "and (t.heldAt is null or t.heldAt <= :cutoff) order by t.showtime.id")
+    List<Long> findExpiredShowtimeIds(@Param("status") TicketStatus status, @Param("cutoff") LocalDateTime cutoff);
+
+    @Modifying(flushAutomatically = true, clearAutomatically = true)
+    @Query("delete from Ticket t where t.showtime.id = :showtimeId and t.status = :status "
+            + "and (t.heldAt is null or t.heldAt <= :cutoff)")
+    int deleteExpiredHolds(@Param("showtimeId") Long showtimeId, @Param("status") TicketStatus status,
+                           @Param("cutoff") LocalDateTime cutoff);
+
+    @Modifying(flushAutomatically = true, clearAutomatically = true)
+    @Query("delete from Ticket t where t.user.id = :userId and t.showtime.id = :showtimeId "
+            + "and t.status = :status and t.id in :ids")
+    int deleteHeldTickets(@Param("userId") Long userId, @Param("showtimeId") Long showtimeId,
+                          @Param("status") TicketStatus status, @Param("ids") Collection<Long> ids);
 
     // ===== Bổ sung 27/09: thanh toán MoMo, soát vé, huỷ vé =====
 

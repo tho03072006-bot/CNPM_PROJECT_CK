@@ -26,6 +26,8 @@ public class BookingOrderService {
     private static final int MAX_ITEMS_PER_ORDER = 20;
     private static final DateTimeFormatter RECEIPT_TIME = DateTimeFormatter.ofPattern("yyyyMMddHHmmss");
 
+    private final BookingLockService locks;
+    private final BookingClock clock;
     private final BookingOrderRepository bookingOrderRepository;
     private final ConcessionProductRepository productRepository;
     private final TicketRepository ticketRepository;
@@ -38,7 +40,11 @@ public class BookingOrderService {
                                TicketRepository ticketRepository,
                                UserRepository userRepository,
                                ShowtimeRepository showtimeRepository,
-                               ConcessionInventoryService inventoryService) {
+                               ConcessionInventoryService inventoryService,
+                               BookingLockService locks,
+                               BookingClock clock) {
+        this.locks = locks;
+        this.clock = clock;
         this.bookingOrderRepository = bookingOrderRepository;
         this.productRepository = productRepository;
         this.ticketRepository = ticketRepository;
@@ -55,6 +61,7 @@ public class BookingOrderService {
     /** Tạo hoặc cập nhật đơn nháp, kể cả khi khách chọn không mua bắp nước. */
     @Transactional
     public BookingOrder saveConcessions(Long userId, Long showtimeId, Map<Long, Integer> quantities) {
+        locks.lock(showtimeId);
         List<Ticket> heldTickets = findValidHeldTickets(userId, showtimeId);
         BookingOrder order = prepareDraft(userId, showtimeId, heldTickets);
 
@@ -117,6 +124,7 @@ public class BookingOrderService {
     @Transactional
     public BookingOrder completeOrder(Long userId, Long showtimeId, List<Ticket> tickets,
                                       PaymentMethod paymentMethod, String paymentRef, LocalDateTime paidAt) {
+        locks.lock(showtimeId);
         BookingOrder order = prepareDraft(userId, showtimeId, tickets);
         // Hết hàng thì ném lỗi ở đây, cả lần thanh toán bị hủy (MoMo tự hoàn tiền).
         inventoryService.deductForPaidOrder(order);
@@ -200,13 +208,10 @@ public class BookingOrderService {
 
     private List<Ticket> findValidHeldTickets(Long userId, Long showtimeId) {
         List<Ticket> tickets = ticketRepository
-                .findByUserIdAndShowtimeIdAndStatus(userId, showtimeId, TicketStatus.HELD)
-                .stream()
-                .filter(ticket -> ticket.getHeldAt() != null
-                        && !ticket.getHeldAt().plusMinutes(Constants.SEAT_HOLD_MINUTES).isBefore(LocalDateTime.now()))
-                .toList();
-        if (tickets.isEmpty()) {
-            throw new InvalidBookingException("Không còn ghế nào đang giữ. Bạn hãy chọn ghế lại.");
+                .findByUserIdAndShowtimeIdAndStatus(userId, showtimeId, TicketStatus.HELD);
+        if (tickets.isEmpty() || tickets.stream().anyMatch(clock::expired)
+                || !tickets.getFirst().getShowtime().getStartTime().isAfter(clock.now())) {
+            throw new InvalidBookingException("Không còn lượt giữ ghế hợp lệ. Bạn hãy chọn ghế lại.");
         }
         return tickets;
     }
@@ -234,6 +239,6 @@ public class BookingOrderService {
 
     private String newReceiptCode() {
         String random = UUID.randomUUID().toString().replace("-", "").substring(0, 6).toUpperCase(Locale.ROOT);
-        return "UTE-" + LocalDateTime.now().format(RECEIPT_TIME) + "-" + random;
+        return "UTE-" + clock.now().format(RECEIPT_TIME) + "-" + random;
     }
 }

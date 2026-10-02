@@ -278,3 +278,14 @@ nào có cam kết thời gian hoạt động. Vì vậy:
 Datacenter của họ đặt ở châu Âu nên độ trễ từ Việt Nam khoảng 250–300ms, khởi động ứng dụng
 mất ~10 giây thay vì ~4 giây khi chạy local. Đó là lý do cloud chỉ dùng để tích hợp, không
 dùng để code hằng ngày.
+
+
+## ADR-3 — Khoá suất chiếu và nhận diện lượt giữ (01/10/2026)
+
+Không đổi schema cloud. Khoá PESSIMISTIC_WRITE trên showtimes được lấy trước khoá tài khoản và trước kiểm tra sơ đồ/ghế lẻ. Giữ, đổi, huỷ giữ, dọn hết hạn, thanh toán, cập nhật đơn và huỷ vé đã trả cùng dùng khoá suất chiếu. UNIQUE(showtime_id, seat_id) vẫn là chốt bảo vệ đặt trùng.
+
+Danh sách tickets.id nhận diện một lượt giữ; đổi ghế tạo mã vé mới và giữ held_at ban đầu. Huỷ và biểu mẫu thanh toán phải gửi đúng mã vé đã thấy. Đơn MoMo gắn mã vé nhỏ nhất, kiểm lại trong giao dịch cùng số tiền. Tab/QR cũ không tác động lượt mới.
+
+Dọn hết hạn DELETE trực tiếp với điều kiện status = HELD và held_at <= cutoff, không xoá theo danh sách entity đã đọc trước. Huỷ giữ DELETE với user/showtime/status/mã vé. Các truy vấn này không xoá PAID. Thời gian nghiệp vụ dùng Asia/Ho_Chi_Minh; giao diện nhận epoch + giờ máy chủ.
+
+Kiểm thử có tạo/xoá dữ liệu chỉ chạy trong SQL Server riêng có tên kết thúc _test; xác thực schema cloud dùng validate và tắt dọn nền trong lần kiểm tra khởi động.

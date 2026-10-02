@@ -1,0 +1,21 @@
+# Vi MoMo GIA LAP Nhom 8. Chi tao 1 web service Free, dung SQL Server cloud san co.
+services:
+  - type: web
+    name: momo-gia-lap-nhom8
+    runtime: docker
+    plan: free
+    region: singapore
+    branch: Hữu_Thắng
+    dockerfilePath: ./Dockerfile.wallet
+    dockerContext: .
+    autoDeployTrigger: "off"
+    healthCheckPath: /demo-wallet/health
+    envVars:
+      - key: SPRING_PROFILES_ACTIVE
+        value: wallet-online
+      - key: WALLET_DB_URL
+        sync: false
+      - key: WALLET_DB_USERNAME
+        sync: false
+      - key: WALLET_DB_PASSWORD
+        sync: false

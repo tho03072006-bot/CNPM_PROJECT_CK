@@ -153,7 +153,7 @@ class SeatBookingServiceIntegrationTest extends IntegrationTestBase {
             return true;
         } catch (InvalidBookingException exception) {
             if (exception.getMessage() != null
-                    && exception.getMessage().contains("đang có một lượt giữ ghế")) {
+                    && exception.getMessage().contains("đang có lượt giữ ghế")) {
                 return false;
             }
             throw exception;
@@ -162,6 +162,8 @@ class SeatBookingServiceIntegrationTest extends IntegrationTestBase {
 
     private HoldSeatsRequest createRequest(List<Long> seatIds) {
         HoldSeatsRequest request = new HoldSeatsRequest();
+        request.setAgeConfirmed(true);
+        request.setTermsAccepted(true);
         request.setSeatIds(seatIds);
         return request;
     }
