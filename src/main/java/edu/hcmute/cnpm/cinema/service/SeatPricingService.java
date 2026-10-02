@@ -24,6 +24,8 @@ public class SeatPricingService {
             case "COUPLE" -> new BigDecimal(Constants.SEAT_PRICE_MULTIPLIER_COUPLE);
             default -> throw new InvalidBookingException("Loại ghế chưa được hỗ trợ.");
         };
-        return basePrice.multiply(multiplier).setScale(2, RoundingMode.HALF_UP);
+        // Giá vé tại rạp được thu theo đồng nguyên. Làm tròn ngay tại nguồn để
+        // sơ đồ ghế, tổng đơn, QR và hóa đơn luôn dùng đúng cùng một số tiền.
+        return basePrice.multiply(multiplier).setScale(0, RoundingMode.HALF_UP);
     }
 }

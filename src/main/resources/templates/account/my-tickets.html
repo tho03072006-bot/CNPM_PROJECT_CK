@@ -48,7 +48,9 @@
                     <td th:text="${#temporals.format(refund.showtimeStart, 'HH:mm dd/MM/yyyy')}">19:00 27/09/2026</td>
                     <td th:text="|${refund.roomName} · ${refund.seatLabel}|">Cinema 1 · A1</td>
                     <td th:text="|${#numbers.formatDecimal(refund.refundAmount, 0, 'POINT', 0, 'COMMA')} đ (${refund.refundPercent}%)|">115.000 đ</td>
-                    <td th:text="${refund.refundRef != null} ? 'Hoàn về MoMo' : 'Nhận tại quầy'">Hoàn về MoMo</td>
+                    <td th:text="${refund.paymentMethod != null and refund.paymentMethod.name() == 'MOMO_DEMO'}
+                                 ? 'Hoàn tiền mô phỏng'
+                                 : (${refund.refundRef != null} ? 'Hoàn về MoMo' : 'Nhận tại quầy')">Hoàn về MoMo</td>
                 </tr></tbody>
             </table>
         </div>

@@ -144,6 +144,21 @@ class TicketRefundIntegrationTest extends IntegrationTestBase {
     }
 
     @Test
+    @DisplayName("Hủy vé MoMo thử nghiệm chỉ ghi nhận mô phỏng, không gọi cổng hoàn tiền thật")
+    void shouldNotCallMomoRefund_whenPaidByDemo() {
+        Ticket ticket = savePaidTicket(seatA1, PaymentMethod.MOMO_DEMO, "demo-payment-1");
+
+        TicketRefund refund = ticketRefundService.cancelPaidTicket(customer.getId(), ticket.getId(), showStart.minusDays(2));
+
+        TicketRefund saved = ticketRefundRepository.findById(refund.getId()).orElseThrow();
+        assertThat(saved.getPaymentMethod()).isEqualTo(PaymentMethod.MOMO_DEMO);
+        assertThat(saved.getRefundRef()).isNull();
+        assertThat(saved.getRefundAmount()).isEqualByComparingTo(PRICE);
+        assertThat(ticketRepository.findById(ticket.getId())).isEmpty();
+        verify(momoApiClient, never()).refund(anyString(), anyString(), anyLong(), anyString());
+    }
+
+    @Test
     @DisplayName("MoMo từ chối hoàn tiền thì huỷ không thành, vé còn nguyên - khách không mất vé mà chưa được hoàn tiền")
     void shouldKeepTicket_whenMomoRefusesRefund() {
         Ticket ticket = savePaidTicket(seatA1, PaymentMethod.MOMO, "4100000002");

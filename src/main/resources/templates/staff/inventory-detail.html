@@ -2,10 +2,10 @@
 <html lang="vi" xmlns:th="http://www.thymeleaf.org"
       xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout" layout:decorate="~{layout/base}">
 <head><title th:text="|Kho · ${item.name()}|">Kho bắp nước</title></head>
-<body><div layout:fragment="content">
+<body><div layout:fragment="content" class="inventory-page inventory-detail-page">
     <a class="inventory-back" th:href="@{/nhan-vien/kho-bap-nuoc}">← Kho bắp nước</a>
 
-    <section class="module1-admin-head inventory-detail-head">
+    <section class="module1-admin-head inventory-detail-head card">
         <div class="inventory-item">
             <span class="inventory-icon inventory-icon-lg" aria-hidden="true" th:text="${item.icon()}">🍿</span>
             <div>
@@ -31,7 +31,7 @@
                 <strong id="current-stock" th:text="${item.stock()}" th:attr="data-stock=${item.stock()}">120</strong>
                 <span>phần</span>
             </p>
-            <p class="text-muted" th:text="|Còn ${item.lowStockThreshold()} phần trở xuống thì báo “Sắp hết” trên thanh menu nhân viên.|">
+            <p class="inventory-stock-guidance" th:text="|Cảnh báo sắp hết khi tồn kho còn ${item.lowStockThreshold()} phần trở xuống.|">
                 Còn 10 phần trở xuống thì báo sắp hết.
             </p>
 
@@ -42,19 +42,27 @@
                     <input class="form-control" id="low-stock-threshold" name="lowStockThreshold" type="number"
                            min="0" max="10000" step="1" required th:value="${item.lowStockThreshold()}">
                 </label>
-                <button class="btn btn-ghost" type="submit">Lưu ngưỡng</button>
+                <button class="btn btn-ghost btn-sm" type="submit">Lưu ngưỡng</button>
             </form>
         </section>
 
         <section class="card inventory-form-card" aria-labelledby="adjust-title">
-            <h2 id="adjust-title">Cập nhật kho</h2>
+            <div class="inventory-form-head">
+                <div><span class="module1-kicker">THAO TÁC KHO</span><h2 id="adjust-title">Cập nhật số lượng</h2></div>
+                <span class="inventory-form-current">Đang có <strong th:text="${item.stock()}">117</strong> phần</span>
+            </div>
             <form method="post" th:object="${adjustmentForm}" id="stock-adjust-form"
                   th:action="@{/nhan-vien/kho-bap-nuoc/{id}/dieu-chinh(id=${item.id()})}">
                 <fieldset class="inventory-type-picker">
-                    <legend>Bạn đang làm gì?</legend>
+                    <legend>1. Chọn thao tác</legend>
                     <label class="inventory-type-option" th:each="type : ${movementTypes}">
                         <input type="radio" th:field="*{type}" th:value="${type}">
                         <span class="inventory-type-card">
+                            <span class="inventory-type-icon" aria-hidden="true" th:switch="${type.name()}">
+                                <th:block th:case="'IMPORT'">＋</th:block>
+                                <th:block th:case="'WRITE_OFF'">−</th:block>
+                                <th:block th:case="*">≡</th:block>
+                            </span>
                             <strong th:text="${type.label}">Nhập kho</strong>
                             <small th:switch="${type.name()}">
                                 <th:block th:case="'IMPORT'">Hàng mới về quầy, cộng thêm vào kho</th:block>
@@ -66,73 +74,36 @@
                 </fieldset>
 
                 <div class="form-field">
-                    <label for="adjust-quantity" id="adjust-quantity-label">Số phần nhập thêm</label>
+                    <label for="adjust-quantity" id="adjust-quantity-label">2. Số phần nhập thêm</label>
                     <input class="form-control" id="adjust-quantity" type="number" min="0" max="100000" step="1"
                            required inputmode="numeric" th:field="*{quantity}" placeholder="Ví dụ: 50">
+                    <div class="inventory-quick-quantities" aria-label="Chọn nhanh số lượng">
+                        <button class="btn btn-ghost btn-sm" type="button" data-quick-quantity="10">10</button>
+                        <button class="btn btn-ghost btn-sm" type="button" data-quick-quantity="25">25</button>
+                        <button class="btn btn-ghost btn-sm" type="button" data-quick-quantity="50">50</button>
+                        <button class="btn btn-ghost btn-sm" type="button" data-quick-quantity="100">100</button>
+                    </div>
                 </div>
                 <div class="form-field">
-                    <label for="adjust-note" id="adjust-note-label">Ghi chú (không bắt buộc)</label>
+                    <label for="adjust-note" id="adjust-note-label">3. Ghi chú (không bắt buộc)</label>
                     <input class="form-control" id="adjust-note" type="text" maxlength="255" th:field="*{note}"
                            placeholder="Ví dụ: nhập theo phiếu số 12, bắp bị ỉu, kiểm kê cuối ca tối">
                 </div>
-                <p class="inventory-preview" aria-live="polite">
-                    Tồn kho sau khi lưu: <strong id="stock-preview" th:text="${item.stock()}">120</strong> phần
-                </p>
-                <button class="btn btn-accent account-submit" type="submit">Lưu cập nhật kho</button>
+                <div class="inventory-preview" aria-live="polite">
+                    <span>Tồn kho sau khi lưu</span>
+                    <p><strong th:text="${item.stock()}">120</strong><span aria-hidden="true">→</span><strong id="stock-preview" th:text="${item.stock()}">120</strong><small>phần</small></p>
+                </div>
+                <button class="btn btn-accent account-submit" id="stock-submit" type="submit">Xác nhận nhập kho</button>
             </form>
         </section>
     </div>
 
-    <section class="card inventory-panel" aria-labelledby="item-history-title">
-        <div class="inventory-panel-head">
-            <h2 id="item-history-title">Lịch sử kho của món này</h2>
-            <p class="text-muted">50 lần thay đổi mới nhất, gồm cả các lần khách mua.</p>
-        </div>
+    <details class="card inventory-panel inventory-history-panel" id="item-history-title">
+        <summary><span><strong>Lịch sử kho của món này</strong><small>50 thay đổi mới nhất, gồm cả các lần khách mua</small></span><span class="inventory-disclosure" aria-hidden="true">⌄</span></summary>
         <p class="text-muted" th:if="${#lists.isEmpty(movements)}">Món này chưa có lần nhập, hủy, kiểm kê hay bán nào.</p>
         <div class="table-wrap" th:unless="${#lists.isEmpty(movements)}">
             <table th:replace="~{staff/inventory-history :: movementTable(${movements}, false)}"></table>
         </div>
-    </section>
-
-    <!-- Đổi nhãn và xem trước tồn kho theo thao tác đang chọn. Tắt JavaScript thì form vẫn gửi bình thường. -->
-    <script th:inline="none">
-        (() => {
-            const form = document.getElementById('stock-adjust-form');
-            if (!form) return;
-            const stock = Number(document.getElementById('current-stock').dataset.stock || 0);
-            const quantity = document.getElementById('adjust-quantity');
-            const quantityLabel = document.getElementById('adjust-quantity-label');
-            const noteLabel = document.getElementById('adjust-note-label');
-            const note = document.getElementById('adjust-note');
-            const preview = document.getElementById('stock-preview');
-            const labels = {
-                IMPORT: ['Số phần nhập thêm', 'Ghi chú (không bắt buộc)', false],
-                WRITE_OFF: ['Số phần xuất hủy', 'Lý do xuất hủy (bắt buộc)', true],
-                STOCKTAKE: ['Số đếm được thực tế trên kệ', 'Ghi chú (không bắt buộc)', false]
-            };
-            function selectedType() {
-                const checked = form.querySelector('input[name="type"]:checked');
-                return checked ? checked.value : 'IMPORT';
-            }
-            function update() {
-                const type = selectedType();
-                const [quantityText, noteText, noteRequired] = labels[type] || labels.IMPORT;
-                quantityLabel.textContent = quantityText;
-                noteLabel.textContent = noteText;
-                note.required = noteRequired;
-                quantity.min = type === 'STOCKTAKE' ? 0 : 1;
-                quantity.max = type === 'WRITE_OFF' ? Math.max(stock, 1) : (type === 'STOCKTAKE' ? 100000 : 10000);
-                const value = quantity.value === '' ? null : Number(quantity.value);
-                let after = stock;
-                if (value !== null && Number.isFinite(value)) {
-                    after = type === 'IMPORT' ? stock + value : (type === 'WRITE_OFF' ? stock - value : value);
-                }
-                preview.textContent = after.toLocaleString('vi-VN');
-                preview.classList.toggle('is-invalid', after < 0);
-            }
-            form.addEventListener('change', update);
-            quantity.addEventListener('input', update);
-            update();
-        })();
-    </script>
+    </details>
+    <script th:src="@{/js/inventory.js(v='20261002-inventory-2')}" defer></script>
 </div></body></html>

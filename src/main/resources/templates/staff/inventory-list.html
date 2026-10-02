@@ -2,13 +2,14 @@
 <html lang="vi" xmlns:th="http://www.thymeleaf.org"
       xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout" layout:decorate="~{layout/base}">
 <head><title>Kho bắp nước</title></head>
-<body><div layout:fragment="content">
-    <section class="module1-admin-head">
+<body><div layout:fragment="content" class="inventory-page">
+    <section class="module1-admin-head inventory-page-head">
         <div>
             <span class="module1-kicker">NHÂN VIÊN RẠP · KHO</span>
             <h1>Kho bắp nước</h1>
-            <p class="text-muted">Nhập hàng, xuất hủy và kiểm kê cuối ca. Khách thanh toán xong thì hệ thống tự trừ kho.</p>
+            <p class="text-muted">Theo dõi hàng tại quầy, nhập thêm và kiểm kê trong một nơi.</p>
         </div>
+        <a class="btn btn-ghost btn-sm" href="#history-title">Lịch sử kho ↓</a>
     </section>
 
     <div class="module1-stats-grid" aria-label="Tóm tắt kho bắp nước">
@@ -24,60 +25,69 @@
         </div>
     </div>
 
-    <section class="card inventory-panel" aria-labelledby="stock-items-title">
+    <section class="inventory-panel inventory-stock-section" aria-labelledby="stock-items-title">
         <div class="inventory-panel-head">
-            <h2 id="stock-items-title">Món lẻ</h2>
-            <p class="text-muted">Hàng mới về thì bấm “Nhập / xuất kho” ở món đó, chọn “Nhập kho” rồi ghi số phần.</p>
+            <div><h2 id="stock-items-title">Hàng trong kho</h2><p class="text-muted">Chọn món cần nhập, xuất hủy hoặc kiểm kê.</p></div>
+            <span class="inventory-result-count" id="inventory-result-count" aria-live="polite"
+                  th:text="|${#lists.size(inventory.items())} món|">3 món</span>
+        </div>
+        <div class="inventory-controls" data-inventory-controls hidden>
+            <label class="inventory-search" for="inventory-search">
+                <span aria-hidden="true">⌕</span>
+                <span class="sr-only">Tìm món theo tên hoặc mã</span>
+                <input class="form-control" id="inventory-search" type="search" placeholder="Tìm tên món hoặc mã hàng…" autocomplete="off">
+            </label>
+            <div class="inventory-filters" role="group" aria-label="Lọc tình trạng tồn kho">
+                <button type="button" class="inventory-filter is-selected" data-stock-filter="ALL" aria-pressed="true">Tất cả</button>
+                <button type="button" class="inventory-filter" data-stock-filter="LOW" aria-pressed="false">Sắp hết</button>
+                <button type="button" class="inventory-filter" data-stock-filter="OUT" aria-pressed="false">Hết hàng</button>
+            </div>
         </div>
         <div class="module1-empty" th:if="${#lists.isEmpty(inventory.items())}">
             <h2>Chưa có món nào</h2>
-            <p>Chạy database/seed-data.sql để có sẵn bắp rang và nước ngọt.</p>
+            <p>Kho chưa có sản phẩm. Liên hệ quản lý để bổ sung danh mục bắp nước.</p>
         </div>
-        <div class="table-wrap" th:unless="${#lists.isEmpty(inventory.items())}">
-            <table class="admin-table inventory-table">
-                <thead><tr><th>Món</th><th>Giá bán</th><th>Tồn kho</th><th>Trạng thái</th><th><span class="sr-only">Thao tác</span></th></tr></thead>
-                <tbody>
-                <tr th:each="item : ${inventory.items()}" th:classappend="|is-${#strings.toLowerCase(item.level().name())}|">
-                    <td>
-                        <div class="inventory-item">
-                            <span class="inventory-icon" aria-hidden="true" th:text="${item.icon()}">🍿</span>
-                            <span class="inventory-item-text">
-                                <strong th:text="${item.name()}">Bắp rang cỡ vừa</strong>
-                                <small th:text="|Mã ${item.code()}|">Mã POPCORN-M</small>
-                                <small th:unless="${#lists.isEmpty(item.usedInCombos())}"
-                                       th:text="|Dùng trong: ${#strings.listJoin(item.usedInCombos(), ', ')}|">Dùng trong: Combo</small>
-                            </span>
-                        </div>
-                    </td>
-                    <td th:text="|${#numbers.formatDecimal(item.price(), 0, 'POINT', 0, 'COMMA')} đ|">55.000 đ</td>
-                    <td>
-                        <span class="inventory-stock"><strong th:text="${item.stock()}">120</strong> phần</span>
-                        <small class="inventory-threshold" th:text="|Báo sắp hết khi còn ≤ ${item.lowStockThreshold()}|">Báo sắp hết khi còn ≤ 10</small>
-                    </td>
-                    <td>
-                        <span class="badge" th:classappend="${item.level().badgeClass}" th:text="${item.level().label}">Còn hàng</span>
-                        <span class="badge" th:unless="${item.active()}">Không bán lẻ</span>
-                    </td>
-                    <td class="inventory-action">
-                        <a class="btn btn-sm" th:href="@{/nhan-vien/kho-bap-nuoc/{id}(id=${item.id()})}"
-                           th:attr="aria-label=|Nhập hoặc xuất kho ${item.name()}|">Nhập / xuất kho</a>
-                    </td>
-                </tr>
-                </tbody>
-            </table>
+        <div class="inventory-products" th:unless="${#lists.isEmpty(inventory.items())}">
+            <article class="inventory-product card" th:each="item : ${inventory.items()}"
+                     th:classappend="|is-${#strings.toLowerCase(item.level().name())}|"
+                     th:attr="data-stock-item=true,data-search=|${item.name()} ${item.code()}|,data-stock-level=${item.level().name()}">
+                <div class="inventory-product-head">
+                    <span class="inventory-icon" aria-hidden="true" th:text="${item.icon()}">🍿</span>
+                    <div><span class="inventory-product-code" th:text="${item.code()}">POPCORN-M</span><h3 th:text="${item.name()}">Bắp rang cỡ vừa</h3></div>
+                </div>
+                <div class="inventory-product-stock">
+                    <div><span class="inventory-small-label">Tồn kho</span><p><strong th:text="${item.stock()}">120</strong><span>phần</span></p></div>
+                    <span class="badge" th:classappend="${item.level().badgeClass}" th:text="${item.level().label}">Còn hàng</span>
+                </div>
+                <dl class="inventory-product-meta">
+                    <div><dt>Giá bán lẻ</dt><dd th:text="|${#numbers.formatDecimal(item.price(), 0, 'POINT', 0, 'COMMA')} đ|">55.000 đ</dd></div>
+                    <div><dt>Ngưỡng cảnh báo</dt><dd th:text="|≤ ${item.lowStockThreshold()} phần|">≤ 20 phần</dd></div>
+                </dl>
+                <p class="inventory-product-combos" th:unless="${#lists.isEmpty(item.usedInCombos())}"
+                   th:text="|Dùng cho ${#strings.listJoin(item.usedInCombos(), ', ')}|">Dùng cho Combo một người</p>
+                <p class="inventory-product-combos" th:if="${#lists.isEmpty(item.usedInCombos())}">Món bán riêng tại quầy.</p>
+                <span class="badge" th:unless="${item.active()}">Không bán lẻ</span>
+                <a class="btn inventory-product-action" th:href="@{/nhan-vien/kho-bap-nuoc/{id}(id=${item.id()})}"
+                   th:attr="aria-label=|Cập nhật kho ${item.name()}|">Cập nhật kho <span aria-hidden="true">→</span></a>
+            </article>
+        </div>
+        <div class="module1-empty inventory-no-results" id="inventory-no-results" hidden>
+            <h3>Không tìm thấy món phù hợp</h3><p>Thử tên khác hoặc bỏ bộ lọc trạng thái.</p>
+            <button class="btn btn-ghost btn-sm" type="button" id="inventory-clear-filters">Bỏ bộ lọc</button>
         </div>
     </section>
 
     <section class="card inventory-panel" aria-labelledby="combo-title" th:unless="${#lists.isEmpty(inventory.combos())}">
         <div class="inventory-panel-head">
-            <h2 id="combo-title">Combo</h2>
-            <p class="text-muted">Combo không có kho riêng. Số combo còn bán được tính theo món thành phần còn ít nhất.</p>
+            <div><h2 id="combo-title">Combo còn bán được</h2><p class="text-muted">Tự tính từ lượng bắp và nước trong kho.</p></div>
+            <span class="inventory-small-label">Trừ kho theo từng thành phần</span>
         </div>
         <div class="inventory-combo-grid">
             <article class="inventory-combo" th:each="combo : ${inventory.combos()}">
                 <span class="inventory-icon" aria-hidden="true" th:text="${combo.icon()}">🍿🥤</span>
                 <div class="inventory-combo-body">
                     <h3 th:text="${combo.name()}">Combo một người</h3>
+                    <p class="inventory-combo-price" th:text="|${#numbers.formatDecimal(combo.price(), 0, 'POINT', 0, 'COMMA')} đ|">79.000 đ</p>
                     <ul class="inventory-recipe">
                         <li th:each="line : ${combo.recipe()}" th:text="${line}">1 × Bắp rang cỡ vừa</li>
                     </ul>
@@ -92,14 +102,12 @@
         </div>
     </section>
 
-    <section class="card inventory-panel" aria-labelledby="history-title">
-        <div class="inventory-panel-head">
-            <h2 id="history-title">Lịch sử kho gần đây</h2>
-            <p class="text-muted">20 lần thay đổi mới nhất của cả kho.</p>
-        </div>
+    <details class="card inventory-panel inventory-history-panel" id="history-title">
+        <summary><span><strong>Lịch sử kho gần đây</strong><small>20 lần thay đổi mới nhất · nhập, xuất hủy, kiểm kê và bán hàng</small></span><span class="inventory-disclosure" aria-hidden="true">⌄</span></summary>
         <p class="text-muted" th:if="${#lists.isEmpty(movements)}">Chưa có lần nhập, hủy, kiểm kê hay bán hàng nào.</p>
         <div class="table-wrap" th:unless="${#lists.isEmpty(movements)}">
             <table th:replace="~{staff/inventory-history :: movementTable(${movements}, true)}"></table>
         </div>
-    </section>
+    </details>
+    <script th:src="@{/js/inventory.js(v='20261002-inventory-2')}" defer></script>
 </div></body></html>
