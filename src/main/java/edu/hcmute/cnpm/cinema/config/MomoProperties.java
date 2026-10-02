@@ -17,7 +17,7 @@ import java.util.HexFormat;
  * Muốn nhận tiền thật thì rạp đăng ký doanh nghiệp với MoMo, rồi chỉ cần đổi endpoint
  * và ba khoá - code giữ nguyên.
  *
- * Thiếu một trong ba khoá thì coi như tắt MoMo: trang thanh toán chỉ còn trả tại quầy.
+ * Thiếu một trong ba khoá thì tắt tạo giao dịch: trang thanh toán báo chưa sẵn sàng.
  */
 @Component
 public class MomoProperties {

@@ -50,6 +50,8 @@ public class PasswordResetService {
     private final MailDelivery mailDelivery;
     private final byte[] secret;
     private final String baseUrl;
+    @jakarta.persistence.PersistenceContext
+    private jakarta.persistence.EntityManager entityManager;
 
     public PasswordResetService(UserRepository userRepository, PasswordEncoder passwordEncoder,
                                 MailDelivery mailDelivery,
@@ -102,7 +104,7 @@ public class PasswordResetService {
         } catch (NumberFormatException exception) {
             throw new BusinessException(INVALID_LINK_MESSAGE);
         }
-        if (now.getEpochSecond() > expiresAt) {
+        if (now.getEpochSecond() >= expiresAt) {
             throw new BusinessException(INVALID_LINK_MESSAGE);
         }
         User user = userRepository.findById(userId)
@@ -119,7 +121,13 @@ public class PasswordResetService {
     /** Đặt mật khẩu mới bằng mã trong link. Dùng xong mã tự hết hiệu lực. */
     @Transactional
     public User resetPassword(String token, String newPassword, Instant now) {
+        AccountValidation.password(newPassword);
         User user = findUserByToken(token, now);
+        userRepository.findByIdForBookingUpdate(user.getId())
+                .orElseThrow(() -> new BusinessException(INVALID_LINK_MESSAGE));
+        entityManager.refresh(user);
+        // Đọc lại chữ ký dưới khoá: hai yêu cầu đồng thời không dùng lại được cùng token.
+        user = findUserByToken(token, now);
         if (newPassword == null || newPassword.length() < AuthService.MIN_PASSWORD_LENGTH) {
             throw new BusinessException("Mật khẩu mới phải dài ít nhất " + AuthService.MIN_PASSWORD_LENGTH + " ký tự.");
         }

@@ -25,8 +25,12 @@ replay_pid*
 
 # Bo qua build output va file secret
 target/
+.tools/
 application-secrets.properties
 application-secrets-cloud.properties
+application-secrets-mail.properties
+application-secrets-mail.properties.tmp
+__pycache__/
 .DS_Store
 
 # IDE (Eclipse / STS)
@@ -40,3 +44,6 @@ bin/
 .vscode/
 .idea/
 *.iml
+
+.local-backup/
+.reconcile-local.py
