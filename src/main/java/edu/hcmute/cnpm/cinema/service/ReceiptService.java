@@ -19,7 +19,7 @@ import java.util.StringJoiner;
 
 /**
  * Dựng hóa đơn điện tử theo bố cục hóa đơn bán hàng thật: thông tin đơn vị bán, số hóa đơn,
- * bảng hàng hóa có STT và đơn vị tính, số tiền viết bằng chữ và mã QR tra cứu.
+ * bảng hàng hóa có STT và đơn vị tính, số tiền viết bằng chữ.
  *
  * Thông tin rạp đọc từ cấu hình app.cinema.* (có giá trị mặc định), muốn đổi thì thêm
  * vào application.properties, không phải sửa code.
@@ -31,23 +31,17 @@ public class ReceiptService {
 
     private final BookingOrderService bookingOrderService;
     private final TicketRefundService refundService;
-    private final QrCodeService qrCodeService;
-    private final String baseUrl;
     private final String sellerName;
     private final String sellerAddress;
     private final String sellerEmail;
 
     public ReceiptService(BookingOrderService bookingOrderService, TicketRefundService refundService,
-                          QrCodeService qrCodeService,
-                          @Value("${app.base-url:http://localhost:8082}") String baseUrl,
                           @Value("${app.cinema.name:Rạp chiếu phim UTE Cinema}") String sellerName,
                           @Value("${app.cinema.address:Số 1 Võ Văn Ngân, P. Linh Chiểu, TP. Thủ Đức, TP. Hồ Chí Minh}")
                           String sellerAddress,
                           @Value("${app.cinema.email:hotro@utecinema.local}") String sellerEmail) {
         this.bookingOrderService = bookingOrderService;
         this.refundService = refundService;
-        this.qrCodeService = qrCodeService;
-        this.baseUrl = baseUrl.endsWith("/") ? baseUrl.substring(0, baseUrl.length() - 1) : baseUrl;
         this.sellerName = sellerName;
         this.sellerAddress = sellerAddress;
         this.sellerEmail = sellerEmail;
@@ -81,12 +75,9 @@ public class ReceiptService {
                     item.getQuantity(), item.getUnitPrice(), item.getLineTotal(), false));
         }
 
-        String lookupUrl = baseUrl + "/hoa-don/" + order.getReceiptCode();
         return new ReceiptView(order, String.format("%07d", order.getId()), lines, seats.toString(),
                 order.getPaymentMethod() == PaymentMethod.MOMO ? "Ví điện tử MoMo" : "Tiền mặt tại quầy",
-                VietnameseMoneyWords.of(order.getTotalAmount()), lookupUrl,
-                qrCodeService.toSvg(lookupUrl, "Mã QR tra cứu hóa đơn " + order.getReceiptCode()),
-                sellerName, sellerAddress, sellerEmail);
+                VietnameseMoneyWords.of(order.getTotalAmount()), sellerName, sellerAddress, sellerEmail);
     }
 
     /** Vé cùng khách, cùng suất và trả tiền cùng lúc với đơn này (vé và đơn ghi chung một thời điểm). */

@@ -27,7 +27,7 @@
     <section class="card inventory-panel" aria-labelledby="stock-items-title">
         <div class="inventory-panel-head">
             <h2 id="stock-items-title">Món lẻ</h2>
-            <p class="text-muted">Bấm “Cập nhật kho” để nhập thêm, xuất hủy hoặc ghi số kiểm kê.</p>
+            <p class="text-muted">Hàng mới về thì bấm “Nhập / xuất kho” ở món đó, chọn “Nhập kho” rồi ghi số phần.</p>
         </div>
         <div class="module1-empty" th:if="${#lists.isEmpty(inventory.items())}">
             <h2>Chưa có món nào</h2>
@@ -60,7 +60,7 @@
                     </td>
                     <td class="inventory-action">
                         <a class="btn btn-sm" th:href="@{/nhan-vien/kho-bap-nuoc/{id}(id=${item.id()})}"
-                           th:attr="aria-label=|Cập nhật kho ${item.name()}|">Cập nhật kho</a>
+                           th:attr="aria-label=|Nhập hoặc xuất kho ${item.name()}|">Nhập / xuất kho</a>
                     </td>
                 </tr>
                 </tbody>

@@ -69,7 +69,7 @@ class ConcessionReceiptIntegrationTest extends IntegrationTestBase {
         Ticket paid = paymentService.confirmPayment(customer.getId(), showtime.getId()).get(0);
         String receiptCode = paid.getBookingOrder().getReceiptCode();
 
-        mockMvc.perform(get("/hoa-don/{code}", receiptCode)
+        String html = mockMvc.perform(get("/hoa-don/{code}", receiptCode)
                         .sessionAttr(Constants.SESSION_USER, customer))
                 .andExpect(status().isOk())
                 .andExpect(content().string(org.hamcrest.Matchers.containsString("Hóa đơn thanh toán")))
@@ -77,7 +77,10 @@ class ConcessionReceiptIntegrationTest extends IntegrationTestBase {
                 .andExpect(content().string(org.hamcrest.Matchers.containsString(
                         "Hai trăm ba mươi ba nghìn đồng chẵn.")))
                 .andExpect(content().string(org.hamcrest.Matchers.containsString("Vé xem phim - Ghế A1")))
-                .andExpect(content().string(org.hamcrest.Matchers.containsString("class=\"qr-svg\"")));
+                .andReturn().getResponse().getContentAsString();
+        // Tờ hóa đơn cố ý chỉ có chữ: không logo, không mã QR (thanh menu phía trên thì vẫn có logo).
+        String paper = html.substring(html.indexOf("invoice-paper"), html.indexOf("</article>"));
+        assertThat(paper).doesNotContain("<svg");
 
         assertThat(concessionProductRepository.findById(combo.getId()).orElseThrow().getStockQuantity())
                 .as("Thanh toán xong phải trừ kho đúng 2 phần khách mua")
