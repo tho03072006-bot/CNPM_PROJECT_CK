@@ -81,7 +81,7 @@ class BookingFlowEndToEndTest extends IntegrationTestBase {
                         .session(session)
                         .contentType(MediaType.APPLICATION_JSON)
                         .accept(MediaType.APPLICATION_JSON)
-                        .content("{\"seatIds\":[" + seatA1.getId() + "," + seatA2.getId() + "]}"))
+                        .content("{\"seatIds\":[" + seatA1.getId() + "," + seatA2.getId() + "] ,\"ageConfirmed\":true,\"termsAccepted\":true}"))
                 .andExpect(status().isOk())
                 .andExpect(content().string(containsString("\"success\":true")));
 
@@ -159,7 +159,7 @@ class BookingFlowEndToEndTest extends IntegrationTestBase {
         mockMvc.perform(post("/booking/showtime/" + showtime.getId() + "/hold")
                         .contentType(MediaType.APPLICATION_JSON)
                         .accept(MediaType.APPLICATION_JSON)
-                        .content("{\"seatIds\":[" + seat.getId() + "]}"))
+                        .content("{\"seatIds\":[" + seat.getId() + "] ,\"ageConfirmed\":true,\"termsAccepted\":true}"))
                 .andExpect(status().is4xxClientError());
 
         assertThat(ticketRepository.count())

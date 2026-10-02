@@ -3,9 +3,11 @@ package edu.hcmute.cnpm.cinema.controller;
 import edu.hcmute.cnpm.cinema.constants.Constants;
 import edu.hcmute.cnpm.cinema.entity.Ticket;
 import edu.hcmute.cnpm.cinema.entity.User;
+import edu.hcmute.cnpm.cinema.entity.BookingOrder;
 import edu.hcmute.cnpm.cinema.exception.BusinessException;
 import edu.hcmute.cnpm.cinema.repository.TicketRepository;
 import edu.hcmute.cnpm.cinema.service.MomoPaymentService;
+import edu.hcmute.cnpm.cinema.service.BookingOrderService;
 import edu.hcmute.cnpm.cinema.service.PaymentService;
 import edu.hcmute.cnpm.cinema.service.PaymentOtpService;
 import edu.hcmute.cnpm.cinema.service.OtpService;
@@ -15,6 +17,7 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
@@ -27,9 +30,12 @@ import java.util.List;
 @RequestMapping("/thanh-toan")
 public class PaymentController {
 
+    private final edu.hcmute.cnpm.cinema.config.DemoWalletSettings demoWalletSettings;
+    private final DemoWalletSessions demoWalletSessions;
     private final PaymentService paymentService;
     private final TicketRepository ticketRepository;
     private final MomoPaymentService momoPaymentService;
+    private final BookingOrderService bookingOrderService;
     private final PaymentOtpService paymentOtp;
     private final OtpService otp;
     static final String PAYMENT_OTP = "paymentOtp";
@@ -37,10 +43,16 @@ public class PaymentController {
 
     public PaymentController(PaymentService paymentService,
                              TicketRepository ticketRepository, MomoPaymentService momoPaymentService,
+                             BookingOrderService bookingOrderService,
+                             edu.hcmute.cnpm.cinema.config.DemoWalletSettings demoWalletSettings,
+                             DemoWalletSessions demoWalletSessions,
                              PaymentOtpService paymentOtp, OtpService otp) {
+        this.demoWalletSettings = demoWalletSettings;
+        this.demoWalletSessions = demoWalletSessions;
         this.paymentService = paymentService;
         this.ticketRepository = ticketRepository;
         this.momoPaymentService = momoPaymentService;
+        this.bookingOrderService = bookingOrderService;
         this.paymentOtp = paymentOtp;
         this.otp = otp;
     }
@@ -53,16 +65,23 @@ public class PaymentController {
         }
 
         List<Ticket> tickets = paymentService.findPayableTickets(customer.getId(), showtimeId);
+        BookingOrder order = tickets.isEmpty() ? null
+                : bookingOrderService.prepareForPayment(customer.getId(), showtimeId);
         model.addAttribute("tickets", tickets);
-        model.addAttribute("total", paymentService.sumPrice(tickets));
+        model.addAttribute("ticketSubtotal", paymentService.sumPrice(tickets));
+        model.addAttribute("order", order);
+        model.addAttribute("total", order == null ? java.math.BigDecimal.ZERO : order.getTotalAmount());
         model.addAttribute("showtimeId", showtimeId);
-        model.addAttribute("momoEnabled", momoPaymentService.isEnabled());
+        model.addAttribute("momoEnabled", momoPaymentService.isEnabled() && !demoWalletSettings.isEnabled());
+        model.addAttribute("demoWalletEnabled", demoWalletSettings.isEnabled());
+        model.addAttribute("walletCsrf", demoWalletSessions.csrf(session));
         return "account/payment";
     }
 
     @PostMapping("/{showtimeId}")
     public String confirmPayment(@PathVariable Long showtimeId, HttpSession session,
                                  @RequestParam(required = false) String code,
+                                 @RequestParam(required = false) List<Long> ticketIds,
                                  RedirectAttributes redirectAttributes) {
         User customer = SessionUsers.current(session);
         if (customer == null) {
@@ -158,6 +177,12 @@ public class PaymentController {
         }
         model.addAttribute("tickets", tickets);
         model.addAttribute("total", paymentService.sumPrice(tickets));
+        Object receiptCode = model.getAttribute("receiptCode");
+        if (receiptCode == null && !tickets.isEmpty()) {
+            receiptCode = bookingOrderService.findReceiptCodeByTicketId(tickets.get(0).getId(), customer.getId())
+                    .orElse(null);
+        }
+        model.addAttribute("receiptCode", receiptCode);
         return "account/payment-success";
     }
 }

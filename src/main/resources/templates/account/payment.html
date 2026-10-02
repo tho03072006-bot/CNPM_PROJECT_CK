@@ -6,7 +6,7 @@
 
     <section class="module1-section-head" aria-labelledby="payment-title">
         <div>
-            <span class="module1-kicker">BƯỚC CUỐI</span>
+            <span class="module1-kicker">BƯỚC 3/3</span>
             <h1 id="payment-title">Xác nhận thanh toán</h1>
             <p class="text-muted" th:unless="${#lists.isEmpty(tickets)}">
                 Kiểm tra lại ghế và số tiền trước khi xác nhận.</p>
@@ -33,30 +33,48 @@
         <div class="card account-summary">
             <div class="account-summary-line">
                 <span th:text="|${#lists.size(tickets)} vé|">2 vé</span>
-                <strong th:text="|${#numbers.formatDecimal(total, 0, 'POINT', 0, 'COMMA')} đ|">230.000 đ</strong>
+                <strong th:text="|${#numbers.formatDecimal(ticketSubtotal, 0, 'POINT', 0, 'COMMA')} đ|">230.000 đ</strong>
             </div>
+            <div th:if="${order != null and !#lists.isEmpty(order.items)}" class="payment-order-items">
+                <div class="account-summary-line" th:each="item : ${order.items}">
+                    <span th:text="|${item.productName} × ${item.quantity}|">Combo × 1</span>
+                    <strong th:text="|${#numbers.formatDecimal(item.lineTotal, 0, 'POINT', 0, 'COMMA')} đ|">79.000 đ</strong>
+                </div>
+            </div>
+            <div class="account-summary-line concession-grand-total">
+                <span>Tổng thanh toán</span>
+                <strong th:text="|${#numbers.formatDecimal(total, 0, 'POINT', 0, 'COMMA')} đ|">309.000 đ</strong>
+            </div>
+            <a class="btn btn-ghost account-submit" th:href="@{/bap-nuoc/{id}(id=${showtimeId})}">Sửa lựa chọn bắp nước</a>
             <!--
               Vé online thanh toán qua QR hoặc thẻ. Cả hai đều phải xác thực OTP trước khi
               tạo giao dịch; vé chỉ được xuất sau khi MoMo xác nhận đã nhận tiền.
             -->
             <div class="payment-options">
-                <p class="form-hint">Mỗi phương thức cần xác thực bằng mã OTP gửi tới email tài khoản trước khi tiếp tục.</p>
-                <div id="payment-unavailable" class="alert" role="status" th:unless="${momoEnabled}">
+                <form th:if="${demoWalletEnabled}" th:action="@{/thanh-toan/{id}/demo-wallet(id=${showtimeId})}" method="post">
+                    <input type="hidden" name="walletCsrf" th:value="${walletCsrf}">
+                    <input th:each="ticket : ${tickets}" type="hidden" name="ticketIds" th:value="${ticket.id}">
+                    <button class="btn btn-accent account-submit" type="submit">MoMo — Giả lập Nhóm 8</button>
+                </form>
+                <p class="payment-sandbox-note" th:if="${demoWalletEnabled}">Quét QR bằng camera điện thoại để mở ví web. Giao dịch mô phỏng, không phát sinh tiền thật. © Nhóm 8.</p>
+
+                <p class="form-hint" th:if="${momoEnabled}">Mỗi phương thức cần xác thực bằng mã OTP gửi tới email tài khoản trước khi tiếp tục.</p>
+                <div id="payment-unavailable" class="alert" role="status" th:unless="${momoEnabled or demoWalletEnabled}">
                     Thanh toán trực tuyến hiện chưa sẵn sàng. Vui lòng thử lại sau.
                 </div>
-                <form th:action="@{/thanh-toan/{id}/otp(id=${showtimeId})}" method="post">
+                <form th:if="${momoEnabled}" th:action="@{/thanh-toan/{id}/otp(id=${showtimeId})}" method="post">
                     <input type="hidden" name="method" value="momo-qr">
-                    <button class="btn btn-accent account-submit" type="submit" th:disabled="${!momoEnabled}">Quét mã QR bằng app MoMo</button>
+                    <button class="btn btn-accent account-submit" type="submit">Quét mã QR bằng app MoMo</button>
                 </form>
-                <p class="text-muted account-summary-note">
+                <p class="text-muted account-summary-note" th:if="${momoEnabled}">
                     Nhanh nhất: mã QR hiện ngay trên trang này, mở app MoMo quét rồi bấm xác nhận là xong,
                     không phải nhập thông tin thẻ.
                 </p>
-                <form th:action="@{/thanh-toan/{id}/otp(id=${showtimeId})}" method="post">
+                <form th:if="${momoEnabled}" th:action="@{/thanh-toan/{id}/otp(id=${showtimeId})}" method="post">
                     <input type="hidden" name="method" value="momo">
-                    <button class="btn btn-ghost account-submit" type="submit" th:disabled="${!momoEnabled}">Thẻ ATM hoặc thẻ quốc tế qua MoMo</button>
+                    <button class="btn btn-ghost account-submit" type="submit">Thẻ ATM hoặc thẻ quốc tế qua MoMo</button>
                 </form>
-                <p class="text-muted account-summary-note">
+                <p class="text-muted account-summary-note" th:if="${momoEnabled}">
                     Chuyển sang trang MoMo để nhập thông tin thẻ, trả xong sẽ tự quay lại đây.
                 </p>
                 <p class="payment-sandbox-note" th:if="${momoEnabled}">

@@ -50,9 +50,9 @@ class SeatPricingServiceTest {
     }
 
     @Test
-    @DisplayName("Giá sau nhân được làm tròn đến hai chữ số thập phân")
-    void shouldRoundPrice_whenMultiplicationCreatesFractionalCents() {
-        assertThat(seatPricingService.calculateSeatPrice(new BigDecimal("10.01"), "VIP"))
-                .isEqualByComparingTo("15.02");
+    @DisplayName("Giá VIP được làm tròn đến đồng nguyên để QR và hóa đơn cùng số tiền")
+    void shouldRoundPrice_whenOddBasePriceCreatesHalfDong() {
+        assertThat(seatPricingService.calculateSeatPrice(new BigDecimal("75001"), "VIP"))
+                .isEqualByComparingTo("112502");
     }
 }

@@ -51,13 +51,15 @@
         </div>
         <div th:if="${ticket.paidAt != null}">
             <dt>Trả qua</dt>
-            <dd th:text="${ticket.paymentMethod != null and ticket.paymentMethod.name() == 'MOMO'} ? 'Ví MoMo' : 'Tại quầy'">Ví MoMo</dd>
+            <dd th:text="${ticket.paymentMethod != null ? ticket.paymentMethod.displayName : 'Tại quầy'}">Ví MoMo</dd>
         </div>
         <div th:if="${ticket.checkedInAt != null}">
             <dt>Vào phòng lúc</dt>
             <dd th:text="${#temporals.format(ticket.checkedInAt, 'HH:mm dd/MM/yyyy')}">19:05 27/09/2026</dd>
         </div>
     </dl>
+    <a class="btn btn-ghost btn-sm" th:if="${ticket.bookingOrder != null and ticket.bookingOrder.status.name() == 'PAID'}"
+       th:href="@{/hoa-don/{code}(code=${ticket.bookingOrder.receiptCode})}">Hóa đơn điện tử</a>
 </article>
 </body>
 </html>

@@ -6,6 +6,7 @@ import edu.hcmute.cnpm.cinema.dto.payment.MomoQrPayment;
 import edu.hcmute.cnpm.cinema.entity.User;
 import edu.hcmute.cnpm.cinema.exception.BusinessException;
 import edu.hcmute.cnpm.cinema.service.MomoPaymentService;
+import edu.hcmute.cnpm.cinema.service.BookingOrderService;
 import edu.hcmute.cnpm.cinema.service.PaymentService;
 import edu.hcmute.cnpm.cinema.service.QrCodeService;
 import edu.hcmute.cnpm.cinema.service.PaymentOtpService;
@@ -29,6 +30,7 @@ import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.List;
 
 /**
  * Thanh toán qua ví MoMo, hai cách:
@@ -45,16 +47,22 @@ public class MomoPaymentController {
     /** Giữ tối đa chừng này mã QR trong session; khách bấm tạo mã nhiều lần thì bỏ mã cũ nhất. */
     private static final int MAX_QR_PAYMENTS_IN_SESSION = 5;
 
+    private final edu.hcmute.cnpm.cinema.config.DemoWalletSettings demoWalletSettings;
     private final MomoPaymentService momoPaymentService;
     private final PaymentService paymentService;
     private final QrCodeService qrCodeService;
     private final PaymentOtpService paymentOtp;
+    private final BookingOrderService bookingOrderService;
 
     public MomoPaymentController(MomoPaymentService momoPaymentService, PaymentService paymentService,
-                                 QrCodeService qrCodeService, PaymentOtpService paymentOtp) {
+                                 QrCodeService qrCodeService, BookingOrderService bookingOrderService,
+                                 edu.hcmute.cnpm.cinema.config.DemoWalletSettings demoWalletSettings,
+                                 PaymentOtpService paymentOtp) {
+        this.demoWalletSettings = demoWalletSettings;
         this.momoPaymentService = momoPaymentService;
         this.paymentService = paymentService;
         this.qrCodeService = qrCodeService;
+        this.bookingOrderService = bookingOrderService;
         this.paymentOtp = paymentOtp;
     }
 
@@ -62,15 +70,19 @@ public class MomoPaymentController {
     @PostMapping("/{showtimeId}/momo")
     public String startPayment(@PathVariable Long showtimeId, HttpSession session,
                                @RequestParam(required = false) String code,
+                               @RequestParam(required = false) List<Long> ticketIds,
                                RedirectAttributes redirectAttributes) {
         User customer = SessionUsers.current(session);
         if (customer == null) {
             return SessionUsers.redirectToLogin("/thanh-toan/" + showtimeId);
         }
         try {
+            if (demoWalletSettings.isEnabled()) return "redirect:/thanh-toan/" + showtimeId;
             String url = paymentOtp.verify((String) session.getAttribute(PaymentController.PAYMENT_OTP),
                     customer.getId(), showtimeId, "momo", code,
-                    () -> momoPaymentService.startPayment(customer.getId(), showtimeId));
+                    () -> ticketIds != null
+                            ? momoPaymentService.startPayment(customer.getId(), showtimeId, ticketIds)
+                            : momoPaymentService.startPayment(customer.getId(), showtimeId));
             session.removeAttribute(PaymentController.PAYMENT_OTP);
             return "redirect:" + url;
         } catch (BusinessException exception) {
@@ -83,15 +95,19 @@ public class MomoPaymentController {
     @PostMapping("/{showtimeId}/momo-qr")
     public String startQrPayment(@PathVariable Long showtimeId, HttpSession session,
                                  @RequestParam(required = false) String code,
+                                 @RequestParam(required = false) List<Long> ticketIds,
                                  RedirectAttributes redirectAttributes) {
         User customer = SessionUsers.current(session);
         if (customer == null) {
             return SessionUsers.redirectToLogin("/thanh-toan/" + showtimeId);
         }
         try {
+            if (demoWalletSettings.isEnabled()) return "redirect:/thanh-toan/" + showtimeId;
             MomoQrPayment qrPayment = paymentOtp.verify((String) session.getAttribute(PaymentController.PAYMENT_OTP),
                     customer.getId(), showtimeId, "momo-qr", code,
-                    () -> momoPaymentService.startQrPayment(customer.getId(), showtimeId));
+                    () -> ticketIds != null
+                            ? momoPaymentService.startQrPayment(customer.getId(), showtimeId, ticketIds)
+                            : momoPaymentService.startQrPayment(customer.getId(), showtimeId));
             session.removeAttribute(PaymentController.PAYMENT_OTP);
             rememberQrPayment(session, qrPayment);
             return "redirect:/thanh-toan/momo/qr/" + qrPayment.orderId();
@@ -177,6 +193,7 @@ public class MomoPaymentController {
             case PAID, ALREADY_PAID -> {
                 qrPayments(session).remove(orderId);
                 redirectAttributes.addFlashAttribute("paidTicketIds", result.getTicketIds());
+                addReceiptCode(result, redirectAttributes);
                 return "redirect:/thanh-toan/hoan-tat";
             }
             case PENDING -> {
@@ -211,6 +228,7 @@ public class MomoPaymentController {
         switch (result.getOutcome()) {
             case PAID -> {
                 redirectAttributes.addFlashAttribute("paidTicketIds", result.getTicketIds());
+                addReceiptCode(result, redirectAttributes);
                 return "redirect:/thanh-toan/hoan-tat";
             }
             case ALREADY_PAID -> {
@@ -257,6 +275,13 @@ public class MomoPaymentController {
         payments.put(qrPayment.orderId(), qrPayment);
         // Gán lại để session lưu ra đĩa hoặc chia sẻ giữa nhiều máy chủ vẫn thấy thay đổi.
         session.setAttribute(Constants.SESSION_MOMO_QR_PAYMENTS, payments);
+    }
+
+    private void addReceiptCode(MomoPaymentResult result, RedirectAttributes redirectAttributes) {
+        if (!result.getTicketIds().isEmpty()) {
+            bookingOrderService.findReceiptCodeByTicketId(result.getTicketIds().get(0), result.getUserId())
+                    .ifPresent(code -> redirectAttributes.addFlashAttribute("receiptCode", code));
+        }
     }
 
     @SuppressWarnings("unchecked")

@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="referrer" content="no-referrer"><title>MoMo — Giả lập Nhóm 8</title>
+    <link rel="icon" th:href="@{/images/favicon.svg}"><link rel="stylesheet" th:href="@{/css/style.css}">
+    <script defer th:src="@{/js/demo-wallet.js}"></script>
+</head>
+<body>
+<main class="wallet-shell" id="demo-wallet" data-role="wallet"
+      th:attr="data-payment-id=${publicId},data-csrf=${walletCsrf}">
+    <header class="wallet-header">
+        <span class="wallet-mark" aria-hidden="true">M</span>
+        <div><h1>MoMo <span class="wallet-subtitle">Giả lập Nhóm 8</span></h1>
+            <p class="text-muted">Ví thanh toán mô phỏng của đồ án</p></div>
+        <button type="button" id="wallet-theme" class="btn btn-ghost" aria-label="Đổi giao diện sáng tối">☀ / ☾</button>
+    </header>
+    <p class="payment-sandbox-note">Ứng dụng mô phỏng do Nhóm 8 phát triển. Không thuộc hệ thống MoMo chính thức và không phát sinh tiền thật.</p>
+    <div class="alert alert-error" id="wallet-message" hidden role="status" aria-live="polite"></div>
+
+    <section class="card wallet-panel" id="wallet-import" th:if="${publicId == null}">
+        <h2>Mở giao dịch thanh toán</h2>
+        <p class="text-muted">Quét QR trên web rạp bằng camera điện thoại để mở đúng đơn. Bạn cũng có thể dán liên kết thanh toán bên dưới.</p>
+        <form id="wallet-import-form">
+            <div class="form-field"><label for="wallet-link-input">Liên kết thanh toán từ web rạp</label>
+                <input class="form-control" id="wallet-link-input" type="url" maxlength="2048" required autocomplete="off" placeholder="Dán liên kết được tạo trên web rạp"></div>
+            <button class="btn btn-accent account-submit" type="submit">Mở giao dịch</button>
+        </form>
+    </section>
+
+    <section class="card wallet-panel" id="wallet-details" th:if="${publicId != null}">
+        <span class="module1-kicker">XÁC NHẬN THANH TOÁN MÔ PHỎNG</span>
+        <h2 id="wallet-movie">Đang tải giao dịch…</h2>
+        <dl class="wallet-summary">
+            <div><dt>Phòng chiếu</dt><dd id="wallet-room">—</dd></div>
+            <div><dt>Suất chiếu</dt><dd id="wallet-showtime">—</dd></div>
+            <div><dt>Ghế</dt><dd id="wallet-seats">—</dd></div>
+            <div><dt>Mã giao dịch</dt><dd id="wallet-order">—</dd></div>
+        </dl>
+        <p class="text-muted">Tổng tiền vé và bắp nước</p>
+        <p class="momo-qr-amount" id="wallet-amount">—</p>
+        <p>Thời gian còn lại <strong id="wallet-countdown" role="timer">Đang xác minh…</strong></p>
+        <p id="wallet-status" role="status" aria-live="polite">Đang xác minh trạng thái thanh toán…</p>
+        <div id="wallet-actions">
+            <label class="wallet-consent"><input type="checkbox" id="wallet-consent">
+                Tôi xác nhận đây là thanh toán giả lập của Nhóm 8, không phát sinh tiền thật.</label>
+            <button class="btn btn-accent account-submit" id="wallet-confirm" type="button" disabled>Xác nhận thanh toán mô phỏng</button>
+            <button class="btn btn-ghost account-submit" id="wallet-cancel" type="button" disabled>Huỷ giao dịch mô phỏng</button>
+        </div>
+        <button class="btn btn-ghost account-submit" id="wallet-refresh" type="button">Kiểm tra lại trạng thái</button>
+        <a class="wallet-home-link" th:href="@{/demo-wallet}">Mở giao dịch khác</a>
+    </section>
+    <noscript><p class="alert alert-error">Vui lòng bật JavaScript để kiểm tra và xác nhận giao dịch an toàn.</p></noscript>
+    <footer class="wallet-footer">© 2026 Nhóm 8. Bản quyền phần mềm và giao diện giả lập thuộc Nhóm 8.</footer>
+</main>
+</body></html>

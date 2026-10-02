@@ -7,6 +7,11 @@ import edu.hcmute.cnpm.cinema.repository.ShowtimeRepository;
 import edu.hcmute.cnpm.cinema.repository.TicketRefundRepository;
 import edu.hcmute.cnpm.cinema.repository.TicketRepository;
 import edu.hcmute.cnpm.cinema.repository.UserRepository;
+import edu.hcmute.cnpm.cinema.repository.BookingOrderRepository;
+import edu.hcmute.cnpm.cinema.repository.BookingOrderItemRepository;
+import edu.hcmute.cnpm.cinema.repository.ConcessionProductRepository;
+import edu.hcmute.cnpm.cinema.repository.SupportConversationRepository;
+import edu.hcmute.cnpm.cinema.repository.SupportMessageRepository;
 import edu.hcmute.cnpm.cinema.service.MomoApiClient;
 import org.junit.jupiter.api.BeforeEach;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -45,6 +50,8 @@ public abstract class IntegrationTestBase {
     @Autowired
     protected TicketRepository ticketRepository;
     @Autowired
+    protected edu.hcmute.cnpm.cinema.repository.DemoPaymentRepository demoPaymentRepository;
+    @Autowired
     protected ShowtimeRepository showtimeRepository;
     @Autowired
     protected SeatRepository seatRepository;
@@ -56,6 +63,16 @@ public abstract class IntegrationTestBase {
     protected UserRepository userRepository;
     @Autowired
     protected TicketRefundRepository ticketRefundRepository;
+    @Autowired
+    protected BookingOrderRepository bookingOrderRepository;
+    @Autowired
+    protected BookingOrderItemRepository bookingOrderItemRepository;
+    @Autowired
+    protected ConcessionProductRepository concessionProductRepository;
+    @Autowired
+    protected SupportConversationRepository supportConversationRepository;
+    @Autowired
+    protected SupportMessageRepository supportMessageRepository;
 
     /**
      * Ban GIA cua lop goi API MoMo, dung chung cho MOI test tich hop: khong test nao duoc
@@ -89,8 +106,14 @@ public abstract class IntegrationTestBase {
 
     /** Xoa du lieu theo dung thu tu khoa ngoai: refund -> ticket -> showtime -> seat -> room -> movie -> user. */
     protected void cleanDatabase() {
+        demoPaymentRepository.deleteAllInBatch();
+        supportMessageRepository.deleteAllInBatch();
+        supportConversationRepository.deleteAllInBatch();
         ticketRefundRepository.deleteAllInBatch();
         ticketRepository.deleteAllInBatch();
+        bookingOrderItemRepository.deleteAllInBatch();
+        bookingOrderRepository.deleteAllInBatch();
+        concessionProductRepository.deleteAllInBatch();
         showtimeRepository.deleteAllInBatch();
         seatRepository.deleteAllInBatch();
         roomRepository.deleteAllInBatch();

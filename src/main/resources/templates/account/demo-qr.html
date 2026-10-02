@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout" layout:decorate="~{layout/base}">
+<head><title>MoMo — Giả lập Nhóm 8</title></head>
+<body><div layout:fragment="content">
+    <section class="module1-section-head"><div><span class="module1-kicker">THANH TOÁN MÔ PHỎNG</span>
+        <h1>MoMo — Giả lập Nhóm 8</h1>
+        <p class="text-muted">Quét QR bằng camera điện thoại để mở đúng giao dịch trên ví online. Trang này tự cập nhật khi thanh toán được xác nhận.</p></div></section>
+    <p class="payment-sandbox-note">Ứng dụng mô phỏng của Nhóm 8, không thuộc hệ thống MoMo chính thức và không phát sinh tiền thật.</p>
+    <div id="demo-wallet" data-role="merchant" class="momo-qr wallet-checkout"
+         th:attr="data-status-url=@{/thanh-toan/demo/qr/{id}/status(id=${merchant.payment.publicId})},
+         data-finish-url=@{/thanh-toan/demo/qr/{id}/finish(id=${merchant.payment.publicId})}">
+        <div class="card momo-qr-card wallet-checkout-card">
+            <span class="momo-qr-brand">MoMo · GIẢ LẬP NHÓM 8</span>
+            <div id="wallet-qr-visual" th:if="${merchant.walletUrl != null}">
+                <h2 class="wallet-qr-title">Quét QR để thanh toán</h2>
+                <div class="momo-qr-frame" th:utext="${qrSvg}"></div>
+                <p class="wallet-qr-caption">Mở camera điện thoại, quét mã và chạm vào liên kết.</p>
+            </div>
+            <p class="momo-qr-amount" th:text="|${#numbers.formatInteger(merchant.payment.amount,1,'POINT')} đ|">—</p>
+            <p>Thời gian còn lại <strong id="wallet-countdown" role="timer">Đang xác minh…</strong></p>
+            <p id="wallet-status" role="status" aria-live="polite" th:text="${merchant.payment.message}">Đang chờ…</p>
+            <div class="alert alert-error" id="wallet-message" role="status" hidden></div>
+            <button class="btn btn-ghost account-submit" id="wallet-refresh" type="button">Kiểm tra trạng thái</button>
+        </div>
+        <div class="card momo-qr-help">
+            <h2>Xác nhận bằng điện thoại</h2>
+            <ol class="momo-qr-steps">
+                <li>Quét QR lớn bên cạnh để mở ví online của đúng đơn.</li>
+                <li>Kiểm tra phim, ghế và tổng tiền trong ví MoMo giả lập.</li>
+                <li>Đồng ý giao dịch mô phỏng rồi bấm xác nhận. Web rạp sẽ tự mở vé.</li>
+            </ol>
+            <dl class="wallet-summary">
+                <div><dt>Phim</dt><dd th:text="${merchant.payment.movieTitle}"></dd></div>
+                <div><dt>Ghế</dt><dd th:text="${#strings.listJoin(merchant.payment.seatLabels,', ')}"></dd></div>
+                <div><dt>Mã giao dịch</dt><dd th:text="${merchant.payment.publicId}"></dd></div>
+            </dl>
+            <details class="wallet-link-backup" th:if="${merchant.walletUrl != null}">
+                <summary>Không quét được QR? Dùng liên kết thanh toán</summary>
+                <label for="wallet-copy-link">Liên kết của đúng giao dịch này</label>
+                <input class="form-control" id="wallet-copy-link" readonly th:value="${merchant.walletUrl}" aria-describedby="wallet-link-help">
+                <div class="account-actions">
+                    <button class="btn btn-ghost" id="wallet-copy" type="button">Sao chép liên kết</button>
+                    <a class="btn btn-ghost" th:href="${merchant.walletUrl}" target="_blank" rel="noopener noreferrer">Mở ví bằng liên kết</a>
+                </div>
+                <p id="wallet-link-help" class="text-muted">Gửi liên kết sang điện thoại rồi mở bằng trình duyệt. Liên kết chứa khóa thanh toán của đơn này, chỉ chia sẻ với người thanh toán.</p>
+                <p class="payment-sandbox-note" th:if="${merchant.localOnly}">Đây là chế độ thử trên cùng máy. Cần cấu hình ví HTTPS công khai để điện thoại khác thanh toán.</p>
+            </details>
+            <p class="text-muted" th:if="${merchant.walletUrl == null and merchant.payment.status == 'PENDING'}">Phiên tạo QR đã kết thúc. Quay lại thanh toán để tạo liên kết mới; thời hạn giữ ghế không được gia hạn.</p>
+            <form th:if="${merchant.payment.status == 'PENDING'}"
+                  th:action="@{/thanh-toan/demo/qr/{id}/cancel(id=${merchant.payment.publicId})}" method="post">
+                <input type="hidden" name="walletCsrf" th:value="${walletCsrf}">
+                <button class="btn btn-ghost account-submit" type="submit">Huỷ mã thanh toán này</button>
+            </form>
+            <a class="btn btn-ghost account-submit" th:href="@{/thanh-toan/{id}(id=${showtimeId})}">Chọn cách trả khác</a>
+            <p class="wallet-footer">© 2026 Nhóm 8. Bản quyền phần mềm giả lập thuộc Nhóm 8.</p>
+        </div>
+    </div>
+    <script defer th:src="@{/js/demo-wallet.js}"></script>
+</div></body></html>

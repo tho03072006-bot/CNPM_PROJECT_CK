@@ -351,3 +351,10 @@ môi trường thử. Suất thử: "Bóng Ma Nhà Hát", Cinema 3, và một su
 (tải ở trang tải về dành cho nhà phát triển của MoMo, phải gỡ app MoMo thật trước khi cài). Tài
 khoản ví thử dùng mật khẩu và OTP `000000`. Chưa cài được thì chọn "Thẻ ATM hoặc thẻ quốc tế qua
 MoMo" và dùng thẻ thử ở mục 9.
+
+
+## Cập nhật Module 2 ngày 01/10/2026
+
+Đã có test JavaScript cho đồng hồ, hết hạn, mất phản hồi và đồng bộ tab tại src/test/js/seat-booking.test.cjs (11 ca). Các mục cũ nói JavaScript chưa có test chỉ mô tả thời điểm trước cập nhật này. BookingSafetyIntegrationTest thêm test SQL Server thực cho ghế lẻ khi giữ đồng thời, thanh toán cạnh tranh huỷ, rollback đổi ghế và mã lượt giữ cũ. Kết quả toàn bộ dự án: 293 Maven test thành công; xem [báo cáo Module 2](MODULE_2_REVIEW.md).
+
+BookingStateIntegrationTest thêm 24 ca cho request API từ phiên JPA mới, dọn vé hết hạn, phân loại tuổi, phim ngừng chiếu, suất đã bắt đầu và thêm phim mới qua trang quản trị. MoviePagesIntegrationTest bổ sung 5 ca chặn phân loại tuổi thiếu/sai. Lỗi 500 API ghế đã tái hiện trước sửa và qua kiểm thử sau sửa; cloud kiểm tra từng phim được ghi trong báo cáo Module 2.
