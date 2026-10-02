@@ -15,7 +15,7 @@ import java.util.Set;
 /**
  * Kiểm tra cách chọn ghế trước khi hệ thống tạo vé giữ chỗ.
  *
- * Chỉ giữ hai luật mà các rạp lớn (CGV, Lotte, Galaxy) đều áp dụng khi đặt vé trực tuyến:
+ * Quy định của dự án, tham khảo luồng đặt vé của các rạp lớn:
  * <ul>
  *   <li>tối đa 8 chỗ một lượt, ghế đôi tính là 2 chỗ;</li>
  *   <li>không để trống đúng MỘT ghế lẻ cạnh ghế vừa chọn (ở giữa hoặc sát mép hàng), vì
@@ -96,7 +96,7 @@ public class SeatSelectionPolicy {
                         && !unavailableSeatIds.contains(rowSeats.get(runEnd + 1).getId())) {
                     runEnd++;
                 }
-                if (runEnd == index) {
+                if (runEnd == index && resolveSeatCapacity(firstAvailableSeat) == 1) {
                     singleSeatGaps.add(firstAvailableSeat.getId());
                 }
                 index = runEnd + 1;

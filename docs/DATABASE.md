@@ -192,7 +192,7 @@ suất bị xoá sau này thì biên nhận vẫn phải đọc được.
 
 | Chỗ | Kiểu | Dùng để |
 |---|---|---|
-| `tickets.payment_method` | `NVARCHAR(20)` NULL | `COUNTER` (tại quầy) hoặc `MOMO`. Vé cũ để NULL, coi như trả tại quầy |
+| `tickets.payment_method` | `NVARCHAR(20)` NULL | `COUNTER` (tại quầy), `MOMO` hoặc `MOMO_DEMO` (thử nghiệm). Vé cũ để NULL, coi như trả tại quầy |
 | `tickets.payment_ref` | `NVARCHAR(100)` NULL | Mã giao dịch MoMo (`transId`), cần để hoàn tiền đúng giao dịch |
 | `tickets.checked_in_at` | `DATETIME2` NULL | Lúc nhân viên soát vé cho vào phòng; khác NULL là vé đã dùng |
 | bảng `ticket_refunds` | — | Biên nhận hoàn tiền theo ADR-3 |
@@ -208,6 +208,25 @@ chạy được với database đã nâng cấp.
   chạy app với profile `cloud`: Hibernate `validate` chấp nhận, trang Vé của tôi và sơ đồ ghế
   chạy bình thường.
 - **Database tạo mới:** `schema.sql` và `schema-cloud.sql` đều đã có cột và bảng mới.
+
+### Đọc lại vé MoMo thử nghiệm — 02/10/2026
+
+Database nhóm còn giao dịch `MOMO_DEMO` trong `tickets` và `booking_orders`. Enum
+`PaymentMethod` phải giữ mã này để đọc vé, tài khoản và hóa đơn, thay vì gây lỗi 500.
+Giao diện ghi rõ **MoMo thử nghiệm**; hủy vé loại này chỉ ghi nhận hoàn tiền mô phỏng,
+không gọi API hoàn tiền thật. Giữ nguyên mã giao dịch cũ trong cả `ticket_refunds`.
+
+Database test đã dựng trước bản sửa có thể còn `CHECK` do Hibernate sinh chỉ cho phép
+`COUNTER` và `MOMO`. `ddl-auto=update` không sửa ràng buộc này. Nếu `mvn test` báo lỗi
+CHECK của `payment_method`, chạy một lần:
+
+```bash
+sqlcmd -S localhost,1433 -d cinema_booking_test -U sa -C -b -f 65001 -i database/update-test-payment-method.sql
+```
+
+Script chỉ chạy trên database có tên kết thúc bằng `_test`, chỉ cập nhật CHECK cũ
+của `payment_method` trong ba bảng trên và có thể chạy lại. Database test tạo mới
+được Hibernate sinh ràng buộc có đủ ba mã. Bản sửa không cần đổi schema hoặc dữ liệu cloud.
 
 ### Kho bắp nước — thêm ngày 02/10/2026
 
@@ -278,3 +297,14 @@ nào có cam kết thời gian hoạt động. Vì vậy:
 Datacenter của họ đặt ở châu Âu nên độ trễ từ Việt Nam khoảng 250–300ms, khởi động ứng dụng
 mất ~10 giây thay vì ~4 giây khi chạy local. Đó là lý do cloud chỉ dùng để tích hợp, không
 dùng để code hằng ngày.
+
+
+## ADR-3 — Khoá suất chiếu và nhận diện lượt giữ (01/10/2026)
+
+Không đổi schema cloud. Khoá PESSIMISTIC_WRITE trên showtimes được lấy trước khoá tài khoản và trước kiểm tra sơ đồ/ghế lẻ. Giữ, đổi, huỷ giữ, dọn hết hạn, thanh toán, cập nhật đơn và huỷ vé đã trả cùng dùng khoá suất chiếu. UNIQUE(showtime_id, seat_id) vẫn là chốt bảo vệ đặt trùng.
+
+Danh sách tickets.id nhận diện một lượt giữ; đổi ghế tạo mã vé mới và giữ held_at ban đầu. Huỷ và biểu mẫu thanh toán phải gửi đúng mã vé đã thấy. Đơn MoMo gắn mã vé nhỏ nhất, kiểm lại trong giao dịch cùng số tiền. Tab/QR cũ không tác động lượt mới.
+
+Dọn hết hạn DELETE trực tiếp với điều kiện status = HELD và held_at <= cutoff, không xoá theo danh sách entity đã đọc trước. Huỷ giữ DELETE với user/showtime/status/mã vé. Các truy vấn này không xoá PAID. Thời gian nghiệp vụ dùng Asia/Ho_Chi_Minh; giao diện nhận epoch + giờ máy chủ.
+
+Kiểm thử có tạo/xoá dữ liệu chỉ chạy trong SQL Server riêng có tên kết thúc _test; xác thực schema cloud dùng validate và tắt dọn nền trong lần kiểm tra khởi động.

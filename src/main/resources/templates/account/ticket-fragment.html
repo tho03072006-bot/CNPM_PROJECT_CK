@@ -51,7 +51,7 @@
         </div>
         <div th:if="${ticket.paidAt != null}">
             <dt>Trả qua</dt>
-            <dd th:text="${ticket.paymentMethod != null and ticket.paymentMethod.name() == 'MOMO'} ? 'Ví MoMo' : 'Tại quầy'">Ví MoMo</dd>
+            <dd th:text="${ticket.paymentMethod != null ? ticket.paymentMethod.displayName : 'Tại quầy'}">Ví MoMo</dd>
         </div>
         <div th:if="${ticket.checkedInAt != null}">
             <dt>Vào phòng lúc</dt>

@@ -76,8 +76,19 @@ public class ReceiptService {
         }
 
         return new ReceiptView(order, String.format("%07d", order.getId()), lines, seats.toString(),
-                order.getPaymentMethod() == PaymentMethod.MOMO ? "Ví điện tử MoMo" : "Tiền mặt tại quầy",
+                paymentMethodLabel(order.getPaymentMethod()),
                 VietnameseMoneyWords.of(order.getTotalAmount()), sellerName, sellerAddress, sellerEmail);
+    }
+
+    private static String paymentMethodLabel(PaymentMethod method) {
+        if (method == null) {
+            return "Tiền mặt tại quầy";
+        }
+        return switch (method) {
+            case COUNTER -> "Tiền mặt tại quầy";
+            case MOMO -> "Ví điện tử MoMo";
+            case MOMO_DEMO -> method.getDisplayName();
+        };
     }
 
     /** Vé cùng khách, cùng suất và trả tiền cùng lúc với đơn này (vé và đơn ghi chung một thời điểm). */

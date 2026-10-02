@@ -23,9 +23,11 @@
         </div>
         <p class="text-muted account-summary-note" th:text="${quote.explanation}">Lý do</p>
         <p class="text-muted account-summary-note"
-           th:text="${quote.ticket.paymentMethod != null and quote.ticket.paymentMethod.name() == 'MOMO'}
-                    ? 'Vé trả qua MoMo nên tiền được hoàn thẳng về ví MoMo.'
-                    : 'Vé trả tại quầy nên bạn nhận lại tiền mặt tại quầy vé.'">Hoàn về đâu</p>
+           th:text="${quote.ticket.paymentMethod != null and quote.ticket.paymentMethod.name() == 'MOMO_DEMO'}
+                    ? 'Vé thanh toán thử nghiệm: hủy vé chỉ ghi nhận hoàn tiền mô phỏng, không chuyển tiền thật.'
+                    : (${quote.ticket.paymentMethod != null and quote.ticket.paymentMethod.name() == 'MOMO'}
+                       ? 'Vé trả qua MoMo nên tiền được hoàn thẳng về ví MoMo.'
+                       : 'Vé trả tại quầy nên bạn nhận lại tiền mặt tại quầy vé.')">Hoàn về đâu</p>
 
         <details class="refund-policy">
             <summary>Chính sách hoàn tiền của rạp</summary>

@@ -26,13 +26,15 @@ import java.util.Map;
 public class SeatService {
     private static final int ONLINE_BOOKING_CUTOFF_MINUTES = 5;
 
+    private final BookingClock clock;
     private final ShowtimeRepository showtimeRepository;
     private final SeatRepository seatRepository;
     private final TicketRepository ticketRepository;
     private final SeatPricingService seatPricingService;
 
     public SeatService(ShowtimeRepository showtimeRepository, SeatRepository seatRepository,
-                       TicketRepository ticketRepository, SeatPricingService seatPricingService) {
+                       TicketRepository ticketRepository, SeatPricingService seatPricingService, BookingClock clock) {
+        this.clock = clock;
         this.showtimeRepository = showtimeRepository;
         this.seatRepository = seatRepository;
         this.ticketRepository = ticketRepository;
@@ -52,10 +54,10 @@ public class SeatService {
         return buildSeatMap(findFutureShowtime(showtimeId));
     }
 
-    private SeatMapView buildSeatMap(Showtime showtime) {
+    public SeatMapView buildSeatMap(Showtime showtime) {
         Long showtimeId = showtime.getId();
         Map<Long, String> seatStatuses = new HashMap<>();
-        LocalDateTime currentTime = LocalDateTime.now();
+        LocalDateTime currentTime = clock.now();
         List<Ticket> tickets = ticketRepository.findByShowtimeIdAndStatusIn(
                 showtimeId, List.of(TicketStatus.values()));
         for (Ticket ticket : tickets) {
@@ -75,7 +77,7 @@ public class SeatService {
 
     public Showtime findBookableShowtime(Long showtimeId) {
         Showtime showtime = findFutureShowtime(showtimeId);
-        LocalDateTime currentTime = LocalDateTime.now();
+        LocalDateTime currentTime = clock.now();
         if (!showtime.getStartTime().minusMinutes(ONLINE_BOOKING_CUTOFF_MINUTES)
                 .isAfter(currentTime)) {
             throw new InvalidBookingException("Đặt vé trực tuyến đã đóng trước giờ chiếu "
@@ -84,13 +86,13 @@ public class SeatService {
         return showtime;
     }
 
-    private Showtime findFutureShowtime(Long showtimeId) {
+    public Showtime findFutureShowtime(Long showtimeId) {
         if (showtimeId == null || showtimeId <= 0) {
             throw new InvalidBookingException("Mã suất chiếu phải là số nguyên dương.");
         }
         Showtime showtime = showtimeRepository.findById(showtimeId)
                 .orElseThrow(() -> new ResourceNotFoundException("suất chiếu", showtimeId));
-        if (showtime.getStartTime() == null || !showtime.getStartTime().isAfter(LocalDateTime.now())) {
+        if (showtime.getStartTime() == null || !showtime.getStartTime().isAfter(clock.now())) {
             throw new InvalidBookingException("Suất chiếu này đã bắt đầu, bạn không thể đặt vé nữa.");
         }
         if (showtime.getMovie() == null || !Boolean.TRUE.equals(showtime.getMovie().getActive())) {

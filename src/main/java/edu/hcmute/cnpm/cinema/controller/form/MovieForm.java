@@ -5,6 +5,8 @@ import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
+import jakarta.validation.constraints.Pattern;
+import java.util.Locale;
 import org.hibernate.validator.constraints.URL;
 
 public class MovieForm {
@@ -20,6 +22,8 @@ public class MovieForm {
     @URL(message = "Đường dẫn poster phải là URL hợp lệ, ví dụ https://...")
     @Size(max = 500, message = "Đường dẫn poster không được dài quá 500 ký tự.")
     private String posterUrl;
+    @NotBlank(message = "Vui lòng chọn phân loại độ tuổi của phim.")
+    @Pattern(regexp = "P|K|T13|T16|T18", message = "Phân loại độ tuổi phải là P, K, T13, T16 hoặc T18.")
     @Size(max = 10, message = "Nhãn độ tuổi không được dài quá 10 ký tự.")
     private String ageRating;
 
@@ -56,5 +60,10 @@ public class MovieForm {
     public String getPosterUrl() { return posterUrl; }
     public void setPosterUrl(String posterUrl) { this.posterUrl = posterUrl; }
     public String getAgeRating() { return ageRating; }
-    public void setAgeRating(String ageRating) { this.ageRating = ageRating; }
+    public void setAgeRating(String ageRating) {
+        this.ageRating = ageRating == null ? null : ageRating.trim().toUpperCase(Locale.ROOT);
+        if (this.ageRating != null && this.ageRating.matches("C(13|16|18)")) {
+            this.ageRating = "T" + this.ageRating.substring(1);
+        }
+    }
 }

@@ -49,7 +49,8 @@ class SeatHoldServiceTest {
                 1L, 1L, TicketStatus.HELD)).thenReturn(List.of(expired));
 
         assertThat(fixture.seatHoldService.findActiveHold(1L, 1L)).isEmpty();
-        verify(fixture.ticketRepository).deleteAll(List.of(expired));
+        verify(fixture.ticketRepository).deleteExpiredHolds(org.mockito.ArgumentMatchers.eq(1L),
+                org.mockito.ArgumentMatchers.eq(TicketStatus.HELD), org.mockito.ArgumentMatchers.any(LocalDateTime.class));
     }
 
     @Test

@@ -51,6 +51,13 @@ class QrCodeServiceTest {
     }
 
     /** Dựng lại ảnh từ các đoạn trong SVG rồi cho bộ đọc QR của ZXing đọc. */
+    @Test
+    @DisplayName("QR ví online đọc lại đúng URL HTTPS, mã đơn và khóa fragment")
+    void shouldDecodeExactOnlineWalletTransactionLink() throws Exception {
+        String url = "https://momo-gia-lap-nhom8.onrender.com/demo-wallet/pay/aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee#token=" + "A".repeat(43);
+        assertThat(decode(qrCodeService.toSvg(url, "MoMo giả lập Nhóm 8"))).isEqualTo(url);
+    }
+
     private String decode(String svg) throws Exception {
         Matcher viewBox = VIEW_BOX.matcher(svg);
         assertThat(viewBox.find()).isTrue();

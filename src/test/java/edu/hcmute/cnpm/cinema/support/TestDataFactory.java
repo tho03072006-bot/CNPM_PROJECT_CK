@@ -131,4 +131,17 @@ public class TestDataFactory {
         ticket.setHeldAt(LocalDateTime.now());
         return ticket;
     }
+    @org.springframework.beans.factory.annotation.Autowired
+    private edu.hcmute.cnpm.cinema.repository.ConcessionProductRepository concessionProducts;
+
+    /** Tạo sản phẩm dùng trong test tổng tiền của ví mô phỏng. */
+    public edu.hcmute.cnpm.cinema.entity.ConcessionProduct createConcessionProduct(String code, BigDecimal price) {
+        var product = new edu.hcmute.cnpm.cinema.entity.ConcessionProduct();
+        product.setCode(code);product.setName("Bắp nước test");product.setPrice(price);
+        // Ví giả lập thanh toán trọn đơn nên sản phẩm mẫu phải có tồn kho thực tế.
+        product.setStockQuantity(100);
+        product.setLowStockThreshold(10);
+        product.setActive(true);
+        return concessionProducts.saveAndFlush(product);
+    }
 }

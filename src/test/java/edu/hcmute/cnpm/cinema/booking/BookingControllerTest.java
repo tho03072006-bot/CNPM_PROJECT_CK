@@ -57,6 +57,8 @@ class BookingControllerTest {
     private SeatHoldService seatHoldService;
     @MockitoBean
     private CustomerSupportService customerSupportService;
+    @MockitoBean
+    private edu.hcmute.cnpm.cinema.service.BookingStateService stateService;
 
     @Test
     @DisplayName("Trang chọn ghế dùng layout và thành phần giao diện chung")
@@ -150,16 +152,17 @@ class BookingControllerTest {
     @DisplayName("API huỷ giữ ghế chỉ huỷ vé của người dùng trong session")
     void shouldUseSessionUser_whenCancellingHold() throws Exception {
         BookingTestFixture fixture = new BookingTestFixture();
-        when(seatHoldService.cancelHold(1L, 1L)).thenReturn(2);
+        when(seatHoldService.cancelHold(1L, 1L, List.of(10L, 11L))).thenReturn(2);
 
         mockMvc.perform(post("/booking/showtime/1/cancel")
                         .sessionAttr(Constants.SESSION_USER, fixture.customer)
                         .accept(MediaType.APPLICATION_JSON)
-                        .header("X-Requested-With", "XMLHttpRequest"))
+                        .header("X-Requested-With", "XMLHttpRequest")
+                        .contentType(MediaType.APPLICATION_JSON).content("{\"ticketIds\":[10,11]}"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.success").value(true))
                 .andExpect(jsonPath("$.releasedSeats").value(2));
-        verify(seatHoldService).cancelHold(1L, 1L);
+        verify(seatHoldService).cancelHold(1L, 1L, List.of(10L, 11L));
     }
 
     @Test
@@ -175,6 +178,16 @@ class BookingControllerTest {
     void shouldRejectRequest_whenJsonIsMalformed() throws Exception {
         mockMvc.perform(post("/booking/showtime/1/hold")
                         .contentType(MediaType.APPLICATION_JSON).content("{\"seatIds\":[\"abc\"]}"))
+                .andExpect(status().isBadRequest());
+        verifyNoInteractions(seatBookingService);
+    }
+
+    @org.junit.jupiter.params.ParameterizedTest
+    @org.junit.jupiter.params.provider.ValueSource(strings = {"1.9", "\"1\"", "true", "9223372036854775808"})
+    @DisplayName("API từ chối số thập phân, chuỗi số, boolean và số vượt Long")
+    void shouldRejectCoercedIdentifier_whenJsonIdIsNotInteger(String value) throws Exception {
+        mockMvc.perform(post("/booking/showtime/1/hold").contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"seatIds\":[" + value + "]}"))
                 .andExpect(status().isBadRequest());
         verifyNoInteractions(seatBookingService);
     }

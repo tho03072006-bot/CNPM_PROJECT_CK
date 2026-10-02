@@ -114,6 +114,45 @@ class ConcessionReceiptIntegrationTest extends IntegrationTestBase {
     }
 
     @Test
+    @DisplayName("Dữ liệu MOMO_DEMO cũ đọc được trên trang vé, tài khoản, hóa đơn và hủy vé")
+    void shouldReadLegacyDemoPayments_withoutBreakingCustomerPages() throws Exception {
+        User customer = testDataFactory.createCustomer("momo-demo@example.com");
+        Movie movie = testDataFactory.createMovie("Phim thanh toán thử");
+        Room room = testDataFactory.createRoom("Cinema Demo", 1, 2);
+        Seat first = testDataFactory.createSeat(room, "A", 1);
+        Seat second = testDataFactory.createSeat(room, "A", 2);
+        Showtime showtime = testDataFactory.createShowtime(movie, room, LocalDateTime.now().plusDays(3));
+        ticketRepository.save(testDataFactory.newHeldTicket(showtime, first, customer));
+        ticketRepository.save(testDataFactory.newHeldTicket(showtime, second, customer));
+        List<Ticket> paid = paymentService.confirmPayment(customer.getId(), showtime.getId());
+        BookingOrder order = paid.get(0).getBookingOrder();
+        TicketRefund refund = ticketRefundService.cancelPaidTicket(customer.getId(), paid.get(0).getId(),
+                LocalDateTime.now());
+        Ticket remaining = paid.get(1);
+
+        // Ghi chuỗi từ dữ liệu cũ trực tiếp để kiểm tra Hibernate đọc cả ba bảng.
+        jdbcTemplate.update("UPDATE tickets SET payment_method = 'MOMO_DEMO' WHERE id = ?", remaining.getId());
+        jdbcTemplate.update("UPDATE booking_orders SET payment_method = 'MOMO_DEMO' WHERE id = ?", order.getId());
+        jdbcTemplate.update("UPDATE ticket_refunds SET payment_method = 'MOMO_DEMO' WHERE id = ?", refund.getId());
+
+        mockMvc.perform(get("/ve-cua-toi").sessionAttr(Constants.SESSION_USER, customer))
+                .andExpect(status().isOk())
+                .andExpect(content().string(org.hamcrest.Matchers.containsString("MoMo giả lập Nhóm 8")))
+                .andExpect(content().string(org.hamcrest.Matchers.containsString("Hoàn tiền mô phỏng")));
+        mockMvc.perform(get("/tai-khoan").sessionAttr(Constants.SESSION_USER, customer))
+                .andExpect(status().isOk())
+                .andExpect(content().string(org.hamcrest.Matchers.containsString("MoMo giả lập Nhóm 8")));
+        mockMvc.perform(get("/hoa-don/{code}", order.getReceiptCode())
+                        .sessionAttr(Constants.SESSION_USER, customer))
+                .andExpect(status().isOk())
+                .andExpect(content().string(org.hamcrest.Matchers.containsString("MoMo giả lập Nhóm 8")));
+        mockMvc.perform(get("/ve-cua-toi/{id}/huy", remaining.getId())
+                        .sessionAttr(Constants.SESSION_USER, customer))
+                .andExpect(status().isOk())
+                .andExpect(content().string(org.hamcrest.Matchers.containsString("không chuyển tiền thật")));
+    }
+
+    @Test
     @DisplayName("Người khác không xem được hóa đơn của khách, nhân viên quầy thì xem được")
     void shouldGuardReceipt_whenViewerIsNotOwnerOrEmployee() throws Exception {
         User customer = testDataFactory.createCustomer("chu-hoa-don@example.com");
