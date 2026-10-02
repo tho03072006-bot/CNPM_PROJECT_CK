@@ -209,6 +209,39 @@ chạy được với database đã nâng cấp.
   chạy bình thường.
 - **Database tạo mới:** `schema.sql` và `schema-cloud.sql` đều đã có cột và bảng mới.
 
+### Kho bắp nước — thêm ngày 02/10/2026
+
+| Chỗ | Kiểu | Dùng để |
+|---|---|---|
+| `concession_products.stock_quantity` | `INT NOT NULL DEFAULT 0` | Tồn kho của món lẻ. Có `CHECK (stock_quantity >= 0)` làm chốt chặn cuối |
+| `concession_products.low_stock_threshold` | `INT NOT NULL DEFAULT 10` | Còn từ mức này trở xuống thì báo "Sắp hết" cho nhân viên |
+| bảng `concession_combo_items` | — | Công thức combo: combo gồm món lẻ nào, mỗi món mấy phần |
+| bảng `concession_stock_movements` | — | Lịch sử kho: nhập, xuất hủy, kiểm kê, bán (kèm mã hóa đơn) |
+
+**Combo không có kho riêng.** Số combo còn bán được tính theo món thành phần còn ít nhất; bán một
+combo là trừ kho từng món bên trong. Nhờ vậy nhân viên chỉ nhập kho bắp và nước, không phải nhập
+riêng "combo".
+
+**Trừ kho lúc thanh toán, không giữ kho lúc chọn món.** Chọn món chỉ kiểm tra còn đủ hay không.
+Lúc thanh toán, kho bị trừ bằng một câu `UPDATE ... SET stock_quantity = stock_quantity - n
+WHERE id = ? AND stock_quantity >= n`. Câu lệnh trả về 0 dòng nghĩa là không đủ hàng, khi đó cả
+lần thanh toán bị hủy (MoMo tự hoàn tiền). Hai khách cùng mua phần cuối cùng thì chỉ một người
+mua được, giống tinh thần ADR-1.
+
+- **Máy cá nhân và database test:** Hibernate (`ddl-auto=update`) tự thêm cột và bảng. Cột mới có
+  `@ColumnDefault` nên thêm được vào bảng đã có dữ liệu. Muốn có sẵn công thức combo và tồn đầu kỳ
+  thì chạy lại `seed-data.sql` (mục 6b); chạy lại nhiều lần vẫn an toàn.
+- **Cloud: đã nâng cấp ngày 02/10/2026** bằng cách chạy khối "Bổ sung 02/10/2026" của
+  `schema-cloud.sql` trong một transaction (lỗi giữa chừng thì hoàn lại toàn bộ). Khối này chỉ thêm
+  cột và bảng, kèm công thức combo và tồn đầu kỳ (bắp vừa 120, bắp lớn 80, nước 200); 5 đơn hàng
+  cũ giữ nguyên. Đã kiểm chứng bằng cách chạy app với profile `cloud`: Hibernate `validate` chấp
+  nhận, trang kho và hóa đơn cũ hiển thị đúng. Code cũ vẫn chạy bình thường trên database đã nâng
+  cấp. Lưu ý: profile `cloud` dùng `validate`, nên database nào chưa có cột `stock_quantity` thì
+  bản code có kho bắp nước không khởi động được — chạy khối trên trước.
+- **Giờ trên server cloud là giờ châu Âu (UTC+2)**, không phải giờ Việt Nam. Ứng dụng tự ghi giờ
+  Việt Nam nên không sao; riêng câu SQL tự ghi thời gian thì quy về UTC+7 như trong khối trên
+  (`CAST(SWITCHOFFSET(SYSDATETIMEOFFSET(), '+07:00') AS DATETIME2)`).
+
 ---
 
 ## Lưu ý khi demo

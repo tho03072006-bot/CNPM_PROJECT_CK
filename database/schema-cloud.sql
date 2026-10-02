@@ -237,3 +237,91 @@ IF NOT EXISTS (SELECT 1 FROM sys.indexes WHERE name = 'ix_support_conversations_
                AND object_id = OBJECT_ID('dbo.support_conversations'))
     CREATE INDEX ix_support_conversations_status ON support_conversations(status, updated_at DESC);
 GO
+
+-- ----------------------------------------------------------------
+-- Bổ sung 02/10/2026: kho bắp nước.
+--   - Món lẻ có tồn kho (stock_quantity) và ngưỡng báo sắp hết (low_stock_threshold).
+--   - Combo không có kho riêng, ghép từ món lẻ theo bảng concession_combo_items.
+--   - Mọi lần nhập kho / xuất hủy / kiểm kê / bán đều ghi vào concession_stock_movements.
+-- PHẢI chạy khối này trước khi chạy bản code có kho bắp nước, vì profile cloud dùng
+-- ddl-auto=validate: thiếu cột là ứng dụng không khởi động.
+-- Các lệnh đều chạy lại an toàn trên database đã có dữ liệu.
+-- ----------------------------------------------------------------
+IF COL_LENGTH('dbo.concession_products', 'stock_quantity') IS NULL
+    ALTER TABLE concession_products ADD stock_quantity INT NOT NULL
+        CONSTRAINT df_concession_products_stock DEFAULT 0;
+GO
+IF COL_LENGTH('dbo.concession_products', 'low_stock_threshold') IS NULL
+    ALTER TABLE concession_products ADD low_stock_threshold INT NOT NULL
+        CONSTRAINT df_concession_products_low_stock DEFAULT 10;
+GO
+-- Chốt chặn cuối ở database: tồn kho không bao giờ âm, kể cả khi code có lỗi.
+IF NOT EXISTS (SELECT 1 FROM sys.check_constraints WHERE name = 'ck_concession_products_stock')
+    ALTER TABLE concession_products ADD CONSTRAINT ck_concession_products_stock CHECK (stock_quantity >= 0);
+GO
+
+IF OBJECT_ID('dbo.concession_combo_items', 'U') IS NULL
+CREATE TABLE concession_combo_items (
+    id                      BIGINT IDENTITY(1,1) PRIMARY KEY,
+    combo_product_id        BIGINT  NOT NULL FOREIGN KEY REFERENCES concession_products(id),
+    component_product_id    BIGINT  NOT NULL FOREIGN KEY REFERENCES concession_products(id),
+    quantity                INT     NOT NULL DEFAULT 1,
+    CONSTRAINT uq_combo_component UNIQUE (combo_product_id, component_product_id),
+    CONSTRAINT ck_combo_item_quantity CHECK (quantity BETWEEN 1 AND 20),
+    CONSTRAINT ck_combo_item_not_self CHECK (combo_product_id <> component_product_id)
+);
+GO
+
+IF OBJECT_ID('dbo.concession_stock_movements', 'U') IS NULL
+CREATE TABLE concession_stock_movements (
+    id                  BIGINT IDENTITY(1,1) PRIMARY KEY,
+    product_id          BIGINT          NOT NULL FOREIGN KEY REFERENCES concession_products(id),
+    type                VARCHAR(20)     NOT NULL,       -- IMPORT | WRITE_OFF | STOCKTAKE | SALE
+    quantity_change     INT             NOT NULL,       -- dương là tăng, âm là giảm
+    quantity_after      INT             NOT NULL,
+    note                NVARCHAR(255)   NULL,
+    reference           VARCHAR(40)     NULL,           -- mã hóa đơn, chỉ có ở lần bán hàng
+    actor_id            BIGINT          NULL FOREIGN KEY REFERENCES users(id),
+    actor_name          NVARCHAR(150)   NULL,
+    created_at          DATETIME2       NOT NULL DEFAULT SYSDATETIME()
+);
+GO
+IF NOT EXISTS (SELECT 1 FROM sys.indexes WHERE name = 'ix_stock_movements_product'
+               AND object_id = OBJECT_ID('dbo.concession_stock_movements'))
+    CREATE INDEX ix_stock_movements_product ON concession_stock_movements(product_id, created_at DESC);
+GO
+IF NOT EXISTS (SELECT 1 FROM sys.indexes WHERE name = 'ix_stock_movements_created'
+               AND object_id = OBJECT_ID('dbo.concession_stock_movements'))
+    CREATE INDEX ix_stock_movements_created ON concession_stock_movements(created_at DESC);
+GO
+
+-- Công thức combo và tồn đầu kỳ cho 5 món đang bán (dữ liệu giống database/seed-data.sql).
+-- Món đã có lịch sử kho thì bỏ qua, nên chạy lại không ghi đè số nhân viên đã nhập.
+INSERT INTO concession_combo_items (combo_product_id, component_product_id, quantity)
+SELECT combo.id, component.id, recipe.quantity
+FROM (VALUES ('COMBO-1', 'POPCORN-M', 1), ('COMBO-1', 'DRINK-M', 1),
+             ('COMBO-2', 'POPCORN-L', 1), ('COMBO-2', 'DRINK-M', 2))
+         AS recipe(combo_code, component_code, quantity)
+JOIN concession_products combo     ON combo.code = recipe.combo_code
+JOIN concession_products component ON component.code = recipe.component_code
+WHERE NOT EXISTS (SELECT 1 FROM concession_combo_items existing
+                  WHERE existing.combo_product_id = combo.id
+                    AND existing.component_product_id = component.id);
+GO
+
+DECLARE @openingStock TABLE (code VARCHAR(40), quantity INT, threshold INT);
+INSERT INTO @openingStock VALUES ('POPCORN-M', 120, 20), ('POPCORN-L', 80, 15), ('DRINK-M', 200, 30);
+
+UPDATE p SET stock_quantity = o.quantity, low_stock_threshold = o.threshold
+FROM concession_products p
+JOIN @openingStock o ON o.code = p.code
+WHERE NOT EXISTS (SELECT 1 FROM concession_stock_movements m WHERE m.product_id = p.id);
+
+-- Server cloud đặt ở châu Âu (giờ UTC+2), còn ứng dụng ghi giờ Việt Nam: quy về UTC+7 để lịch sử kho không lệch giờ.
+INSERT INTO concession_stock_movements (product_id, type, quantity_change, quantity_after, note, actor_name, created_at)
+SELECT p.id, 'IMPORT', o.quantity, o.quantity, N'Tồn đầu kỳ khi bắt đầu quản lý kho', N'Hệ thống',
+       CAST(SWITCHOFFSET(SYSDATETIMEOFFSET(), '+07:00') AS DATETIME2)
+FROM concession_products p
+JOIN @openingStock o ON o.code = p.code
+WHERE NOT EXISTS (SELECT 1 FROM concession_stock_movements m WHERE m.product_id = p.id);
+GO

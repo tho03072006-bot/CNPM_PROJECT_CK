@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<body>
+<!--
+  Bảng lịch sử kho dùng chung cho trang tổng quan kho và trang chi tiết một món.
+  Cách dùng: <table th:replace="~{staff/inventory-history :: movementTable(${movements}, true)}"></table>
+  Tham số thứ hai: có hiện cột tên món không (trang chi tiết một món thì không cần).
+-->
+<table th:fragment="movementTable(rows, showProduct)" class="admin-table inventory-history">
+    <thead>
+    <tr>
+        <th>Thời gian</th>
+        <th th:if="${showProduct}">Món</th>
+        <th>Loại</th>
+        <th>Thay đổi</th>
+        <th>Tồn sau</th>
+        <th>Người thực hiện</th>
+        <th>Ghi chú</th>
+    </tr>
+    </thead>
+    <tbody>
+    <tr th:each="movement : ${rows}">
+        <td th:text="${#temporals.format(movement.createdAt, 'HH:mm dd/MM/yyyy')}">10:00 02/10/2026</td>
+        <td th:if="${showProduct}">
+            <a th:href="@{/nhan-vien/kho-bap-nuoc/{id}(id=${movement.product.id})}" th:text="${movement.product.name}">Bắp rang</a>
+        </td>
+        <td>
+            <span class="inventory-type" th:classappend="|is-${#strings.toLowerCase(movement.type.name())}|"
+                  th:text="${movement.type.label}">Nhập kho</span>
+        </td>
+        <td class="inventory-change"
+            th:classappend="${movement.quantityChange > 0} ? 'is-up' : (${movement.quantityChange < 0} ? 'is-down' : '')"
+            th:text="${movement.quantityChange > 0} ? |+${movement.quantityChange}| : (${movement.quantityChange < 0} ? |−${-movement.quantityChange}| : '0')">+50</td>
+        <td th:text="${movement.quantityAfter}">170</td>
+        <td th:text="${movement.actorName ?: 'Hệ thống'}">Nhân viên</td>
+        <td class="inventory-note">
+            <a th:if="${movement.reference != null}" th:href="@{/hoa-don/{code}(code=${movement.reference})}"
+               th:text="|Hóa đơn ${movement.reference}|">Hóa đơn UTE-...</a>
+            <span th:if="${movement.reference == null}" th:text="${movement.note ?: '—'}">Nhập từ nhà cung cấp</span>
+        </td>
+    </tr>
+    </tbody>
+</table>
+</body>
+</html>

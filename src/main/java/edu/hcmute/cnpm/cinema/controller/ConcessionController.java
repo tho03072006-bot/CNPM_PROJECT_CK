@@ -6,6 +6,7 @@ import edu.hcmute.cnpm.cinema.entity.BookingOrder;
 import edu.hcmute.cnpm.cinema.entity.User;
 import edu.hcmute.cnpm.cinema.exception.BusinessException;
 import edu.hcmute.cnpm.cinema.service.BookingOrderService;
+import edu.hcmute.cnpm.cinema.service.ConcessionInventoryService;
 import edu.hcmute.cnpm.cinema.service.PaymentService;
 import jakarta.servlet.http.HttpSession;
 import org.springframework.stereotype.Controller;
@@ -20,10 +21,13 @@ public class ConcessionController {
 
     private final BookingOrderService bookingOrderService;
     private final PaymentService paymentService;
+    private final ConcessionInventoryService inventoryService;
 
-    public ConcessionController(BookingOrderService bookingOrderService, PaymentService paymentService) {
+    public ConcessionController(BookingOrderService bookingOrderService, PaymentService paymentService,
+                                ConcessionInventoryService inventoryService) {
         this.bookingOrderService = bookingOrderService;
         this.paymentService = paymentService;
+        this.inventoryService = inventoryService;
     }
 
     @GetMapping("/{showtimeId}")
@@ -37,6 +41,7 @@ public class ConcessionController {
         form.setQuantities(bookingOrderService.selectedQuantities(customer.getId(), showtimeId));
         model.addAttribute("selectionForm", form);
         model.addAttribute("products", bookingOrderService.findActiveProducts());
+        model.addAttribute("availableQuantities", inventoryService.findAvailableQuantities());
         model.addAttribute("tickets", paymentService.findPayableTickets(customer.getId(), showtimeId));
         model.addAttribute("order", order);
         model.addAttribute("showtimeId", showtimeId);
