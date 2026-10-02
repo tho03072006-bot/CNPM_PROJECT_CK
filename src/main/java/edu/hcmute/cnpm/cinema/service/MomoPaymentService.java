@@ -87,7 +87,7 @@ public class MomoPaymentService {
 
     private String createPayment(Long userId, Long showtimeId, List<Long> expectedIds) {
         if (!isEnabled()) {
-            throw new BusinessException("Rạp chưa bật thanh toán qua MoMo. Bạn chọn trả tại quầy nhé.");
+            throw new BusinessException("Thanh toán trực tuyến hiện chưa sẵn sàng. Vui lòng thử lại sau.");
         }
         PaymentService.Checkout snapshot = paymentService.prepareCheckout(userId, showtimeId, expectedIds);
         List<Ticket> payable = snapshot.tickets();
@@ -111,7 +111,7 @@ public class MomoPaymentService {
 
     private MomoQrPayment createQrPayment(Long userId, Long showtimeId, List<Long> expectedIds) {
         if (!isEnabled()) {
-            throw new BusinessException("Rạp chưa bật thanh toán qua MoMo. Bạn chọn trả tại quầy nhé.");
+            throw new BusinessException("Thanh toán trực tuyến hiện chưa sẵn sàng. Vui lòng thử lại sau.");
         }
         PaymentService.Checkout snapshot = paymentService.prepareCheckout(userId, showtimeId, expectedIds);
         List<Ticket> payable = snapshot.tickets();

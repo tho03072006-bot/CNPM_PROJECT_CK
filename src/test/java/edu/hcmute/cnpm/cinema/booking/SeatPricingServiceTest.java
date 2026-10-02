@@ -26,8 +26,8 @@ class SeatPricingServiceTest {
     }
 
     @ParameterizedTest
-    @ValueSource(strings = {"0", "-1"})
-    @DisplayName("Không chấp nhận giá gốc bằng không hoặc âm")
+    @ValueSource(strings = {"0", "-1", "0.01", "75000.5", "50000000", "1E100"})
+    @DisplayName("Không chấp nhận giá âm, giá lẻ hoặc vượt phạm vi database")
     void shouldRejectPrice_whenBasePriceIsNotPositive(String basePrice) {
         assertThatThrownBy(() -> seatPricingService.calculateSeatPrice(new BigDecimal(basePrice), "NORMAL"))
                 .isInstanceOf(InvalidBookingException.class);
@@ -49,10 +49,11 @@ class SeatPricingServiceTest {
                 .isInstanceOf(InvalidBookingException.class);
     }
 
-    @Test
-    @DisplayName("Giá VIP được làm tròn đến đồng nguyên để QR và hóa đơn cùng số tiền")
-    void shouldRoundPrice_whenOddBasePriceCreatesHalfDong() {
-        assertThat(seatPricingService.calculateSeatPrice(new BigDecimal("75001"), "VIP"))
-                .isEqualByComparingTo("112502");
+    @ParameterizedTest
+    @CsvSource({"75001,VIP,112502", "1,VIP,2", "49999999,COUPLE,99999998"})
+    @DisplayName("Làm tròn mỗi ghế đến đồng nguyên trước khi cộng hóa đơn")
+    void shouldRoundPrice_whenMultiplicationCreatesHalfDong(String basePrice, String type, String expected) {
+        assertThat(seatPricingService.calculateSeatPrice(new BigDecimal(basePrice), type))
+                .isEqualByComparingTo(expected);
     }
 }

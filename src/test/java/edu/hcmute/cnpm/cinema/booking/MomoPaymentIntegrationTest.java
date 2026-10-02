@@ -61,6 +61,9 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @DisplayName("Thanh toán qua MoMo")
 class MomoPaymentIntegrationTest extends IntegrationTestBase {
 
+    @org.springframework.test.context.bean.override.mockito.MockitoBean
+    private edu.hcmute.cnpm.cinema.service.MailDelivery mailDelivery;
+
     private static final String TRANS_ID = "4115000001";
     private static final MomoCheckout QR_CHECKOUT = new MomoCheckout("https://test-payment.momo.vn/v2/gateway/pay?t=abc",
             "momo://app?action=payWithApp&isScanQR=true&serviceType=qr&sid=abc");
@@ -183,7 +186,9 @@ class MomoPaymentIntegrationTest extends IntegrationTestBase {
                 .andExpect(status().isOk())
                 .andExpect(content().string(containsString("Quét mã QR bằng app MoMo")))
                 .andExpect(content().string(containsString("Thẻ ATM hoặc thẻ quốc tế qua MoMo")))
-                .andExpect(content().string(containsString("Trả tiền mặt tại quầy")));
+                .andExpect(content().string(containsString("Quét mã QR bằng app MoMo")))
+                .andExpect(content().string(containsString("Thẻ ATM hoặc thẻ quốc tế qua MoMo")))
+                .andExpect(content().string(org.hamcrest.Matchers.not(containsString("Trả tiền mặt tại quầy"))));
     }
 
     @Test
@@ -245,8 +250,15 @@ class MomoPaymentIntegrationTest extends IntegrationTestBase {
         MockHttpSession session = new MockHttpSession();
         session.setAttribute(Constants.SESSION_USER, customer);
 
-        String qrPage = mockMvc.perform(post("/thanh-toan/{id}/momo-qr", showtime.getId()).session(session)
-                .param("ticketIds", heldTickets.stream().map(ticket -> ticket.getId().toString()).toArray(String[]::new)))
+        java.util.concurrent.atomic.AtomicReference<String> otpCode = new java.util.concurrent.atomic.AtomicReference<>();
+        when(mailDelivery.send(anyString(), anyString(), anyString())).thenAnswer(invocation -> {
+            var matcher = java.util.regex.Pattern.compile("[0-9]{6}").matcher((String) invocation.getArgument(2));
+            if (matcher.find()) otpCode.set(matcher.group());
+            return true;
+        });
+        mockMvc.perform(post("/thanh-toan/{id}/otp", showtime.getId()).session(session).param("method", "momo-qr"))
+                .andExpect(status().is3xxRedirection());
+        String qrPage = mockMvc.perform(post("/thanh-toan/{id}/momo-qr", showtime.getId()).session(session).param("code", otpCode.get()))
                 .andExpect(status().is3xxRedirection())
                 .andReturn().getResponse().getRedirectedUrl();
         assertThat(qrPage).startsWith("/thanh-toan/momo/qr/UTE-" + showtime.getId() + "-" + customer.getId() + "-");

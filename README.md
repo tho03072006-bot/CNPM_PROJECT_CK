@@ -16,13 +16,13 @@ máy cá nhân sau khi chạy `database/seed-data.sql`. Mật khẩu chung: **`1
 
 | Email | Mật khẩu | Vai trò | Nên thử gì |
 |---|---|---|---|
-| `khachhang@utecinema.local` | `123456` | Khách hàng | Chọn suất → chọn ghế → thanh toán (QR MoMo, thẻ hoặc tại quầy) → **Vé của tôi** → huỷ vé xem hoàn tiền |
+| `khachhang@utecinema.local` | `123456` | Khách hàng | Chọn suất → chọn ghế → xem thanh toán QR MoMo/thẻ; để nhận OTP và hoàn tất thanh toán, đăng ký bằng email thật |
 | `nhanvien@utecinema.local` | `123456` | Nhân viên | Menu **Soát vé**: nhập mã vé (số `#` trên thẻ vé ở trang Vé của tôi) hoặc email khách, bấm "Cho vào phòng" |
 | `admin@utecinema.local` | `123456` | Quản trị | Menu **Quản trị**: thêm/sửa phim, phòng, suất chiếu (thử thêm suất trùng giờ), cấp vai trò ở `/admin/users`, xem thống kê |
 
-Cách thử nhanh cả vòng: đăng nhập tài khoản khách, đặt vé và trả **tại quầy** (xác nhận ngay,
-không cần MoMo) → đăng xuất → đăng nhập tài khoản nhân viên, soát đúng mã vé đó → đăng nhập
-quản trị xem thống kê doanh thu.
+Cách thử nhanh cả vòng: đăng ký tài khoản bằng email thật, xác thực OTP, đặt vé và chọn
+**QR MoMo hoặc thẻ** → nhập OTP → hoàn tất thanh toán online → đăng xuất → đăng nhập tài khoản nhân viên, soát đúng mã
+vé đó → đăng nhập quản trị xem thống kê doanh thu. Tài khoản mẫu `.local` không nhận được OTP.
 
 **Thanh toán MoMo (môi trường thử, tiền không bị trừ thật).**
 
@@ -32,7 +32,7 @@ quản trị xem thống kê doanh thu.
   `NGUYEN VAN A`, hạn `12/30`, CVC `111`. Thẻ trong tài liệu MoMo ghi hạn `05/26` đã quá hạn nên
   bị từ chối.
 - Máy nào chưa có khoá MoMo trong `application-secrets.properties` thì trang thanh toán chỉ còn
-  nút trả tại quầy (xem mục [Cách chạy dự án](#cách-chạy-dự-án-máy-cá-nhân)).
+  thông báo thanh toán trực tuyến chưa sẵn sàng (xem mục [Cách chạy dự án](#cách-chạy-dự-án-máy-cá-nhân)).
 
 **Email.** Tên miền `.local` không có thật nên ba tài khoản trên **không nhận thư** (hệ thống bỏ
 qua, không báo lỗi). Muốn thử quên mật khẩu hay thư xác nhận vé thì đăng ký thêm một tài khoản
@@ -52,7 +52,7 @@ Hệ thống có bốn nhóm người dùng. Quyền được chặn ở phía m
 | Vai trò | Làm được gì | Bị chặn ở đâu |
 |---|---|---|
 | **Khách chưa đăng nhập** | Xem phim, tìm và lọc phim, lịch chiếu, bảng giá, xem sơ đồ ghế; đăng ký, đăng nhập, quên mật khẩu | Giữ ghế, thanh toán, tài khoản → chuyển sang trang đăng nhập |
-| **Khách hàng** (`CUSTOMER`) | Thêm: giữ ghế, thanh toán (quét mã QR MoMo, thẻ qua MoMo hoặc tại quầy), vé của tôi, huỷ vé có hoàn tiền, sửa hồ sơ, đổi mật khẩu | `/nhan-vien/**`, `/admin/**` → 403 |
+| **Khách hàng** (`CUSTOMER`) | Thêm: giữ ghế, thanh toán online (quét mã QR MoMo hoặc thẻ qua MoMo, có OTP), vé của tôi, huỷ vé có hoàn tiền, sửa hồ sơ, đổi mật khẩu | `/nhan-vien/**`, `/admin/**` → 403 |
 | **Nhân viên** (`STAFF`) | Như khách hàng, thêm trang **Soát vé**: tra vé theo mã hoặc email, cho khách vào phòng | `/admin/**` → 403 |
 | **Quản trị** (`ADMIN`) | Tất cả những việc trên, thêm khu **Quản trị**: phim, phòng chiếu, suất chiếu, người dùng (cấp vai trò), thống kê doanh thu | — |
 
@@ -72,11 +72,12 @@ Tài khoản tạo sẵn để thử từng vai trò: xem mục [Tài khoản d�
 - **Loại phòng:** Phòng thường, Premium, Gold Class có nhãn màu riêng ở lịch chiếu, chi tiết phim,
   sơ đồ ghế và bảng giá. Loại phòng suy ra từ tên phòng, không thêm cột database.
 - **Thanh toán:** ưu tiên quét mã QR MoMo ngay trên trang của rạp (trang tự nhận kết quả, không
-  phải nhập thẻ); ngoài ra có thẻ ATM/thẻ quốc tế qua trang MoMo, hoặc trả tại quầy. MoMo đang
+  phải nhập thẻ); ngoài ra có thẻ ATM/thẻ quốc tế qua trang MoMo. Cả hai đều xác thực OTP trước khi tạo giao dịch. MoMo đang
   chạy môi trường thử, tiền không đi thật; quét mã QR thử cần app **MoMo Test** của MoMo.
 - **Huỷ vé và hoàn tiền:** còn từ 24 giờ trước giờ chiếu hoàn 100%, từ 2 tới dưới 24 giờ hoàn
   50%, dưới 2 giờ hoặc đã vào phòng thì không huỷ. Vé trả qua MoMo được hoàn thẳng về MoMo.
-- **Email:** xác nhận vé, xác nhận huỷ vé, link đặt lại mật khẩu (qua Gmail).
+- **Email:** OTP đăng ký, khôi phục tài khoản/quên mật khẩu và xác thực đơn thanh toán;
+  xác nhận vé, xác nhận huỷ vé (qua Gmail). Setup và kiểm thử: [`docs/MODULE3.md`](docs/MODULE3.md).
 - **Soát vé:** nhân viên tra mã vé, ghi giờ vào phòng; một vé không dùng được hai lần.
 - **Quản trị:** thêm/sửa/ngừng chiếu/mở bán lại phim, phòng chiếu tự sinh ghế, xếp suất chiếu
   có chặn trùng giờ, cấp vai trò người dùng, thống kê doanh thu đã trừ tiền hoàn.
@@ -209,7 +210,7 @@ docs/                     — kế hoạch, phân công, ADR
    thì ứng dụng vẫn chạy, chỉ tắt đúng tính năng đó:
    - `spring.mail.username` / `spring.mail.password` (Gmail App Password) — thiếu thì không gửi thư.
    - `momo.partner-code` / `access-key` / `secret-key` (bộ khoá thử của MoMo) — thiếu thì trang
-     thanh toán chỉ còn "Trả tiền mặt tại quầy".
+     thanh toán hiển thị QR/thẻ nhưng chưa cho tạo giao dịch, không xác nhận vé tiền mặt.
    - `app.password-reset.secret` — thiếu thì mỗi lần khởi động lại, link đặt lại mật khẩu cũ hết hiệu lực.
 
    File này **đã nằm trong `.gitignore`, tuyệt đối không commit**.

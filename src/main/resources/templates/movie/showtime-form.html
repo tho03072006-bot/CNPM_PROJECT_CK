@@ -28,7 +28,7 @@
                 <input class="form-control" id="startTime" type="datetime-local" th:field="*{startTime}" required>
                 <span class="form-error" th:if="${#fields.hasErrors('startTime')}" th:errors="*{startTime}"></span></div>
             <div class="form-field"><label for="basePrice">Giá vé cơ bản (đồng) *</label>
-                <input class="form-control" id="basePrice" type="number" min="1" step="1" th:field="*{basePrice}" required
+                <input class="form-control" id="basePrice" type="number" min="1" max="49999999" step="1" th:field="*{basePrice}" required
                        placeholder="75000">
                 <span class="form-error" th:if="${#fields.hasErrors('basePrice')}" th:errors="*{basePrice}"></span></div>
         </div>

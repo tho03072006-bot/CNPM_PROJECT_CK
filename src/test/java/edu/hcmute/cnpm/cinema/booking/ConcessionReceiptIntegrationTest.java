@@ -78,9 +78,9 @@ class ConcessionReceiptIntegrationTest extends IntegrationTestBase {
                         "Hai trăm ba mươi ba nghìn đồng chẵn.")))
                 .andExpect(content().string(org.hamcrest.Matchers.containsString("Vé xem phim - Ghế A1")))
                 .andReturn().getResponse().getContentAsString();
-        // Tờ hóa đơn cố ý chỉ có chữ: không logo, không mã QR (thanh menu phía trên thì vẫn có logo).
+        // Phân công bổ sung yêu cầu mã số và QR của từng vé trên hóa đơn để in/soát vé.
         String paper = html.substring(html.indexOf("invoice-paper"), html.indexOf("</article>"));
-        assertThat(paper).doesNotContain("<svg");
+        assertThat(paper).contains("<svg", "Mã QR vé " + paid.getId());
 
         assertThat(concessionProductRepository.findById(combo.getId()).orElseThrow().getStockQuantity())
                 .as("Thanh toán xong phải trừ kho đúng 2 phần khách mua")
@@ -136,6 +136,9 @@ class ConcessionReceiptIntegrationTest extends IntegrationTestBase {
         jdbcTemplate.update("UPDATE ticket_refunds SET payment_method = 'MOMO_DEMO' WHERE id = ?", refund.getId());
 
         mockMvc.perform(get("/ve-cua-toi").sessionAttr(Constants.SESSION_USER, customer))
+                .andExpect(status().is3xxRedirection())
+                .andExpect(org.springframework.test.web.servlet.result.MockMvcResultMatchers.redirectedUrl("/lich-su-dat-ve"));
+        mockMvc.perform(get("/lich-su-dat-ve/{code}", order.getReceiptCode()).sessionAttr(Constants.SESSION_USER, customer))
                 .andExpect(status().isOk())
                 .andExpect(content().string(org.hamcrest.Matchers.containsString("MoMo giả lập Nhóm 8")))
                 .andExpect(content().string(org.hamcrest.Matchers.containsString("Hoàn tiền mô phỏng")));

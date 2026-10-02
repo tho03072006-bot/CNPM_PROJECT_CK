@@ -2,7 +2,6 @@ package edu.hcmute.cnpm.cinema.booking;
 
 import edu.hcmute.cnpm.cinema.constants.Constants;
 import edu.hcmute.cnpm.cinema.controller.DemoWalletSessions;
-import edu.hcmute.cnpm.cinema.dto.payment.DemoWalletRequest;
 import edu.hcmute.cnpm.cinema.entity.*;
 import edu.hcmute.cnpm.cinema.service.*;
 import edu.hcmute.cnpm.cinema.support.IntegrationTestBase;

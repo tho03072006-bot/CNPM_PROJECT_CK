@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout" layout:decorate="~{layout/base}">
+<head><title>Chi tiết đặt vé</title><link rel="stylesheet" th:href="@{/css/booking-history.css(v='20261002-3')}"></head>
+<body><div layout:fragment="content" class="booking-detail-page">
+    <div class="booking-detail-heading">
+        <div><a class="module1-card-link" th:href="@{/lich-su-dat-ve}">← Lịch sử đặt vé</a><h1>Chi tiết đặt vé</h1></div>
+        <a class="btn btn-ghost" th:if="${order.status.name() == 'PAID'}" th:href="@{/hoa-don/{code}(code=${order.receiptCode})}">Xem / in hóa đơn</a>
+    </div>
+
+    <section class="booking-detail-film card" aria-labelledby="booked-film">
+        <div class="movie-poster module1-poster booking-detail-poster">
+            <img th:if="${order.showtime.movie.posterUrl != null and !#strings.isEmpty(order.showtime.movie.posterUrl)}"
+                 th:src="${order.showtime.movie.posterUrl}" th:alt="|Poster phim ${order.movieTitle}|" onerror="this.hidden=true">
+            <div class="module1-poster-art" aria-hidden="true"><span class="module1-poster-letter" th:text="${#strings.substring(order.movieTitle, 0, 1)}">U</span><span class="module1-poster-caption">UTE CINEMA</span></div>
+        </div>
+        <div class="booking-detail-film-copy">
+            <span class="badge" th:classappend="${order.status.name() == 'PAID'} ? 'badge-ok' : (${order.status.name() == 'DRAFT'} ? 'badge-accent' : 'badge-danger')" th:text="${bookingStatusLabel}">Đã thanh toán</span>
+            <p class="module1-card-overline" th:text="${order.showtime.movie.genre ?: 'Phim điện ảnh'}">Thể loại</p>
+            <h2 id="booked-film" th:text="${order.movieTitle}">Tên phim</h2>
+            <p class="movie-meta" th:text="|${order.showtime.movie.durationMin} phút · ${order.showtime.movie.ageRating ?: 'Chưa phân loại'}|">Thời lượng</p>
+            <dl class="booking-film-meta">
+                <div><dt>Suất chiếu</dt><dd th:text="${#temporals.format(order.showtimeStart, 'HH:mm · dd/MM/yyyy')}">13:20 · 03/10/2026</dd></div>
+                <div><dt>Phòng chiếu</dt><dd th:text="${order.roomName}">Cinema 4</dd></div>
+                <div><dt>Ghế đã đặt</dt><dd th:text="${#strings.isEmpty(receipt.seats()) ? 'Lượt giữ ghế đã kết thúc' : receipt.seats()}">D6</dd></div>
+            </dl>
+        </div>
+    </section>
+
+    <div class="booking-detail-layout">
+        <div class="booking-detail-main">
+            <section class="card booking-detail-panel" aria-labelledby="booking-tickets-title">
+                <div class="booking-panel-heading"><div><span class="module1-kicker">VÉ XEM PHIM</span><h2 id="booking-tickets-title">Ghế và mã vé</h2></div><span class="badge" th:text="|${#lists.size(receipt.tickets())} vé|">1 vé</span></div>
+                <p class="text-muted booking-ticket-help" th:if="${order.status.name() == 'PAID'}">Xuất trình mã QR hoặc mã số của từng vé khi vào phòng chiếu.</p>
+                <p class="alert alert-warn" th:if="${order.status.name() != 'PAID'}">Đơn này chưa thanh toán thành công. Thông tin đặt vé chưa có giá trị để vào phòng chiếu.</p>
+                <p class="text-muted" th:if="${#lists.isEmpty(receipt.tickets())}">Lượt giữ ghế đã kết thúc. Mã đặt vé và số tiền dự kiến vẫn được lưu trong lịch sử.</p>
+                <div th:replace="~{booking/ticket-passes :: passes(${receipt.tickets()},${order.receiptCode},${refundQuotes},true)}"></div>
+            </section>
+
+            <section class="card booking-detail-panel" aria-labelledby="booking-items-title">
+                <div class="booking-panel-heading"><div><span class="module1-kicker">THÔNG TIN ĐƠN HÀNG</span><h2 id="booking-items-title">Vé và bắp nước</h2></div></div>
+                <div class="table-wrap">
+                    <table class="admin-table booking-line-table">
+                        <caption class="sr-only">Các khoản tiền đã lưu trên đơn đặt vé</caption>
+                        <thead><tr><th scope="col">Sản phẩm</th><th scope="col">SL</th><th scope="col">Đơn giá</th><th scope="col">Thành tiền</th></tr></thead>
+                        <tbody><tr th:each="line : ${receipt.lines()}" th:classappend="${line.refunded()} ? 'is-refunded' : ''">
+                            <td><strong th:text="${line.description()}">Vé xem phim</strong><small th:text="${line.detail()}">Ghế thường</small></td>
+                            <td th:text="${line.quantity()}">1</td>
+                            <td th:text="|${#numbers.formatDecimal(line.unitPrice(), 0, 'POINT', 0, 'COMMA')} đ|">135.000 đ</td>
+                            <td th:text="|${#numbers.formatDecimal(line.amount(), 0, 'POINT', 0, 'COMMA')} đ|">135.000 đ</td>
+                        </tr></tbody>
+                    </table>
+                </div>
+                <p class="text-muted" th:if="${#lists.isEmpty(order.items)}">Bạn không chọn thêm bắp nước trong lần đặt này.</p>
+            </section>
+        </div>
+
+        <aside class="booking-detail-sidebar" aria-label="Thông tin giao dịch">
+            <section class="card booking-detail-panel booking-payment-summary">
+                <span class="module1-kicker">THANH TOÁN</span><h2>Tổng tiền đặt vé</h2>
+                <dl class="booking-costs">
+                    <div><dt>Tiền vé</dt><dd th:text="|${#numbers.formatDecimal(order.ticketSubtotal, 0, 'POINT', 0, 'COMMA')} đ|">135.000 đ</dd></div>
+                    <div><dt>Bắp nước / combo</dt><dd th:text="|${#numbers.formatDecimal(order.concessionSubtotal, 0, 'POINT', 0, 'COMMA')} đ|">0 đ</dd></div>
+                    <div><dt>Ưu đãi</dt><dd th:text="${receipt.discountAmount().signum() > 0} ? |−${#numbers.formatDecimal(receipt.discountAmount(), 0, 'POINT', 0, 'COMMA')} đ| : 'Không áp dụng'">Không áp dụng</dd></div>
+                    <div th:if="${order.appliedVoucherCode != null}"><dt>Mã ưu đãi</dt><dd th:text="${order.appliedVoucherCode}">UTE20</dd></div>
+                    <div class="booking-grand-total"><dt th:text="${order.status.name() == 'PAID'} ? 'Đã thanh toán' : 'Tổng tiền dự kiến'">Đã thanh toán</dt><dd th:text="|${#numbers.formatDecimal(order.totalAmount, 0, 'POINT', 0, 'COMMA')} đ|">135.000 đ</dd></div>
+                    <div th:if="${receipt.refundedAmount().signum() > 0}"><dt>Đã hoàn tiền</dt><dd th:text="|${#numbers.formatDecimal(receipt.refundedAmount(), 0, 'POINT', 0, 'COMMA')} đ|">75.000 đ</dd></div>
+                </dl>
+                <p class="booking-money-words" th:text="${receipt.amountInWords()}">Tiền bằng chữ</p>
+                <p class="booking-money-words" th:if="${order.appliedVoucherName != null}" th:text="${order.appliedVoucherName}">Ưu đãi đã áp dụng</p>
+                <p class="booking-payment-method" th:text="${order.paymentMethod != null} ? ${receipt.paymentMethodLabel()} : 'Chưa chọn phương thức thanh toán'">Ví điện tử MoMo</p>
+            </section>
+            <section class="card booking-detail-panel">
+                <span class="module1-kicker">GIAO DỊCH</span><h2>Thông tin đặt vé</h2>
+                <dl class="booking-transaction-meta">
+                    <div><dt>Mã đặt vé</dt><dd th:text="${order.receiptCode}">UTE-...</dd></div>
+                    <div><dt>Thời điểm đặt</dt><dd th:text="${#temporals.format(order.createdAt, 'HH:mm:ss · dd/MM/yyyy')}">02/10/2026</dd></div>
+                    <div th:if="${order.paidAt != null}"><dt>Thời điểm thanh toán</dt><dd th:text="${#temporals.format(order.paidAt, 'HH:mm:ss · dd/MM/yyyy')}">02/10/2026</dd></div>
+                    <div th:if="${order.paymentRef != null}"><dt>Mã giao dịch thanh toán</dt><dd th:text="${order.paymentRef}">123</dd></div>
+                    <div><dt>Người đặt</dt><dd th:text="${order.customerName}">Hữu Tài</dd></div>
+                    <div><dt>Email</dt><dd th:text="${order.customerEmail}">email</dd></div>
+                    <div><dt>Trạng thái đặt vé</dt><dd th:text="${bookingStatusLabel}">Đã thanh toán</dd></div>
+                </dl>
+                <a class="module1-card-link" th:href="@{/ho-tro}">Cần hỗ trợ về đơn này? →</a>
+            </section>
+        </aside>
+    </div>
+</div></body></html>

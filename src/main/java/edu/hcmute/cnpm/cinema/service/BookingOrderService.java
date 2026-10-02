@@ -34,6 +34,7 @@ public class BookingOrderService {
     private final UserRepository userRepository;
     private final ShowtimeRepository showtimeRepository;
     private final ConcessionInventoryService inventoryService;
+    private final BookingSnapshotService snapshots;
 
     public BookingOrderService(BookingOrderRepository bookingOrderRepository,
                                ConcessionProductRepository productRepository,
@@ -42,7 +43,7 @@ public class BookingOrderService {
                                ShowtimeRepository showtimeRepository,
                                ConcessionInventoryService inventoryService,
                                BookingLockService locks,
-                               BookingClock clock) {
+                               BookingClock clock, BookingSnapshotService snapshots) {
         this.locks = locks;
         this.clock = clock;
         this.bookingOrderRepository = bookingOrderRepository;
@@ -51,6 +52,7 @@ public class BookingOrderService {
         this.userRepository = userRepository;
         this.showtimeRepository = showtimeRepository;
         this.inventoryService = inventoryService;
+        this.snapshots = snapshots;
     }
 
     @Transactional(readOnly = true)
@@ -92,17 +94,39 @@ public class BookingOrderService {
             concessionSubtotal = concessionSubtotal.add(lineTotal);
         }
         items.sort(Comparator.comparing(item -> item.getProduct().getDisplayOrder()));
+        boolean selectionChanged = order.getItems().size() != items.size() || items.stream().anyMatch(item ->
+                order.getItems().stream().noneMatch(old -> old.getProduct().getId().equals(item.getProduct().getId())
+                        && old.getQuantity() == item.getQuantity() && old.getUnitPrice().compareTo(item.getUnitPrice()) == 0));
         order.replaceItems(items);
+        if (selectionChanged || order.getConcessionSubtotal().compareTo(concessionSubtotal) != 0) clearOffer(order);
         order.setConcessionSubtotal(concessionSubtotal);
-        order.setTotalAmount(order.getTicketSubtotal().add(concessionSubtotal));
+        recalculateTotal(order);
         return bookingOrderRepository.save(order);
     }
 
     /** Bảo đảm đường dẫn thanh toán trực tiếp vẫn có một đơn không kèm bắp nước. */
     @Transactional
     public BookingOrder prepareForPayment(Long userId, Long showtimeId) {
+        locks.lock(showtimeId);
         List<Ticket> heldTickets = findValidHeldTickets(userId, showtimeId);
         return prepareDraft(userId, showtimeId, heldTickets);
+    }
+
+    /** Điểm nối cho module ưu đãi: chỉ gọi sau khi dịch vụ voucher xác thực mã và điều kiện. */
+    @Transactional
+    public BookingOrder applyValidatedOffer(Long userId, Long showtimeId, String code, String name, BigDecimal amount) {
+        BookingOrder order = prepareForPayment(userId, showtimeId);
+        BigDecimal subtotal = order.getTicketSubtotal().add(order.getConcessionSubtotal());
+        if (code == null || code.isBlank() || code.strip().length() > 50 || name == null || name.isBlank()
+                || name.strip().length() > 150 || amount == null || amount.signum() <= 0
+                || amount.stripTrailingZeros().scale() > 0 || amount.compareTo(subtotal) > 0) {
+            throw new InvalidBookingException("Thông tin ưu đãi đã xác thực không hợp lệ.");
+        }
+        order.setAppliedVoucherCode(code.strip());
+        order.setAppliedVoucherName(name.strip());
+        order.setDiscountAmount(amount);
+        recalculateTotal(order);
+        return bookingOrderRepository.save(order);
     }
 
     @Transactional(readOnly = true)
@@ -179,18 +203,43 @@ public class BookingOrderService {
                         userId, showtimeId, BookingOrderStatus.DRAFT)
                 .orElseGet(() -> newDraft(user, showtime));
 
+        if (order.getId() != null && !snapshots.belongsToSameHold(order, tickets)) {
+            order.setStatus(BookingOrderStatus.CANCELLED);
+            bookingOrderRepository.save(order);
+            order = newDraft(user, showtime);
+        }
+
         BigDecimal ticketSubtotal = tickets.stream()
                 .map(Ticket::getPrice)
                 .filter(Objects::nonNull)
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
+        Set<Long> previousIds = new HashSet<>(snapshots.read(order).stream()
+                .map(edu.hcmute.cnpm.cinema.dto.booking.BookedTicketSnapshot::ticketId).toList());
+        Set<Long> nextIds = new HashSet<>(tickets.stream().map(Ticket::getId).toList());
+        if (!previousIds.equals(nextIds) || order.getTicketSubtotal().compareTo(ticketSubtotal) != 0) clearOffer(order);
         order.setTicketSubtotal(ticketSubtotal);
-        order.setTotalAmount(ticketSubtotal.add(order.getConcessionSubtotal()));
+        recalculateTotal(order);
+        snapshots.capture(order, tickets);
         order = bookingOrderRepository.save(order);
         for (Ticket ticket : tickets) {
             ticket.setBookingOrder(order);
         }
         ticketRepository.saveAll(tickets);
         return order;
+    }
+
+    private void clearOffer(BookingOrder order) {
+        order.setDiscountAmount(BigDecimal.ZERO);
+        order.setAppliedVoucherCode(null);
+        order.setAppliedVoucherName(null);
+    }
+
+    private void recalculateTotal(BookingOrder order) {
+        BigDecimal subtotal = order.getTicketSubtotal().add(order.getConcessionSubtotal());
+        if (order.getDiscountAmount().signum() < 0 || order.getDiscountAmount().compareTo(subtotal) > 0) {
+            throw new InvalidBookingException("Số tiền giảm không phù hợp với đơn đặt vé.");
+        }
+        order.setTotalAmount(subtotal.subtract(order.getDiscountAmount()));
     }
 
     private BookingOrder newDraft(User user, Showtime showtime) {

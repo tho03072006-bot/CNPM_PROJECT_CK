@@ -4,6 +4,10 @@
 
 ## Sử dụng
 
+**Chạy trực tiếp trong IDE:** chọn JDK 21, mở đúng thư mục dự án và Run `CinemaBookingApplication` dưới dạng Spring Boot App. Không cần nhập profile hay chạy script: profile mặc định là `cloud`, web dùng cổng 8082, tự đọc `application-secrets-cloud.properties`, bật giữ ghế/thanh toán và dùng URL Render của nhóm. Khi Spring đã sẵn sàng, ứng dụng gọi health ví ở nền một lần để đánh thức Render. Nếu ví hoặc mạng chưa sẵn sàng, web vẫn chạy; mở ví trước khi giữ ghế. Không thể bảo đảm Render Free hoặc database ngoài luôn hoạt động ngay lập tức.
+
+File secret cần có sẵn như hiện tại, không được commit. Hibernate cloud chỉ `validate`, không tạo/xóa/sửa schema. Profile chỉ định rõ (`test`, `wallet-online` hoặc `local`) vẫn được ưu tiên. Profile online không tự gọi warmup của chính nó. Muốn tắt warmup trên máy local: `demo-wallet.warmup-enabled=false`.
+
 Ví hiện đã được triển khai tại https://momo-gia-lap-nhom8.onrender.com/demo-wallet. Endpoint /demo-wallet/health được kiểm tra trả HTTP 200, status UP ngày 02/10/2026.
 
 1. Cấu hình application-secrets-cloud.properties với database nhóm và demo-wallet.public-base-url=https://momo-gia-lap-nhom8.onrender.com.

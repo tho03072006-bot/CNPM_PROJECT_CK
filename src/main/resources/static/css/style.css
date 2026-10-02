@@ -2272,6 +2272,39 @@ main.container {
 .momo-qr-seats { margin: 0 0 var(--space-3); color: var(--text-muted); font-size: var(--text-sm); }
 .momo-qr-help .account-actions { margin-top: var(--space-4); }
 
+/* Tài khoản: cùng màu thương hiệu và nền hero với trang chủ. */
+.auth-layout { display: grid; grid-template-columns: 1.05fr 1fr; gap: var(--space-6); max-width: 980px; margin: var(--space-5) auto; align-items: stretch; }
+.auth-welcome { padding: var(--space-7); border-radius: var(--radius-xl); background: var(--hero-bg); color: var(--header-text); display: flex; flex-direction: column; justify-content: center; gap: var(--space-5); }
+.auth-welcome h2 { font-size: var(--text-2xl); line-height: 1.25; margin: 0; }
+.auth-welcome p { color: var(--header-text-muted); margin: 0; }
+.auth-welcome > .btn { align-self: flex-start; }
+.auth-benefits { display: grid; gap: var(--space-4); }
+.auth-benefits > div { display: flex; align-items: center; gap: var(--space-3); }
+.auth-benefits .badge { flex-shrink: 0; }
+.auth-login-card { padding: var(--space-7) var(--space-6); }
+.auth-login-heading { margin-bottom: var(--space-6); }
+.auth-login-heading h1 { margin: 0 0 var(--space-2); }
+.auth-login-heading p { margin: 0; }
+.auth-login-form, .auth-otp-form { display: grid; gap: var(--space-5); }
+.auth-label-row { display: flex; justify-content: space-between; align-items: baseline; gap: var(--space-3); }
+.auth-label-row a { font-size: var(--text-sm); }
+.auth-password { position: relative; }
+.auth-password .form-control { padding-right: 70px; }
+.auth-toggle { position: absolute; right: var(--space-2); top: 50%; transform: translateY(-50%); border: none; border-radius: var(--radius-sm); padding: var(--space-2); background: var(--surface-2); color: var(--link); font: inherit; font-size: var(--text-sm); cursor: pointer; }
+.auth-toggle:focus-visible { outline: 2px solid var(--link); outline-offset: 2px; }
+.auth-support { padding-top: var(--space-5); margin: var(--space-5) 0 0; border-top: 1px solid var(--border); text-align: center; color: var(--text-muted); font-size: var(--text-sm); }
+.auth-otp-address { text-align: center; overflow-wrap: anywhere; }
+.auth-otp-input { text-align: center; letter-spacing: .35em; font-size: var(--text-xl); font-variant-numeric: tabular-nums; }
+.auth-order { padding: var(--space-4); border-radius: var(--radius-md); background: var(--tint-brand); }
+@media (max-width: 760px) {
+    .auth-layout { grid-template-columns: 1fr; max-width: 480px; gap: var(--space-4); }
+    .auth-welcome { padding: var(--space-5); gap: var(--space-3); }
+    .auth-welcome h2 { font-size: var(--text-xl); }
+    .auth-benefits { display: none; }
+    .auth-welcome > .btn { display: none; }
+    .auth-login-card { padding: var(--space-6) var(--space-5); }
+}
+
 /* ================================================================
    25. Bắp nước, hóa đơn điện tử và chăm sóc khách hàng
    ================================================================ */

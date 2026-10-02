@@ -55,13 +55,8 @@ public class AccountController {
         if (sessionUser == null) {
             return SessionUsers.redirectToLogin("/ve-cua-toi");
         }
-        List<Ticket> tickets = paymentService.findTicketHistory(sessionUser.getId());
-        model.addAttribute("tickets", tickets);
-        model.addAttribute("total", sumPaid(tickets));
-        model.addAttribute("refundQuotes",
-                ticketRefundService.quoteCancellableTickets(sessionUser.getId(), LocalDateTime.now()));
-        model.addAttribute("refunds", ticketRefundService.findRefundHistory(sessionUser.getId()));
-        return "account/my-tickets";
+        // Giữ đường dẫn cũ cho thanh toán/hủy vé, dùng một màn hình theo giao dịch.
+        return "redirect:/lich-su-dat-ve";
     }
 
     private long countByStatus(List<Ticket> tickets, TicketStatus status) {

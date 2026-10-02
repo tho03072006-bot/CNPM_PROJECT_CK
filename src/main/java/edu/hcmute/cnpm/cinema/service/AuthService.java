@@ -38,8 +38,13 @@ public class AuthService {
      */
     @Transactional
     public User register(String fullName, String email, String phone, String rawPassword) {
+        return registerVerified(prepareRegistration(fullName, email, phone, rawPassword));
+    }
+
+    public User prepareRegistration(String fullName, String email, String phone, String rawPassword) {
         String normalizedEmail = normalizeEmail(email);
         validateRegistration(fullName, normalizedEmail, rawPassword);
+        String normalizedPhone = AccountValidation.phone(phone);
 
         if (userRepository.existsByEmail(normalizedEmail)) {
             throw new BusinessException("Email này đã có người đăng ký. Bạn hãy đăng nhập hoặc dùng email khác.");
@@ -48,10 +53,21 @@ public class AuthService {
         User user = new User();
         user.setFullName(fullName.trim());
         user.setEmail(normalizedEmail);
-        user.setPhone(phone == null ? null : phone.trim());
+        user.setPhone(normalizedPhone);
         user.setPasswordHash(passwordEncoder.encode(rawPassword));
         user.setRole(Role.CUSTOMER);
-        return userRepository.save(user);
+        return user;
+    }
+
+    @Transactional
+    public User registerVerified(User user) {
+        if (userRepository.existsByEmail(user.getEmail()))
+            throw new BusinessException("Email này đã đăng ký. Hãy đăng nhập hoặc khôi phục tài khoản.");
+        try {
+            return userRepository.saveAndFlush(user);
+        } catch (org.springframework.dao.DataIntegrityViolationException exception) {
+            throw new BusinessException("Email này đã đăng ký. Hãy đăng nhập hoặc khôi phục tài khoản.");
+        }
     }
 
     /**
@@ -114,6 +130,7 @@ public class AuthService {
      */
     @Transactional
     public void changePassword(Long userId, String currentPassword, String newPassword) {
+        AccountValidation.password(newPassword);
         User user = findById(userId);
         if (currentPassword == null || !passwordEncoder.matches(currentPassword, user.getPasswordHash())) {
             throw new BusinessException("Mật khẩu hiện tại không đúng.");
@@ -133,6 +150,9 @@ public class AuthService {
     }
 
     private void validateRegistration(String fullName, String email, String rawPassword) {
+        AccountValidation.name(fullName);
+        AccountValidation.email(email);
+        AccountValidation.password(rawPassword);
         if (fullName == null || fullName.isBlank()) {
             throw new BusinessException("Bạn hãy nhập họ tên.");
         }
