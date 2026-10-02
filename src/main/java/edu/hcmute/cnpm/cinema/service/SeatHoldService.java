@@ -16,8 +16,11 @@ public class SeatHoldService {
     private final TicketRepository tickets;
     private final BookingLockService locks;
     private final BookingClock clock;
-    public SeatHoldService(TicketRepository tickets, BookingLockService locks, BookingClock clock) {
+    private final BookingSnapshotService snapshots;
+    public SeatHoldService(TicketRepository tickets, BookingLockService locks, BookingClock clock,
+                           BookingSnapshotService snapshots) {
         this.tickets = tickets; this.locks = locks; this.clock = clock;
+        this.snapshots = snapshots;
     }
 
     /** ADR-2: only expired HELD rows are deleted; PAID rows are excluded in SQL itself. */
@@ -27,6 +30,7 @@ public class SeatHoldService {
         int released = 0;
         for (Long id : tickets.findExpiredShowtimeIds(TicketStatus.HELD, cutoff)) {
             locks.lock(id);
+            archiveExpired(id, cutoff);
             released += tickets.deleteExpiredHolds(id, TicketStatus.HELD, cutoff);
         }
         return released;
@@ -35,6 +39,7 @@ public class SeatHoldService {
     @Transactional
     public int releaseExpiredHolds(Long showtimeId) {
         locks.lock(showtimeId);
+        archiveExpired(showtimeId, clock.now().minusMinutes(Constants.SEAT_HOLD_MINUTES));
         return tickets.deleteExpiredHolds(showtimeId, TicketStatus.HELD,
                 clock.now().minusMinutes(Constants.SEAT_HOLD_MINUTES));
     }
@@ -62,6 +67,12 @@ public class SeatHoldService {
         locks.lock(showtimeId);
         List<Ticket> held = tickets.findByUserIdAndShowtimeIdAndStatus(userId, showtimeId, TicketStatus.HELD);
         HoldIdentity.requireMatch(expectedTicketIds, held.stream().map(Ticket::getId).toList());
+        snapshots.closeDraftsBeforeRelease(held);
         return tickets.deleteHeldTickets(userId, showtimeId, TicketStatus.HELD, expectedTicketIds);
+    }
+
+    private void archiveExpired(Long showtimeId, LocalDateTime cutoff) {
+        snapshots.closeDraftsBeforeRelease(tickets.findByShowtimeIdAndStatusIn(showtimeId, List.of(TicketStatus.HELD))
+                .stream().filter(ticket -> ticket.getHeldAt() == null || !ticket.getHeldAt().isAfter(cutoff)).toList());
     }
 }

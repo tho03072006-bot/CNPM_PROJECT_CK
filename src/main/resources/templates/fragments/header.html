@@ -54,8 +54,8 @@
               AdminAccessInterceptor và StaffAccessInterceptor chặn ở phía máy chủ.
             -->
             <a th:if="${session.LOGGED_IN_USER != null and session.LOGGED_IN_USER.role.name() == 'CUSTOMER'}"
-               th:href="@{/ve-cua-toi}" th:classappend="${path.startsWith('/ve-cua-toi')} ? 'is-active' : ''"
-               th:attr="aria-current=${path.startsWith('/ve-cua-toi') ? 'page' : null}">Vé của tôi</a>
+               th:href="@{/lich-su-dat-ve}" th:classappend="${path.startsWith('/lich-su-dat-ve') or path.startsWith('/ve-cua-toi')} ? 'is-active' : ''"
+               th:attr="aria-current=${path.startsWith('/lich-su-dat-ve') or path.startsWith('/ve-cua-toi') ? 'page' : null}">Lịch sử đặt vé</a>
             <a th:if="${session.LOGGED_IN_USER != null and session.LOGGED_IN_USER.role.name() == 'CUSTOMER'}"
                th:href="@{/ho-tro}" th:classappend="${path.startsWith('/ho-tro')} ? 'is-active' : ''"
                th:attr="aria-current=${path.startsWith('/ho-tro') ? 'page' : null}">Hỗ trợ</a>

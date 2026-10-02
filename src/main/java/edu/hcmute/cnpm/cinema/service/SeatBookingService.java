@@ -25,14 +25,16 @@ public class SeatBookingService {
     private final BookingLockService locks;
     private final BookingClock clock;
     private final BookingConsentPolicy consent;
+    private final BookingOrderService orders;
 
     public SeatBookingService(SeatService seatService, SeatPricingService pricing,
             SeatSelectionPolicy policy, SeatHoldService holds, SeatRepository seats,
             TicketRepository tickets, UserRepository users, BookingLockService locks,
-            BookingClock clock, BookingConsentPolicy consent) {
+            BookingClock clock, BookingConsentPolicy consent, BookingOrderService orders) {
         this.seatService = seatService; this.pricing = pricing; this.policy = policy;
         this.holds = holds; this.seats = seats; this.tickets = tickets; this.users = users;
         this.locks = locks; this.clock = clock; this.consent = consent;
+        this.orders = orders;
     }
 
     /** Creation, retry and replacement are atomic. Replacement never extends the original deadline. */
@@ -99,6 +101,7 @@ public class SeatBookingService {
             }
             total = total.add(ticket.getPrice());
         }
+        orders.prepareForPayment(customer.getId(), showtimeId);
         return new HoldSeatsResponse(ticketIds, total, heldAt.plusMinutes(Constants.SEAT_HOLD_MINUTES));
     }
 

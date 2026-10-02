@@ -42,12 +42,14 @@ class BookingTestFixture {
     final SeatSelectionPolicy seatSelectionPolicy = new SeatSelectionPolicy();
     final BookingClock clock = new BookingClock();
     final BookingLockService locks = new BookingLockService(showtimeRepository);
-    final SeatHoldService seatHoldService = new SeatHoldService(ticketRepository, locks, clock);
+    final edu.hcmute.cnpm.cinema.service.BookingSnapshotService snapshots = mock(edu.hcmute.cnpm.cinema.service.BookingSnapshotService.class);
+    final edu.hcmute.cnpm.cinema.service.BookingOrderService orders = mock(edu.hcmute.cnpm.cinema.service.BookingOrderService.class);
+    final SeatHoldService seatHoldService = new SeatHoldService(ticketRepository, locks, clock, snapshots);
     final SeatService seatService = new SeatService(showtimeRepository, seatRepository,
             ticketRepository, seatPricingService, clock);
     final SeatBookingService seatBookingService = new SeatBookingService(seatService,
             seatPricingService, seatSelectionPolicy, seatHoldService,
-            seatRepository, ticketRepository, userRepository, locks, clock, new BookingConsentPolicy());
+            seatRepository, ticketRepository, userRepository, locks, clock, new BookingConsentPolicy(), orders);
     final Movie movie;
     final Room room;
     final Seat seat;

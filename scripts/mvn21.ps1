@@ -9,6 +9,10 @@ $previousPath = $env:PATH
 $previousMavenOpts = $env:MAVEN_OPTS
 $candidates = @()
 if ($env:JAVA_HOME) { $candidates += $env:JAVA_HOME }
+if (Test-Path (Join-Path $env:USERPROFILE '.jdks')) {
+    $candidates += Get-ChildItem (Join-Path $env:USERPROFILE '.jdks') -Directory |
+        Select-Object -ExpandProperty FullName
+}
 if (Test-Path (Join-Path $projectRoot '.tools')) {
     $candidates += Get-ChildItem (Join-Path $projectRoot '.tools') -Directory -Filter 'jdk-21*' |
         Select-Object -ExpandProperty FullName

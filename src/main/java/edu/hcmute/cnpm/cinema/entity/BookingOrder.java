@@ -59,6 +59,23 @@ public class BookingOrder {
     @Column(name = "total_amount", nullable = false, precision = 12, scale = 2)
     private BigDecimal totalAmount = BigDecimal.ZERO;
 
+    @org.hibernate.annotations.ColumnDefault("0")
+    @Column(name = "discount_amount", nullable = false, precision = 12, scale = 2)
+    private BigDecimal discountAmount = BigDecimal.ZERO;
+
+    @Nationalized
+    @Column(name = "applied_voucher_code", length = 50)
+    private String appliedVoucherCode;
+
+    @Nationalized
+    @Column(name = "applied_voucher_name", length = 150)
+    private String appliedVoucherName;
+
+    /** Bản lưu ghế/mã/giá vé, không mất khi ghế được trả lại cho người khác. */
+    @Nationalized
+    @Column(name = "ticket_snapshot", columnDefinition = "nvarchar(max)")
+    private String ticketSnapshot;
+
     @Enumerated(EnumType.STRING)
     @Column(name = "payment_method", length = 20)
     private PaymentMethod paymentMethod;
@@ -116,6 +133,14 @@ public class BookingOrder {
     public void setConcessionSubtotal(BigDecimal concessionSubtotal) { this.concessionSubtotal = concessionSubtotal; }
     public BigDecimal getTotalAmount() { return totalAmount; }
     public void setTotalAmount(BigDecimal totalAmount) { this.totalAmount = totalAmount; }
+    public BigDecimal getDiscountAmount() { return discountAmount; }
+    public void setDiscountAmount(BigDecimal discountAmount) { this.discountAmount = discountAmount; }
+    public String getAppliedVoucherCode() { return appliedVoucherCode; }
+    public void setAppliedVoucherCode(String appliedVoucherCode) { this.appliedVoucherCode = appliedVoucherCode; }
+    public String getAppliedVoucherName() { return appliedVoucherName; }
+    public void setAppliedVoucherName(String appliedVoucherName) { this.appliedVoucherName = appliedVoucherName; }
+    public String getTicketSnapshot() { return ticketSnapshot; }
+    public void setTicketSnapshot(String ticketSnapshot) { this.ticketSnapshot = ticketSnapshot; }
     public PaymentMethod getPaymentMethod() { return paymentMethod; }
     public void setPaymentMethod(PaymentMethod paymentMethod) { this.paymentMethod = paymentMethod; }
     public String getPaymentRef() { return paymentRef; }
