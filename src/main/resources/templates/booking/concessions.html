@@ -15,18 +15,24 @@
     <form th:object="${selectionForm}" th:action="@{/bap-nuoc/{id}(id=${showtimeId})}" method="post">
         <div class="concession-layout">
             <section class="concession-grid" aria-label="Danh sách bắp nước">
-                <article class="card concession-card" th:each="product : ${products}">
+                <!-- Số phần còn bán được lấy từ kho; combo tính theo món thành phần còn ít nhất. -->
+                <article class="card concession-card" th:each="product : ${products}"
+                         th:with="available=${availableQuantities[product.id] ?: 0}, maxQuantity=${available < 10 ? available : 10}"
+                         th:classappend="${available == 0} ? 'is-sold-out' : ''">
                     <div class="concession-icon" aria-hidden="true" th:text="${product.icon}">🍿</div>
                     <div class="concession-info">
                         <h2 th:text="${product.name}">Combo bắp nước</h2>
                         <p th:text="${product.description}">Mô tả</p>
                         <strong th:text="|${#numbers.formatDecimal(product.price, 0, 'POINT', 0, 'COMMA')} đ|">79.000 đ</strong>
+                        <span class="concession-stock is-out" th:if="${available == 0}">Tạm hết hàng</span>
+                        <span class="concession-stock is-low" th:if="${available > 0 and available <= 10}"
+                              th:text="|Chỉ còn ${available} phần|">Chỉ còn 3 phần</span>
                     </div>
                     <label class="concession-quantity">
                         <span>Số lượng</span>
-                        <select class="form-control" th:name="|quantities[${product.id}]|"
+                        <select class="form-control" th:name="|quantities[${product.id}]|" th:disabled="${available == 0}"
                                 th:attr="data-price=${product.price},aria-label=|Số lượng ${product.name}|">
-                            <option th:each="quantity : ${#numbers.sequence(0, 10)}"
+                            <option th:each="quantity : ${#numbers.sequence(0, maxQuantity)}"
                                     th:value="${quantity}" th:text="${quantity}"
                                     th:selected="${selectionForm.quantities[product.id] != null and selectionForm.quantities[product.id] == quantity}">0</option>
                         </select>

@@ -2331,26 +2331,8 @@ main.container {
     .concession-summary { position: static; }
 }
 
-.receipt { max-width: 880px; margin: 0 auto; }
-.receipt-head, .support-thread-head { display: flex; justify-content: space-between; align-items: flex-start; gap: var(--space-4); }
-.receipt-head h1, .support-thread-head h1 { margin-bottom: var(--space-1); }
-.receipt-meta { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--space-3); margin: var(--space-5) 0; }
-.receipt-meta div { padding: var(--space-3); border-radius: var(--radius-md); background: var(--surface-2); }
-.receipt-meta dt { color: var(--text-muted); font-size: var(--text-xs); text-transform: uppercase; letter-spacing: .06em; }
-.receipt-meta dd { margin: var(--space-1) 0 0; font-weight: 700; }
-.receipt-showtime { padding: var(--space-4); border-left: 4px solid var(--accent-500); background: var(--surface-2); }
-.receipt-showtime h2, .receipt-showtime p { margin: 0; }
-.receipt-showtime p { margin-top: var(--space-1); color: var(--text-muted); }
-.receipt-table { margin-top: var(--space-5); }
-.receipt-table th:not(:first-child), .receipt-table td:not(:first-child) { text-align: right; }
-.receipt-totals { width: min(100%, 420px); margin: var(--space-5) 0 var(--space-4) auto; }
-.receipt-totals > div { display: flex; justify-content: space-between; gap: var(--space-4); padding: var(--space-2) 0; }
-.receipt-total { border-top: 2px solid var(--border-strong); font-size: var(--text-xl); }
-.receipt-note { padding: var(--space-3); background: var(--tint-brand); border-radius: var(--radius-md); text-align: center; }
-@media (max-width: 620px) {
-    .receipt-meta { grid-template-columns: 1fr; }
-    .receipt-table { display: block; overflow-x: auto; }
-}
+.support-thread-head { display: flex; justify-content: space-between; align-items: flex-start; gap: var(--space-4); }
+.support-thread-head h1 { margin-bottom: var(--space-1); }
 
 .support-form { max-width: 760px; margin: 0 auto; }
 .support-textarea { min-height: 140px; resize: vertical; }
@@ -2508,6 +2490,370 @@ main.container {
     .receipt-meta div, .receipt-showtime, .receipt-note { background: #fff !important; border: 1px solid #bbb; }
 }
 
+/* ================================================================
+   26. Kho bắp nước (/nhan-vien/kho-bap-nuoc) và trạng thái hết hàng ở trang chọn bắp nước
+   Thêm 02/10/2026. Nối vào cuối file theo quy ước ở CONTRIBUTING.md mục 1.3.
+   ================================================================ */
+/* Món hết hàng thì mờ đi và khóa ô số lượng, món còn ít thì nhắc khách. */
+.concession-stock {
+    display: inline-block;
+    margin-left: var(--space-2);
+    padding: 2px var(--space-2);
+    border-radius: var(--radius-pill);
+    font-size: var(--text-xs);
+    font-weight: 700;
+}
+.concession-stock.is-low { background: var(--tint-accent); color: var(--stock-low); }
+.concession-stock.is-out { background: var(--tint-danger); color: var(--stock-down); }
+.concession-card.is-sold-out { opacity: .7; }
+.concession-card.is-sold-out .concession-icon { filter: grayscale(1); }
+
+/* ---- Kho bắp nước (/nhan-vien/kho-bap-nuoc) ---- */
+:root,
+[data-theme="light"] {
+    --stock-up: var(--ok-700);
+    --stock-down: var(--danger-700);
+    --stock-low: var(--accent-600);
+}
+/* Nền tối: màu đậm ở trên không đủ tương phản, dùng bản sáng như nhãn .badge. */
+[data-theme="dark"] {
+    --stock-up: #6fd79f;
+    --stock-down: #ff9d97;
+    --stock-low: var(--accent-400);
+}
+@media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+        --stock-up: #6fd79f;
+        --stock-down: #ff9d97;
+        --stock-low: var(--accent-400);
+    }
+}
+.header-nav .nav-with-badge { display: inline-flex; align-items: center; gap: var(--space-1); }
+.module1-stat-card.inventory-stat-out { border-color: var(--danger-500); background: var(--tint-danger); }
+.inventory-panel { margin-top: var(--space-5); }
+.inventory-panel-head { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: baseline; gap: var(--space-2) var(--space-4); margin-bottom: var(--space-4); }
+.inventory-panel-head h2 { margin: 0; font-size: var(--text-lg); }
+.inventory-panel-head p { margin: 0; }
+.inventory-item { display: flex; align-items: center; gap: var(--space-3); }
+/* Combo có hai biểu tượng (🍿🥤) nên ô rộng theo nội dung, không ép vuông. */
+.inventory-icon {
+    display: grid;
+    place-items: center;
+    flex: none;
+    min-width: 44px;
+    height: 44px;
+    padding: 0 var(--space-1);
+    border-radius: var(--radius-md);
+    background: var(--tint-brand);
+    font-size: 22px;
+    white-space: nowrap;
+}
+.inventory-icon.inventory-icon-lg { min-width: 72px; height: 72px; border-radius: var(--radius-lg); font-size: 38px; }
+.inventory-item-text { display: grid; gap: 2px; white-space: normal; }
+.inventory-item-text small,
+.inventory-threshold { color: var(--text-muted); font-size: var(--text-xs); }
+.inventory-threshold { display: block; }
+.inventory-table td { vertical-align: middle; }
+.inventory-stock strong { font-size: var(--text-lg); font-variant-numeric: tabular-nums; }
+.inventory-table tr.is-low .inventory-stock strong { color: var(--stock-low); }
+.inventory-table tr.is-out .inventory-stock strong { color: var(--stock-down); }
+.inventory-table .badge + .badge { margin-left: var(--space-1); }
+.admin-table td.inventory-action { text-align: right; }
+
+.inventory-combo-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 340px), 1fr)); gap: var(--space-3); }
+.inventory-combo {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr);
+    gap: var(--space-3);
+    padding: var(--space-4);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    background: var(--surface-2);
+}
+.inventory-combo h3 { margin: 0 0 var(--space-1); font-size: var(--text-base); }
+.inventory-recipe { margin: 0; padding-left: var(--space-4); color: var(--text-muted); font-size: var(--text-sm); }
+.inventory-combo-state { display: flex; flex-wrap: wrap; align-items: baseline; gap: var(--space-2); grid-column: 1 / -1; padding-top: var(--space-3); border-top: 1px dashed var(--border-strong); }
+.inventory-combo-state strong { font-size: var(--text-xl); font-variant-numeric: tabular-nums; }
+.inventory-combo-state > span:first-of-type { margin-right: auto; color: var(--text-muted); font-size: var(--text-sm); }
+
+.inventory-history td { vertical-align: top; }
+.inventory-type { display: inline-block; padding: 2px var(--space-2); border-radius: var(--radius-pill); background: var(--surface-2); font-size: var(--text-xs); font-weight: 700; }
+.inventory-type.is-import { background: var(--tint-ok); color: var(--stock-up); }
+.inventory-type.is-write_off { background: var(--tint-danger); color: var(--stock-down); }
+.inventory-type.is-stocktake { background: var(--tint-accent); color: var(--stock-low); }
+.inventory-type.is-sale { background: var(--tint-brand); color: var(--link); }
+.inventory-change { font-weight: 800; font-variant-numeric: tabular-nums; }
+.inventory-change.is-up { color: var(--stock-up); }
+.inventory-change.is-down { color: var(--stock-down); }
+.admin-table td.inventory-note { min-width: 180px; max-width: 320px; white-space: normal; }
+
+.inventory-back { display: inline-block; margin-bottom: var(--space-3); font-weight: 700; }
+.inventory-detail-head { align-items: center; }
+.inventory-detail-head h1 { margin: 0 0 var(--space-1); }
+.inventory-detail-head p { margin: 0; }
+.inventory-head-badges { display: flex; gap: var(--space-2); }
+.inventory-detail-layout { display: grid; grid-template-columns: minmax(260px, 1fr) minmax(0, 1.6fr); gap: var(--space-5); align-items: start; margin-top: var(--space-5); }
+.inventory-summary-label { margin: 0; color: var(--text-muted); font-size: var(--text-sm); letter-spacing: .08em; text-transform: uppercase; }
+.inventory-big { display: flex; align-items: baseline; gap: var(--space-2); margin: var(--space-2) 0; }
+.inventory-big strong { font-size: 3.5rem; line-height: 1; font-variant-numeric: tabular-nums; }
+.inventory-big.is-low strong { color: var(--stock-low); }
+.inventory-big.is-out strong { color: var(--stock-down); }
+.inventory-threshold-form { display: flex; align-items: end; gap: var(--space-3); margin-top: var(--space-4); padding-top: var(--space-4); border-top: 1px solid var(--border); }
+.inventory-threshold-form .form-field { flex: 1; margin: 0; }
+.inventory-form-card h2 { margin-top: 0; }
+.inventory-type-picker { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--space-2); min-width: 0; margin: 0 0 var(--space-4); padding: 0; border: 0; }
+.inventory-type-picker legend { margin-bottom: var(--space-2); padding: 0; font-size: var(--text-sm); font-weight: 600; }
+.inventory-type-option { position: relative; display: block; cursor: pointer; }
+/* Ẩn nút tròn nhưng vẫn giữ trong luồng bàn phím: Tab và phím mũi tên vẫn chọn được. */
+.inventory-type-option input { position: absolute; inset: 0; margin: 0; opacity: 0; cursor: pointer; }
+.inventory-type-card {
+    display: grid;
+    gap: var(--space-1);
+    height: 100%;
+    padding: var(--space-3);
+    border: 2px solid var(--border);
+    border-radius: var(--radius-md);
+    background: var(--surface-2);
+    transition: border-color var(--motion-fast) var(--ease-out), background-color var(--motion-fast) var(--ease-out);
+}
+.inventory-type-card small { color: var(--text-muted); font-size: var(--text-xs); }
+.inventory-type-option:hover .inventory-type-card { border-color: var(--brand-300); }
+.inventory-type-option input:checked + .inventory-type-card { border-color: var(--brand-500); background: var(--tint-brand); }
+.inventory-type-option input:focus-visible + .inventory-type-card { outline: 3px solid var(--accent-500); outline-offset: 2px; }
+.inventory-preview { margin: 0 0 var(--space-4); padding: var(--space-3); border-radius: var(--radius-md); background: var(--surface-2); }
+.inventory-preview strong { font-size: var(--text-lg); font-variant-numeric: tabular-nums; }
+.inventory-preview strong.is-invalid { color: var(--stock-down); }
+@media (max-width: 860px) {
+    .inventory-detail-layout { grid-template-columns: 1fr; }
+}
+@media (max-width: 620px) {
+    .inventory-type-picker { grid-template-columns: 1fr; }
+    .inventory-detail-head { flex-direction: column; align-items: flex-start; }
+    .inventory-threshold-form { flex-direction: column; align-items: stretch; }
+}
+
+/* ================================================================
+   27. Hóa đơn điện tử theo mẫu hóa đơn bán hàng (/hoa-don/{mã})
+   Thêm 02/10/2026. Nối vào cuối file theo quy ước ở CONTRIBUTING.md mục 1.3.
+   ================================================================ */
+/* ---- Hóa đơn điện tử (/hoa-don/{ma}) ----
+   Tờ hóa đơn luôn là giấy trắng chữ đen ở CẢ chế độ tối (cùng lý do với mã QR MoMo):
+   khách chụp màn hình gửi đi hay in ra A4 đều giống hóa đơn thật. */
+:root {
+    --paper-bg: #ffffff;
+    --paper-text: #172033;
+    --paper-muted: #5a6478;
+    --paper-line: #d3d9e6;
+    --paper-line-strong: #2b3550;
+    --paper-tint: #f3f6fc;
+    --paper-brand: var(--brand-700);
+    --stamp-ink: var(--danger-500);
+    --esign-ink: var(--ok-700);
+}
+.receipt-toolbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: var(--space-3);
+    max-width: 860px;
+    margin: 0 auto var(--space-4);
+}
+.invoice-paper {
+    position: relative;
+    max-width: 860px;
+    margin: 0 auto;
+    padding: var(--space-7) var(--space-7) var(--space-6);
+    overflow: hidden;
+    border-radius: var(--radius-sm);
+    background: var(--paper-bg);
+    color: var(--paper-text);
+    box-shadow: var(--shadow-lg);
+    font-size: var(--text-sm);
+    line-height: 1.55;
+}
+/* Dải màu ở mép trên như giấy in sẵn của rạp. */
+.invoice-paper::before {
+    content: "";
+    position: absolute;
+    inset: 0 0 auto;
+    height: 6px;
+    background: linear-gradient(90deg, var(--paper-brand), var(--accent-500));
+}
+.invoice-seller {
+    display: flex;
+    justify-content: space-between;
+    gap: var(--space-5);
+    padding-bottom: var(--space-4);
+    border-bottom: 2px solid var(--paper-line-strong);
+}
+.invoice-seller-info { display: grid; gap: 2px; min-width: 0; }
+.invoice-seller-label,
+.invoice-serial dt,
+.invoice-showtime span,
+.invoice-words span {
+    color: var(--paper-muted);
+    font-size: var(--text-xs);
+    font-weight: 700;
+    letter-spacing: .07em;
+    text-transform: uppercase;
+}
+.invoice-seller-info strong { color: var(--paper-brand); font-size: var(--text-lg); letter-spacing: .02em; text-transform: uppercase; }
+.invoice-serial { display: grid; align-content: start; gap: var(--space-2); min-width: 210px; margin: 0; text-align: right; }
+.invoice-serial dd { margin: 0; font-weight: 700; font-variant-numeric: tabular-nums; overflow-wrap: anywhere; }
+.invoice-serial .invoice-number { color: var(--stamp-ink); font-size: var(--text-xl); letter-spacing: .14em; }
+
+.invoice-title { position: relative; padding: var(--space-5) 0 var(--space-4); text-align: center; }
+.invoice-title h1 { margin: 0; color: var(--paper-brand); font-size: 1.75rem; letter-spacing: .06em; text-transform: uppercase; }
+.invoice-subtitle { margin: var(--space-1) 0 0; color: var(--paper-muted); font-style: italic; }
+.invoice-date { margin: var(--space-2) 0 0; font-style: italic; }
+/* Con dấu mực đỏ, nghiêng như dấu đóng tay. Đặt ngang dòng phụ đề (hẹp hơn tiêu đề) để không đè chữ. */
+.invoice-stamp {
+    position: absolute;
+    top: 76px;
+    right: var(--space-2);
+    padding: var(--space-1) var(--space-3);
+    border: 3px double var(--stamp-ink);
+    border-radius: var(--radius-sm);
+    color: var(--stamp-ink);
+    font-size: var(--text-sm);
+    font-weight: 900;
+    letter-spacing: .14em;
+    text-transform: uppercase;
+    transform: rotate(-9deg);
+    opacity: .85;
+}
+
+.invoice-parties { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--space-2) var(--space-5); margin: 0 0 var(--space-4); }
+.invoice-parties div { display: flex; align-items: baseline; gap: var(--space-2); min-width: 0; padding-bottom: var(--space-1); border-bottom: 1px dotted var(--paper-line); }
+.invoice-parties dt { flex: none; color: var(--paper-muted); }
+.invoice-parties dd { margin: 0; font-weight: 700; overflow-wrap: anywhere; }
+
+.invoice-showtime {
+    display: grid;
+    grid-template-columns: minmax(0, 2fr) repeat(3, minmax(0, 1fr));
+    margin-bottom: var(--space-4);
+    border: 1px solid var(--paper-line);
+    border-radius: var(--radius-sm);
+    background: var(--paper-tint);
+}
+.invoice-showtime > div { display: grid; align-content: start; gap: 2px; padding: var(--space-3); border-left: 1px solid var(--paper-line); }
+.invoice-showtime > div:first-child { border-left: 0; }
+.invoice-showtime strong { overflow-wrap: anywhere; }
+
+.invoice-currency { margin: 0 0 var(--space-1); color: var(--paper-muted); font-size: var(--text-xs); font-style: italic; text-align: right; }
+.invoice-table-wrap { overflow-x: auto; }
+.invoice-table { width: 100%; border-collapse: collapse; font-variant-numeric: tabular-nums; }
+.invoice-table th,
+.invoice-table td { padding: var(--space-2) var(--space-3); border: 1px solid var(--paper-line-strong); text-align: center; vertical-align: top; }
+.invoice-table thead th { background: var(--paper-tint); font-size: var(--text-xs); letter-spacing: .04em; text-transform: uppercase; }
+.invoice-table .invoice-column-index td { padding-block: 2px; color: var(--paper-muted); font-size: var(--text-xs); font-style: italic; }
+.invoice-table tbody td:nth-child(n+5) { text-align: right; white-space: nowrap; }
+.invoice-table td.invoice-item { min-width: 220px; text-align: left; }
+.invoice-item strong,
+.invoice-item small { display: block; }
+.invoice-item small { color: var(--paper-muted); }
+.invoice-table tr.is-refunded td { color: var(--paper-muted); }
+.invoice-table tr.is-refunded .invoice-item small { color: var(--stamp-ink); }
+
+.invoice-summary {
+    display: grid;
+    grid-template-areas: "words totals";
+    grid-template-columns: minmax(0, 1fr) minmax(260px, 340px);
+    gap: var(--space-5);
+    align-items: start;
+    margin-top: var(--space-4);
+}
+.invoice-totals { grid-area: totals; margin: 0; }
+.invoice-totals div { display: flex; justify-content: space-between; gap: var(--space-4); padding: var(--space-1) 0; }
+.invoice-totals dt { color: var(--paper-muted); }
+.invoice-totals dd { margin: 0; font-weight: 700; }
+.invoice-totals .invoice-grand-total { margin-top: var(--space-1); padding-top: var(--space-2); border-top: 2px solid var(--paper-line-strong); align-items: baseline; }
+.invoice-grand-total dt { color: var(--paper-text); font-weight: 800; text-transform: uppercase; }
+.invoice-grand-total dd { color: var(--paper-brand); font-size: var(--text-xl); white-space: nowrap; }
+.invoice-words { grid-area: words; margin: 0; padding: var(--space-3); border: 1px dashed var(--paper-line-strong); border-radius: var(--radius-sm); }
+.invoice-words span { display: block; margin-bottom: var(--space-1); }
+.invoice-words em { font-weight: 700; }
+
+.invoice-signatures { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--space-5); margin-top: var(--space-6); text-align: center; break-inside: avoid; }
+.invoice-sign { display: grid; justify-items: center; align-content: start; gap: var(--space-1); }
+.invoice-sign > strong { letter-spacing: .06em; text-transform: uppercase; }
+.invoice-sign > span { color: var(--paper-muted); font-size: var(--text-xs); font-style: italic; }
+.invoice-sign > .invoice-sign-name { margin-top: var(--space-7); color: var(--paper-text); font-size: var(--text-base); font-style: normal; font-weight: 700; }
+.invoice-esign {
+    display: grid;
+    gap: 2px;
+    margin-top: var(--space-3);
+    padding: var(--space-2) var(--space-3);
+    border: 1.5px solid var(--esign-ink);
+    border-radius: var(--radius-sm);
+    color: var(--esign-ink);
+    font-size: var(--text-xs);
+}
+.invoice-esign b { font-size: var(--text-sm); }
+
+.invoice-footer {
+    margin-top: var(--space-6);
+    padding-top: var(--space-4);
+    border-top: 1px dashed var(--paper-line-strong);
+    text-align: center;
+    break-inside: avoid;
+}
+.invoice-footer p { margin: 0 0 var(--space-1); }
+.invoice-footer .invoice-thanks { margin: var(--space-2) 0 0; color: var(--paper-brand); font-weight: 800; }
+
+@media (max-width: 720px) {
+    .invoice-paper { padding: var(--space-6) var(--space-4) var(--space-5); }
+    .invoice-seller { flex-direction: column; }
+    .invoice-serial { grid-template-columns: repeat(2, minmax(0, 1fr)); min-width: 0; text-align: left; }
+    .invoice-title h1 { font-size: var(--text-xl); }
+    .invoice-stamp { position: static; display: inline-block; margin-top: var(--space-3); }
+    .invoice-parties { grid-template-columns: 1fr; }
+    .invoice-showtime { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .invoice-showtime > .invoice-showtime-movie { grid-column: 1 / -1; }
+    .invoice-showtime > div { border-left: 0; border-top: 1px solid var(--paper-line); }
+    .invoice-showtime > div:first-child { border-top: 0; }
+    .invoice-summary { grid-template-areas: "totals" "words"; grid-template-columns: 1fr; }
+    .invoice-signatures { grid-template-columns: 1fr; }
+    .invoice-sign > .invoice-sign-name { margin-top: var(--space-4); }
+}
+
+/* In ra đúng một tờ A4, lề 0 để trình duyệt không chèn ngày giờ và đường dẫn vào đầu/cuối trang.
+   Đặt tên trang ở <body> chứ không ở tờ hóa đơn: đặt ở tờ hóa đơn thì Chrome ngắt sang trang mới
+   trước nó và in ra một trang trắng đầu tiên. Các trang khác của web không bị ảnh hưởng. */
+@page invoice { size: A4; margin: 0; }
+@media print {
+    body:has(.invoice-paper) { page: invoice; }
+    body:has(.invoice-paper) main.container { min-height: 0; padding: 0 !important; }
+    .receipt.invoice-paper {
+        max-width: none;
+        margin: 0;
+        padding: 12mm 14mm !important;
+        border-radius: 0;
+        box-shadow: none !important;
+        font-size: 11.5px;
+        line-height: 1.45;
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+    }
+    /* Thu gọn khoảng trắng của bản màn hình để cả tờ vừa một trang A4. */
+    .invoice-seller { padding-bottom: 10px; }
+    .invoice-seller-info strong { font-size: 15px; }
+    .invoice-serial .invoice-number { font-size: 18px; }
+    .invoice-title { padding: 14px 0 10px; }
+    .invoice-title h1 { font-size: 22px; }
+    .invoice-stamp { top: 46px; font-size: 11px; }
+    .invoice-parties { margin-bottom: 10px; }
+    .invoice-showtime { margin-bottom: 10px; }
+    .invoice-showtime > div { padding: 6px 10px; }
+    .invoice-table th,
+    .invoice-table td { padding: 5px 8px; }
+    .invoice-summary { margin-top: 10px; }
+    .invoice-grand-total dd { font-size: 18px; }
+    .invoice-signatures { margin-top: 16px; }
+    .invoice-sign > .invoice-sign-name { margin-top: 26px; font-size: 13px; }
+    .invoice-footer { margin-top: 16px; padding-top: 10px; }
+}
+
 /* © Nhóm 8 — Ví MoMo giả lập; dùng chung bảng màu sáng/tối của rạp. */
 .wallet-shell { width: min(100% - 32px, 560px); margin: 32px auto; }
 .wallet-header { display: flex; align-items: center; gap: var(--space-3); margin-bottom: var(--space-5); }
@@ -2547,4 +2893,229 @@ main.container {
 .wallet-link-backup p { margin-top: var(--space-3); font-size: var(--text-sm); }
 @media (min-width: 960px) {
     .wallet-checkout { grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr); }
+}
+
+/* ================================================================
+   28. Kho bắp nước: bảng điều khiển dễ quét và form thao tác rõ ràng
+   Cải tiến 02/10/2026. Giữ các class cũ để lịch sử kho và trang khác không bị ảnh hưởng.
+   ================================================================ */
+.inventory-page { padding-bottom: var(--space-7); }
+.inventory-page-head { align-items: center; margin-bottom: var(--space-5); }
+.inventory-page-head h1 { margin-bottom: var(--space-1); }
+.inventory-page-head p { max-width: 680px; margin-bottom: 0; }
+
+.inventory-page .module1-stats-grid { gap: var(--space-4); margin-bottom: var(--space-6); }
+.inventory-page .module1-stat-card {
+    position: relative;
+    min-height: 112px;
+    overflow: hidden;
+    border-width: 1px;
+    box-shadow: var(--shadow-sm);
+}
+.inventory-page .module1-stat-card::after {
+    content: "";
+    position: absolute;
+    inset: auto 0 0;
+    height: 4px;
+    background: var(--border-strong);
+}
+.inventory-page .module1-stat-card.is-active::after { background: var(--brand-500); }
+.inventory-page .module1-stat-card.is-warning::after { background: var(--accent-500); }
+.inventory-page .module1-stat-card.inventory-stat-out::after { background: var(--danger-500); }
+
+.inventory-stock-section { margin-bottom: var(--space-6); }
+.inventory-panel-head > div { min-width: 0; }
+.inventory-panel-head > div h2 { margin: 0 0 var(--space-1); }
+.inventory-result-count,
+.inventory-small-label,
+.inventory-product-code {
+    color: var(--text-muted);
+    font-size: var(--text-xs);
+    font-weight: 800;
+    letter-spacing: .07em;
+    text-transform: uppercase;
+}
+.inventory-result-count {
+    padding: var(--space-1) var(--space-3);
+    border-radius: var(--radius-pill);
+    background: var(--surface-2);
+}
+.inventory-controls {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-3);
+    margin-bottom: var(--space-4);
+    padding: var(--space-3);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    background: var(--surface-2);
+}
+.inventory-controls[hidden] { display: none; }
+.inventory-search { position: relative; flex: 1; max-width: 480px; }
+.inventory-search > span[aria-hidden="true"] {
+    position: absolute;
+    z-index: 1;
+    left: var(--space-3);
+    top: 50%;
+    color: var(--text-muted);
+    font-size: var(--text-xl);
+    line-height: 1;
+    transform: translateY(-55%);
+}
+.inventory-search .form-control { padding-left: 42px; background: var(--surface); }
+.inventory-filters { display: flex; gap: var(--space-1); padding: 3px; border-radius: var(--radius-pill); background: var(--surface); }
+.inventory-filter {
+    padding: var(--space-2) var(--space-3);
+    border: 0;
+    border-radius: var(--radius-pill);
+    background: transparent;
+    color: var(--text-muted);
+    font: inherit;
+    font-size: var(--text-sm);
+    font-weight: 700;
+    cursor: pointer;
+}
+.inventory-filter:hover { color: var(--text); }
+.inventory-filter.is-selected { background: var(--brand-500); color: var(--qr-bg); box-shadow: var(--shadow-sm); }
+.inventory-filter:focus-visible { outline: 3px solid var(--accent-500); outline-offset: 2px; }
+
+.inventory-products { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--space-4); }
+.inventory-product {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-4);
+    min-width: 0;
+    padding: var(--space-4);
+    border-top: 4px solid var(--ok-500);
+    box-shadow: var(--shadow-sm);
+}
+.inventory-product[hidden] { display: none; }
+.inventory-product.is-low { border-top-color: var(--accent-500); }
+.inventory-product.is-out { border-top-color: var(--danger-500); }
+.inventory-product-head { display: grid; grid-template-columns: auto minmax(0, 1fr); align-items: center; gap: var(--space-3); }
+.inventory-product-head h3 { margin: 2px 0 0; font-size: var(--text-lg); line-height: 1.25; }
+.inventory-product-stock { display: flex; justify-content: space-between; align-items: center; gap: var(--space-3); }
+.inventory-product-stock p { display: flex; align-items: baseline; gap: var(--space-1); margin: 0; }
+.inventory-product-stock p strong { font-size: var(--text-3xl); line-height: 1; font-variant-numeric: tabular-nums; }
+.inventory-product.is-low .inventory-product-stock p strong { color: var(--stock-low); }
+.inventory-product.is-out .inventory-product-stock p strong { color: var(--stock-down); }
+.inventory-product-stock p span { color: var(--text-muted); }
+.inventory-product-meta { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); margin: 0; border-block: 1px solid var(--border); }
+.inventory-product-meta div { padding: var(--space-2) 0; }
+.inventory-product-meta div + div { padding-left: var(--space-3); border-left: 1px solid var(--border); }
+.inventory-product-meta dt { color: var(--text-muted); font-size: var(--text-xs); }
+.inventory-product-meta dd { margin: 2px 0 0; font-weight: 700; }
+.inventory-product-combos { min-height: 42px; margin: 0; color: var(--text-muted); font-size: var(--text-sm); }
+.inventory-product-action { justify-content: space-between; width: 100%; margin-top: auto; }
+.inventory-no-results { margin-top: var(--space-4); border: 1px dashed var(--border-strong); border-radius: var(--radius-lg); }
+.inventory-no-results[hidden] { display: none; }
+
+.inventory-page .inventory-combo-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.inventory-page .inventory-combo {
+    position: relative;
+    border: 1px solid var(--border);
+    border-left: 4px solid var(--brand-500);
+    background: var(--surface-2);
+}
+.inventory-combo-price { margin: 0 0 var(--space-2); color: var(--link); font-size: var(--text-sm); font-weight: 800; }
+.inventory-page .inventory-combo-state { align-items: center; }
+.inventory-page .inventory-combo-state strong { color: var(--link); font-size: var(--text-2xl); }
+
+.inventory-history-panel { padding: 0; overflow: hidden; }
+.inventory-history-panel > summary {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-4);
+    padding: var(--space-4) var(--space-5);
+    cursor: pointer;
+    list-style: none;
+}
+.inventory-history-panel > summary::-webkit-details-marker { display: none; }
+.inventory-history-panel > summary:hover { background: var(--surface-2); }
+.inventory-history-panel > summary:focus-visible { outline: 3px solid var(--accent-500); outline-offset: -3px; }
+.inventory-history-panel > summary > span:first-child { display: grid; gap: 2px; }
+.inventory-history-panel > summary strong { font-size: var(--text-lg); }
+.inventory-history-panel > summary small { color: var(--text-muted); }
+.inventory-disclosure { color: var(--text-muted); font-size: var(--text-xl); transition: transform var(--motion-fast) var(--ease-out); }
+.inventory-history-panel[open] .inventory-disclosure { transform: rotate(180deg); }
+.inventory-history-panel[open] > summary { border-bottom: 1px solid var(--border); }
+.inventory-history-panel > .table-wrap,
+.inventory-history-panel > p { margin: var(--space-4) var(--space-5) var(--space-5); }
+
+/* Chi tiết một món và form cập nhật. */
+.inventory-detail-page .inventory-back { margin-bottom: var(--space-4); }
+.inventory-detail-page .inventory-detail-head { margin-bottom: var(--space-5); padding: var(--space-4) var(--space-5); }
+.inventory-detail-page .inventory-detail-head h1 { font-size: var(--text-2xl); }
+.inventory-detail-page .inventory-detail-layout { grid-template-columns: minmax(260px, .75fr) minmax(0, 1.5fr); }
+.inventory-detail-page .inventory-summary { position: sticky; top: 118px; }
+.inventory-detail-page .inventory-big { padding: var(--space-3) 0; }
+.inventory-stock-guidance { margin: 0; padding: var(--space-3); border-radius: var(--radius-md); background: var(--surface-2); color: var(--text-muted); font-size: var(--text-sm); }
+.inventory-detail-page .inventory-threshold-form { align-items: end; }
+.inventory-form-head { display: flex; align-items: start; justify-content: space-between; gap: var(--space-4); margin-bottom: var(--space-4); }
+.inventory-form-head h2 { margin: 2px 0 0; }
+.inventory-form-current { flex: none; padding: var(--space-2) var(--space-3); border-radius: var(--radius-pill); background: var(--tint-brand); color: var(--link); font-size: var(--text-sm); }
+.inventory-detail-page .inventory-type-picker { gap: var(--space-3); }
+.inventory-detail-page .inventory-type-picker legend { width: 100%; color: var(--text); font-weight: 700; }
+.inventory-detail-page .inventory-type-card { grid-template-columns: auto minmax(0, 1fr); align-content: center; min-height: 104px; }
+.inventory-detail-page .inventory-type-card strong,
+.inventory-detail-page .inventory-type-card small { grid-column: 2; }
+.inventory-type-icon {
+    display: grid;
+    grid-row: 1 / span 2;
+    place-items: center;
+    width: 34px;
+    height: 34px;
+    border-radius: 50%;
+    background: var(--surface);
+    color: var(--link);
+    font-size: var(--text-xl);
+    font-weight: 800;
+}
+.inventory-type-option input:checked + .inventory-type-card .inventory-type-icon { background: var(--brand-500); color: var(--qr-bg); }
+.inventory-quick-quantities { display: flex; flex-wrap: wrap; gap: var(--space-2); margin-top: var(--space-2); }
+.inventory-quick-quantities .btn { min-width: 56px; }
+.inventory-detail-page .inventory-preview {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-3);
+    margin-top: var(--space-4);
+    border: 1px solid var(--brand-300);
+    background: var(--tint-brand);
+}
+.inventory-detail-page .inventory-preview > span { color: var(--text-muted); font-weight: 700; }
+.inventory-detail-page .inventory-preview p { display: flex; align-items: baseline; gap: var(--space-2); margin: 0; }
+.inventory-detail-page .inventory-preview strong { color: var(--link); font-size: var(--text-xl); }
+.inventory-detail-page .inventory-preview small { color: var(--text-muted); }
+.inventory-detail-page .inventory-preview.is-invalid { border-color: var(--danger-500); background: var(--tint-danger); }
+.inventory-detail-page .inventory-preview.is-invalid strong:last-of-type { color: var(--stock-down); }
+.inventory-detail-page .account-submit { width: 100%; margin-top: var(--space-3); }
+.inventory-detail-page .inventory-submit-danger { background: var(--danger-500); border-color: var(--danger-500); color: var(--qr-bg); }
+
+@media (max-width: 960px) {
+    .inventory-products { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .inventory-detail-page .inventory-detail-layout { grid-template-columns: 1fr; }
+    .inventory-detail-page .inventory-summary { position: static; }
+}
+@media (max-width: 720px) {
+    .inventory-page-head { align-items: flex-start; flex-direction: column; }
+    .inventory-page .module1-stats-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .inventory-controls { align-items: stretch; flex-direction: column; }
+    .inventory-search { max-width: none; }
+    .inventory-filters { align-self: flex-start; overflow-x: auto; max-width: 100%; }
+    .inventory-products,
+    .inventory-page .inventory-combo-grid { grid-template-columns: 1fr; }
+    .inventory-form-head { align-items: flex-start; flex-direction: column; }
+    .inventory-detail-page .inventory-type-picker { grid-template-columns: 1fr; }
+}
+@media (max-width: 480px) {
+    .inventory-page .module1-stats-grid { grid-template-columns: 1fr; }
+    .inventory-product-meta { grid-template-columns: 1fr; }
+    .inventory-product-meta div + div { padding-left: 0; border-top: 1px solid var(--border); border-left: 0; }
+    .inventory-history-panel > summary,
+    .inventory-history-panel > .table-wrap,
+    .inventory-history-panel > p { margin-inline: 0; }
+    .inventory-history-panel > summary { padding-inline: var(--space-4); }
 }

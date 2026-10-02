@@ -29,7 +29,8 @@
         })();
     </script>
 
-    <link rel="stylesheet" th:href="@{/css/style.css}">
+    <!-- Đổi tham số v khi sửa giao diện để Chrome không dùng lại CSS cũ. -->
+    <link rel="stylesheet" th:href="@{/css/style.css(v='20261002-inventory-2')}">
 </head>
 <body>
     <div th:replace="~{fragments/header :: header}"></div>

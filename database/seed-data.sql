@@ -632,6 +632,40 @@ IF NOT EXISTS (SELECT 1 FROM concession_products WHERE code = 'COMBO-1')
 IF NOT EXISTS (SELECT 1 FROM concession_products WHERE code = 'COMBO-2')
     INSERT INTO concession_products (code, name, description, price, icon, active, display_order)
     VALUES ('COMBO-2', N'Combo đôi', N'1 bắp lớn và 2 nước vừa.', 119000, N'🍿🥤', 1, 50);
+GO
+
+-- ---------------------------------------------------------------
+-- 6b. Kho bắp nước: công thức combo và tồn đầu kỳ
+-- Combo không có kho riêng, bán combo là trừ kho từng món lẻ bên trong.
+-- Món đã có lịch sử kho thì bỏ qua, nên chạy lại không ghi đè số nhân viên đã nhập.
+-- ---------------------------------------------------------------
+INSERT INTO concession_combo_items (combo_product_id, component_product_id, quantity)
+SELECT combo.id, component.id, recipe.quantity
+FROM (VALUES ('COMBO-1', 'POPCORN-M', 1), ('COMBO-1', 'DRINK-M', 1),
+             ('COMBO-2', 'POPCORN-L', 1), ('COMBO-2', 'DRINK-M', 2))
+         AS recipe(combo_code, component_code, quantity)
+JOIN concession_products combo     ON combo.code = recipe.combo_code
+JOIN concession_products component ON component.code = recipe.component_code
+WHERE NOT EXISTS (SELECT 1 FROM concession_combo_items existing
+                  WHERE existing.combo_product_id = combo.id
+                    AND existing.component_product_id = component.id);
+
+DECLARE @openingStock TABLE (code VARCHAR(40), quantity INT, threshold INT);
+INSERT INTO @openingStock VALUES ('POPCORN-M', 120, 20), ('POPCORN-L', 80, 15), ('DRINK-M', 200, 30);
+
+UPDATE p SET stock_quantity = o.quantity, low_stock_threshold = o.threshold
+FROM concession_products p
+JOIN @openingStock o ON o.code = p.code
+WHERE NOT EXISTS (SELECT 1 FROM concession_stock_movements m WHERE m.product_id = p.id);
+
+-- Quy về giờ Việt Nam (UTC+7) như ứng dụng, kể cả khi chạy file này trên server cloud ở châu Âu.
+INSERT INTO concession_stock_movements (product_id, type, quantity_change, quantity_after, note, actor_name, created_at)
+SELECT p.id, 'IMPORT', o.quantity, o.quantity, N'Tồn đầu kỳ khi bắt đầu quản lý kho', N'Hệ thống',
+       CAST(SWITCHOFFSET(SYSDATETIMEOFFSET(), '+07:00') AS DATETIME2)
+FROM concession_products p
+JOIN @openingStock o ON o.code = p.code
+WHERE NOT EXISTS (SELECT 1 FROM concession_stock_movements m WHERE m.product_id = p.id);
+GO
 
 -- ---------------------------------------------------------------
 -- 7. Báo cáo kết quả

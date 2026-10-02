@@ -9,7 +9,9 @@ import edu.hcmute.cnpm.cinema.repository.TicketRepository;
 import edu.hcmute.cnpm.cinema.repository.UserRepository;
 import edu.hcmute.cnpm.cinema.repository.BookingOrderRepository;
 import edu.hcmute.cnpm.cinema.repository.BookingOrderItemRepository;
+import edu.hcmute.cnpm.cinema.repository.ConcessionComboItemRepository;
 import edu.hcmute.cnpm.cinema.repository.ConcessionProductRepository;
+import edu.hcmute.cnpm.cinema.repository.ConcessionStockMovementRepository;
 import edu.hcmute.cnpm.cinema.repository.SupportConversationRepository;
 import edu.hcmute.cnpm.cinema.repository.SupportMessageRepository;
 import edu.hcmute.cnpm.cinema.service.MomoApiClient;
@@ -70,6 +72,10 @@ public abstract class IntegrationTestBase {
     @Autowired
     protected ConcessionProductRepository concessionProductRepository;
     @Autowired
+    protected ConcessionComboItemRepository concessionComboItemRepository;
+    @Autowired
+    protected ConcessionStockMovementRepository concessionStockMovementRepository;
+    @Autowired
     protected SupportConversationRepository supportConversationRepository;
     @Autowired
     protected SupportMessageRepository supportMessageRepository;
@@ -113,6 +119,8 @@ public abstract class IntegrationTestBase {
         ticketRepository.deleteAllInBatch();
         bookingOrderItemRepository.deleteAllInBatch();
         bookingOrderRepository.deleteAllInBatch();
+        concessionStockMovementRepository.deleteAllInBatch();
+        concessionComboItemRepository.deleteAllInBatch();
         concessionProductRepository.deleteAllInBatch();
         showtimeRepository.deleteAllInBatch();
         seatRepository.deleteAllInBatch();
