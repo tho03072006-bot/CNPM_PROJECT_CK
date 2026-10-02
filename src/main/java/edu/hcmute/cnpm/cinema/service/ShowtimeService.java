@@ -16,6 +16,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.DateTimeException;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 
@@ -28,13 +29,18 @@ public class ShowtimeService {
     private final MovieRepository movieRepository;
     private final RoomRepository roomRepository;
     private final TicketRepository ticketRepository;
+    private final BookingLockService locks;
+    private final BookingClock clock;
 
     public ShowtimeService(ShowtimeRepository showtimeRepository, MovieRepository movieRepository,
-                           RoomRepository roomRepository, TicketRepository ticketRepository) {
+                           RoomRepository roomRepository, TicketRepository ticketRepository,
+                           BookingLockService locks, BookingClock clock) {
         this.showtimeRepository = showtimeRepository;
         this.movieRepository = movieRepository;
         this.roomRepository = roomRepository;
         this.ticketRepository = ticketRepository;
+        this.locks = locks;
+        this.clock = clock;
     }
 
     @Transactional(readOnly = true)
@@ -53,7 +59,7 @@ public class ShowtimeService {
 
     @Transactional(readOnly = true)
     public List<Showtime> findUpcomingByMovie(Long movieId) {
-        return showtimeRepository.findByMovieIdAndStartTimeAfterOrderByStartTimeAsc(movieId, LocalDateTime.now());
+        return showtimeRepository.findByMovieIdAndStartTimeAfterOrderByStartTimeAsc(movieId, clock.now());
     }
 
     @Transactional(readOnly = true)
@@ -70,7 +76,8 @@ public class ShowtimeService {
     @Transactional
     public Showtime updateShowtime(Long showtimeId, Long movieId, Long roomId,
                                    LocalDateTime startTime, BigDecimal basePrice) {
-        Showtime showtime = findById(showtimeId);
+        // Serialize the ticket check and edit with hold/cancel/payment transactions.
+        Showtime showtime = locks.lock(showtimeId);
         if (ticketRepository.existsByShowtimeId(showtimeId)) {
             throw new BusinessException("Không thể sửa suất chiếu đã có vé đặt.");
         }
@@ -79,7 +86,7 @@ public class ShowtimeService {
 
     @Transactional
     public void deleteShowtime(Long showtimeId) {
-        Showtime showtime = findById(showtimeId);
+        Showtime showtime = locks.lock(showtimeId);
         if (ticketRepository.existsByShowtimeId(showtimeId)) {
             throw new BusinessException("Không thể xoá suất chiếu đã có vé đặt.");
         }
@@ -88,21 +95,33 @@ public class ShowtimeService {
 
     private Showtime saveShowtime(Showtime showtime, Long movieId, Long roomId,
                                   LocalDateTime startTime, BigDecimal basePrice) {
-        if (startTime == null || !startTime.isAfter(LocalDateTime.now())) {
+        if (startTime == null || !startTime.isAfter(clock.now()) || startTime.getYear() > 9999) {
             throw new InvalidBookingException("Giờ bắt đầu phải ở trong tương lai.");
         }
-        if (basePrice == null || basePrice.signum() <= 0) {
-            throw new BusinessException("Giá vé cơ bản phải lớn hơn 0.");
+        if (!SeatPricingService.isValidBasePrice(basePrice)) {
+            throw new BusinessException("Giá vé cơ bản phải là số đồng nguyên từ 1 đến 49.999.999 đồng.");
+        }
+        if (movieId == null || movieId <= 0 || roomId == null || roomId <= 0) {
+            throw new BusinessException("Mã phim và mã phòng phải là số nguyên dương.");
         }
         Movie movie = movieRepository.findById(movieId)
                 .orElseThrow(() -> new ResourceNotFoundException("phim", movieId));
         if (!Boolean.TRUE.equals(movie.getActive())) {
             throw new BusinessException("Không thể xếp lịch cho phim đã ngừng chiếu.");
         }
+        if (movie.getDurationMin() == null || movie.getDurationMin() <= 0) {
+            throw new BusinessException("Phim chưa có thời lượng hợp lệ.");
+        }
+        LocalDateTime endTime;
+        try {
+            endTime = startTime.plusMinutes(movie.getDurationMin().longValue() + CLEANING_MINUTES);
+            if (endTime.getYear() > 9999) throw new DateTimeException("SQL Server date range exceeded");
+        } catch (DateTimeException exception) {
+            throw new InvalidBookingException("Giờ kết thúc vượt phạm vi ngày giờ cho phép. Vui lòng chọn giờ chiếu khác.");
+        }
         // Khoá phòng trong giao dịch để hai quản trị viên không cùng xếp lịch trùng giờ.
         Room room = roomRepository.findLockedById(roomId)
                 .orElseThrow(() -> new ResourceNotFoundException("phòng chiếu", roomId));
-        LocalDateTime endTime = startTime.plusMinutes(movie.getDurationMin() + CLEANING_MINUTES);
         for (Showtime existing : showtimeRepository
                 .findByRoomIdAndStartTimeLessThanAndEndTimeGreaterThan(roomId, endTime, startTime)) {
             if (showtime == null || !existing.getId().equals(showtime.getId())) {
@@ -111,12 +130,15 @@ public class ShowtimeService {
                         + existing.getEndTime().format(TIME_FORMAT) + ").");
             }
         }
+        if (!startTime.isAfter(clock.now())) {
+            throw new InvalidBookingException("Giờ bắt đầu đã qua trong lúc xử lý. Vui lòng chọn giờ chiếu khác.");
+        }
         Showtime target = showtime == null ? new Showtime() : showtime;
         target.setMovie(movie);
         target.setRoom(room);
         target.setStartTime(startTime);
         target.setEndTime(endTime);
-        target.setBasePrice(basePrice);
+        target.setBasePrice(basePrice.setScale(2));
         return showtimeRepository.save(target);
     }
 }
