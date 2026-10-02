@@ -13,7 +13,7 @@ if (!$PublicUrl) {
     $secretText=[IO.File]::ReadAllText($secretPath)
     $PublicUrl=[regex]::Match($secretText,'(?m)^demo-wallet\.public-base-url[ \t]*=[ \t]*(.*)$').Groups[1].Value.Trim()
 }
-if (!$PublicUrl) {throw 'Chưa có URL ví Render. Chạy scripts/set-demo-wallet-url.ps1 -PublicUrl URL_HTTPS_THUC_TE trước.'}
+if (!$PublicUrl) {$PublicUrl='https://momo-gia-lap-nhom8.onrender.com'}
 & (Join-Path $PSScriptRoot 'set-demo-wallet-url.ps1') -PublicUrl $PublicUrl
 $publicOrigin=([Uri]$PublicUrl).GetLeftPart([UriPartial]::Authority)
 if (Test-Path -LiteralPath $statePath) {
