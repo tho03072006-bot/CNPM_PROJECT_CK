@@ -28,4 +28,4 @@ $content = $content.TrimEnd() + [Environment]::NewLine +
 [IO.File]::WriteAllText($secretPath, $content, [Text.UTF8Encoding]::new($false))
 Write-Host ('Da cau hinh vi online: ' + $origin + '/demo-wallet')
 Write-Host 'Khoi dong lai web rap local bang profile cloud. QR moi se dung dia chi HTTPS nay.'
-Write-Host 'Chay web local bang IDE/Maven; script start-demo-wallet.ps1 danh rieng cho Cloudflare va se ghi de URL bang tunnel.'
+Write-Host 'Bat web local bang IDE/Maven hoac scripts/start-demo-wallet.ps1. Vi chi chay tren Render HTTPS.'

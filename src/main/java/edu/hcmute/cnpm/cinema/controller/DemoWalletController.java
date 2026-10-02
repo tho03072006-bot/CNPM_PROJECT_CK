@@ -1,6 +1,5 @@
 package edu.hcmute.cnpm.cinema.controller;
 import edu.hcmute.cnpm.cinema.config.DemoWalletSettings;
-import edu.hcmute.cnpm.cinema.dto.payment.DemoWalletRequest;
 import edu.hcmute.cnpm.cinema.entity.User;
 import edu.hcmute.cnpm.cinema.exception.BusinessException;
 import edu.hcmute.cnpm.cinema.service.*;
@@ -54,25 +53,6 @@ public class DemoWalletController {
         redirect.addFlashAttribute("paidTicketIds",ids);
         orders.findReceiptCodeByTicketId(ids.getFirst(),userId).ifPresent(code->redirect.addFlashAttribute("receiptCode",code));
         return "redirect:/thanh-toan/hoan-tat";}
-    @GetMapping({"/demo-wallet","/demo-wallet/pay/{publicId}"})
-    public String phone(@PathVariable(required=false) String publicId,HttpSession session,Model model){
-        settings.requireEnabled();model.addAttribute("publicId",publicId);model.addAttribute("walletCsrf",sessions.csrf(session));
-        return "account/demo-wallet";}
-    @PostMapping(value="/demo-wallet/api/{publicId}/status",consumes=MediaType.APPLICATION_JSON_VALUE,
-            produces=MediaType.APPLICATION_JSON_VALUE) @ResponseBody
-    public DemoWalletService.View phoneStatus(@PathVariable String publicId,@RequestBody DemoWalletRequest request,
-            @RequestHeader(value="X-Demo-Wallet-CSRF",required=false) String csrf,HttpSession session){
-        sessions.verify(session,csrf);return wallet.wallet(publicId,request.token());}
-    @PostMapping(value="/demo-wallet/api/{publicId}/confirm",consumes=MediaType.APPLICATION_JSON_VALUE,
-            produces=MediaType.APPLICATION_JSON_VALUE) @ResponseBody
-    public DemoWalletService.View confirm(@PathVariable String publicId,@RequestBody DemoWalletRequest request,
-            @RequestHeader(value="X-Demo-Wallet-CSRF",required=false) String csrf,HttpSession session){
-        sessions.verify(session,csrf);return wallet.confirm(publicId,request);}
-    @PostMapping(value="/demo-wallet/api/{publicId}/cancel",consumes=MediaType.APPLICATION_JSON_VALUE,
-            produces=MediaType.APPLICATION_JSON_VALUE) @ResponseBody
-    public DemoWalletService.View cancelPhone(@PathVariable String publicId,@RequestBody DemoWalletRequest request,
-            @RequestHeader(value="X-Demo-Wallet-CSRF",required=false) String csrf,HttpSession session){
-        sessions.verify(session,csrf);return wallet.cancel(publicId,request.token());}
     private Long currentUserId(HttpSession session){
         User customer=SessionUsers.current(session);
         if(customer==null)throw new BusinessException("Phiên đăng nhập đã hết. Vui lòng đăng nhập lại để xem vé.");

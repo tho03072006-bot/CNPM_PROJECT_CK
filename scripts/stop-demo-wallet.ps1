@@ -1,4 +1,4 @@
-﻿# © 2026 Nhóm 8. Chỉ dừng đúng hai tiến trình do start-demo-wallet.ps1 tạo.
+﻿# © 2026 Nhóm 8. Chỉ dừng tiến trình do start-demo-wallet.ps1 tạo; hỗ trợ dọn trạng thái Cloudflare cũ.
 $ErrorActionPreference='Stop'
 $projectRoot=Split-Path -Parent $PSScriptRoot
 $statePath=Join-Path $projectRoot 'target\demo-wallet\runtime.json'
@@ -21,4 +21,4 @@ foreach($entry in @(
     Stop-Process -Id $entry.id -ErrorAction Stop
 }
 Remove-Item -LiteralPath $statePath
-Write-Host 'Đã tắt web rạp và HTTPS của bản demo Nhóm 8.'
+Write-Host 'Đã tắt web rạp local. Ví Render vẫn do Render quản lý.'

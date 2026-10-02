@@ -85,7 +85,7 @@ mvn spring-boot:run "-Dspring-boot.run.profiles=cloud"
 
 Web mặc định http://localhost:8082. Nếu cổng bận, cấu hình cổng khác trong IDE. URL public ví không phụ thuộc cổng web local.
 
-**Không dùng scripts/start-demo-wallet.ps1 cho chế độ Render:** script đó chạy Cloudflare và truyền URL tunnel bằng tham số ưu tiên hơn file secret. Nếu còn dùng phiên Cloudflare cũ, dừng nó bằng scripts/stop-demo-wallet.ps1 rồi chạy lại web theo profile cloud.
+Có thể dùng scripts/start-demo-wallet.ps1 để bật web local với URL Render đã cấu hình. Script hiện không mở Cloudflare hoặc ví local. Dừng web do script tạo bằng scripts/stop-demo-wallet.ps1.
 
 ## 4. Kiểm tra hai thiết bị
 
@@ -120,7 +120,7 @@ Free ngủ sau 15 phút không có truy cập, lần khởi động tiếp theo 
 - https://render.com/docs/environment-variables
 - https://render.com/docs/health-checks
 
-**Chưa có URL Render thật cho tới khi tài khoản được tạo, code được push và service triển khai thành công.** Kiểm thử local không thay thế việc kiểm tra kết nối từ Render đến SQL cloud và quét thực tế trên điện thoại sau triển khai.
+**Ví nhóm đã được triển khai: https://momo-gia-lap-nhom8.onrender.com/demo-wallet; ngày 02/10/2026 health trả UP.** Kiểm thử local không thay thế việc kiểm tra kết nối từ Render đến SQL cloud và quét thực tế trên điện thoại sau triển khai.
 
 ## Kết quả kiểm thử cấu hình mới trên máy local
 
@@ -130,3 +130,11 @@ Free ngủ sau 15 phút không có truy cập, lần khởi động tiếp theo 
 - Hai JVM riêng: web local tạo QR, ví profile wallet-online xác nhận, web local tự mở vé từ trạng thái chung. Dừng JVM web local rồi xác nhận một QR khác vẫn thành công; đúng hai vé thử chuyển PAID. Chỉ dùng cinema_booking_module2_test.
 - Chrome hai context độc lập: QR desktop 420px, QR/giao diện phù hợp 375px, URL dự phòng thu gọn, không có lỗi JavaScript; cổng công khai chặn trang web rạp/tài khoản/quản trị.
 - URL HTTPS trong phép thử trình duyệt được mô phỏng bằng chuyển tiếp nội bộ. Chưa build container tại máy này vì chưa có Docker, chưa deploy Render hoặc kiểm tra quét bằng điện thoại thật. Sau deploy cần kiểm tra kết nối SQL từ Render và QR HTTPS thực tế.
+
+## Nhập link trang ví vào cấu hình
+
+Code chấp nhận cả https://TEN-VI.onrender.com và https://TEN-VI.onrender.com/demo-wallet (có thể có dấu / cuối). Khi tạo QR, backend tự chuẩn hóa về địa chỉ gốc rồi ghép /demo-wallet/pay/{UUID} đúng một lần. Link giao dịch có #token, query, tài khoản/mật khẩu trong URL hoặc đường dẫn khác vẫn bị từ chối. Sau khi sửa file secret, cần khởi động lại backend local vì cấu hình được đọc khi ứng dụng khởi động.
+
+## Bỏ ví local
+
+Profile cloud/local tắt demo-wallet.phone-enabled; các API ví local không tồn tại. Hai đường dẫn GET ví local chỉ chuyển sang HTTPS. Profile wallet-online bật giao diện/API ví trên Render. QR luôn dùng demo-wallet.public-base-url của Render và đi thẳng đến /demo-wallet/pay/{UUID} cùng khóa fragment. Script local không tạo tunnel hoặc cổng ví local nữa.

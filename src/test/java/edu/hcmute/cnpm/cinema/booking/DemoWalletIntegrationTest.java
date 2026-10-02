@@ -27,7 +27,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 /** SQL Server thật, hai thiết bị dùng hai session độc lập. © Nhóm 8. */
-@SpringBootTest(properties={"demo-wallet.enabled=true","demo-wallet.public-base-url=https://demo.group8.test"})
+@SpringBootTest(properties={"demo-wallet.enabled=true","demo-wallet.public-base-url=https://demo.group8.test/demo-wallet/"})
 @AutoConfigureMockMvc
 class DemoWalletIntegrationTest extends IntegrationTestBase {
     @Autowired private DemoWalletService wallet;
@@ -69,6 +69,7 @@ class DemoWalletIntegrationTest extends IntegrationTestBase {
         var issued=sessions.find(laptop,publicId);
         mvc.perform(get(qrUrl).session(laptop)).andExpect(status().isOk())
                 .andExpect(content().string(org.hamcrest.Matchers.containsString("https://demo.group8.test/demo-wallet/pay/")))
+                .andExpect(content().string(org.hamcrest.Matchers.not(org.hamcrest.Matchers.containsString("/demo-wallet/demo-wallet/"))))
                 .andExpect(content().string(org.hamcrest.Matchers.containsString("Nhóm 8")));
         MockHttpSession phone=new MockHttpSession();
         mvc.perform(get("/demo-wallet/pay/{id}",publicId).session(phone)).andExpect(status().isOk())

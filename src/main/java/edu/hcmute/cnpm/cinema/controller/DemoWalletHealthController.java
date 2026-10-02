@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 /** Kiểm tra ví và kết nối database, không công khai thông tin cấu hình hoặc đơn hàng. */
 @RestController
+@org.springframework.boot.autoconfigure.condition.ConditionalOnProperty(name="demo-wallet.phone-enabled", havingValue="true")
 public class DemoWalletHealthController {
     private final DemoWalletSettings settings;
     private final DataSource dataSource;
