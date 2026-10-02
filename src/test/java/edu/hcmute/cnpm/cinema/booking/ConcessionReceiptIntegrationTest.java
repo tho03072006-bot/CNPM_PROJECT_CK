@@ -4,6 +4,7 @@ import edu.hcmute.cnpm.cinema.constants.Constants;
 import edu.hcmute.cnpm.cinema.entity.*;
 import edu.hcmute.cnpm.cinema.service.BookingOrderService;
 import edu.hcmute.cnpm.cinema.service.PaymentService;
+import edu.hcmute.cnpm.cinema.service.TicketRefundService;
 import edu.hcmute.cnpm.cinema.support.IntegrationTestBase;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -13,6 +14,7 @@ import org.springframework.test.web.servlet.MockMvc;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -26,6 +28,7 @@ class ConcessionReceiptIntegrationTest extends IntegrationTestBase {
     @Autowired private MockMvc mockMvc;
     @Autowired private BookingOrderService bookingOrderService;
     @Autowired private PaymentService paymentService;
+    @Autowired private TicketRefundService ticketRefundService;
 
     @Test
     @DisplayName("Khách chọn combo trước thanh toán và in được hóa đơn sau khi trả tiền")
@@ -45,6 +48,7 @@ class ConcessionReceiptIntegrationTest extends IntegrationTestBase {
         combo.setIcon("🍿");
         combo.setActive(true);
         combo.setDisplayOrder(1);
+        combo.setStockQuantity(50);
         combo = concessionProductRepository.save(combo);
 
         mockMvc.perform(get("/bap-nuoc/{id}", showtime.getId())
@@ -69,6 +73,61 @@ class ConcessionReceiptIntegrationTest extends IntegrationTestBase {
                         .sessionAttr(Constants.SESSION_USER, customer))
                 .andExpect(status().isOk())
                 .andExpect(content().string(org.hamcrest.Matchers.containsString("Hóa đơn thanh toán")))
-                .andExpect(content().string(org.hamcrest.Matchers.containsString("233.000 đ")));
+                .andExpect(content().string(org.hamcrest.Matchers.containsString("233.000 đ")))
+                .andExpect(content().string(org.hamcrest.Matchers.containsString(
+                        "Hai trăm ba mươi ba nghìn đồng chẵn.")))
+                .andExpect(content().string(org.hamcrest.Matchers.containsString("Vé xem phim - Ghế A1")))
+                .andExpect(content().string(org.hamcrest.Matchers.containsString("class=\"qr-svg\"")));
+
+        assertThat(concessionProductRepository.findById(combo.getId()).orElseThrow().getStockQuantity())
+                .as("Thanh toán xong phải trừ kho đúng 2 phần khách mua")
+                .isEqualTo(48);
+    }
+
+    @Test
+    @DisplayName("Vé hủy sau khi thanh toán vẫn nằm trên hóa đơn, ghi rõ đã hoàn bao nhiêu")
+    void shouldKeepRefundedTicketOnReceipt() throws Exception {
+        User customer = testDataFactory.createCustomer("huy-mot-ve@example.com");
+        Movie movie = testDataFactory.createMovie("Phim hoàn vé");
+        Room room = testDataFactory.createRoom("Cinema 3", 2, 4);
+        Seat first = testDataFactory.createSeat(room, "C", 1);
+        Seat second = testDataFactory.createSeat(room, "C", 2);
+        Showtime showtime = testDataFactory.createShowtime(movie, room, LocalDateTime.now().plusDays(3));
+        ticketRepository.save(testDataFactory.newHeldTicket(showtime, first, customer));
+        ticketRepository.save(testDataFactory.newHeldTicket(showtime, second, customer));
+        List<Ticket> paid = paymentService.confirmPayment(customer.getId(), showtime.getId());
+        String receiptCode = paid.get(0).getBookingOrder().getReceiptCode();
+        Ticket cancelled = paid.stream().filter(ticket -> ticket.getSeat().getId().equals(first.getId()))
+                .findFirst().orElseThrow();
+
+        ticketRefundService.cancelPaidTicket(customer.getId(), cancelled.getId(), LocalDateTime.now());
+
+        mockMvc.perform(get("/hoa-don/{code}", receiptCode).sessionAttr(Constants.SESSION_USER, customer))
+                .andExpect(status().isOk())
+                .andExpect(content().string(org.hamcrest.Matchers.containsString("Vé xem phim - Ghế C1")))
+                .andExpect(content().string(org.hamcrest.Matchers.containsString("Vé xem phim - Ghế C2")))
+                .andExpect(content().string(org.hamcrest.Matchers.containsString("hoàn lại 75.000 đ")))
+                .andExpect(content().string(org.hamcrest.Matchers.containsString("150.000 đ")));
+    }
+
+    @Test
+    @DisplayName("Người khác không xem được hóa đơn của khách, nhân viên quầy thì xem được")
+    void shouldGuardReceipt_whenViewerIsNotOwnerOrEmployee() throws Exception {
+        User customer = testDataFactory.createCustomer("chu-hoa-don@example.com");
+        User stranger = testDataFactory.createCustomer("nguoi-la@example.com");
+        User staff = testDataFactory.createUserWithRole("quay@example.com", Role.STAFF);
+        Movie movie = testDataFactory.createMovie("Phim hóa đơn");
+        Room room = testDataFactory.createRoom("Cinema 2", 2, 4);
+        Seat seat = testDataFactory.createSeat(room, "B", 2);
+        Showtime showtime = testDataFactory.createShowtime(movie, room, LocalDateTime.now().plusDays(1));
+        ticketRepository.save(testDataFactory.newHeldTicket(showtime, seat, customer));
+        String receiptCode = paymentService.confirmPayment(customer.getId(), showtime.getId())
+                .get(0).getBookingOrder().getReceiptCode();
+
+        mockMvc.perform(get("/hoa-don/{code}", receiptCode).sessionAttr(Constants.SESSION_USER, stranger))
+                .andExpect(status().isBadRequest());
+        mockMvc.perform(get("/hoa-don/{code}", receiptCode).sessionAttr(Constants.SESSION_USER, staff))
+                .andExpect(status().isOk())
+                .andExpect(content().string(org.hamcrest.Matchers.containsString("Khach hang test")));
     }
 }

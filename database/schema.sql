@@ -235,3 +235,58 @@ IF NOT EXISTS (SELECT 1 FROM sys.indexes WHERE name = 'ix_support_conversations_
                AND object_id = OBJECT_ID('dbo.support_conversations'))
     CREATE INDEX ix_support_conversations_status ON support_conversations(status, updated_at DESC);
 GO
+
+-- ----------------------------------------------------------------
+-- Bổ sung 02/10/2026: kho bắp nước.
+--   - Món lẻ có tồn kho (stock_quantity) và ngưỡng báo sắp hết (low_stock_threshold).
+--   - Combo không có kho riêng, ghép từ món lẻ theo bảng concession_combo_items.
+--   - Mọi lần nhập kho / xuất hủy / kiểm kê / bán đều ghi vào concession_stock_movements.
+-- Các lệnh đều chạy lại an toàn trên database đã có dữ liệu.
+-- ----------------------------------------------------------------
+IF COL_LENGTH('dbo.concession_products', 'stock_quantity') IS NULL
+    ALTER TABLE concession_products ADD stock_quantity INT NOT NULL
+        CONSTRAINT df_concession_products_stock DEFAULT 0;
+GO
+IF COL_LENGTH('dbo.concession_products', 'low_stock_threshold') IS NULL
+    ALTER TABLE concession_products ADD low_stock_threshold INT NOT NULL
+        CONSTRAINT df_concession_products_low_stock DEFAULT 10;
+GO
+-- Chốt chặn cuối ở database: tồn kho không bao giờ âm, kể cả khi code có lỗi.
+IF NOT EXISTS (SELECT 1 FROM sys.check_constraints WHERE name = 'ck_concession_products_stock')
+    ALTER TABLE concession_products ADD CONSTRAINT ck_concession_products_stock CHECK (stock_quantity >= 0);
+GO
+
+IF OBJECT_ID('dbo.concession_combo_items', 'U') IS NULL
+CREATE TABLE concession_combo_items (
+    id                      BIGINT IDENTITY(1,1) PRIMARY KEY,
+    combo_product_id        BIGINT  NOT NULL FOREIGN KEY REFERENCES concession_products(id),
+    component_product_id    BIGINT  NOT NULL FOREIGN KEY REFERENCES concession_products(id),
+    quantity                INT     NOT NULL DEFAULT 1,
+    CONSTRAINT uq_combo_component UNIQUE (combo_product_id, component_product_id),
+    CONSTRAINT ck_combo_item_quantity CHECK (quantity BETWEEN 1 AND 20),
+    CONSTRAINT ck_combo_item_not_self CHECK (combo_product_id <> component_product_id)
+);
+GO
+
+IF OBJECT_ID('dbo.concession_stock_movements', 'U') IS NULL
+CREATE TABLE concession_stock_movements (
+    id                  BIGINT IDENTITY(1,1) PRIMARY KEY,
+    product_id          BIGINT          NOT NULL FOREIGN KEY REFERENCES concession_products(id),
+    type                VARCHAR(20)     NOT NULL,       -- IMPORT | WRITE_OFF | STOCKTAKE | SALE
+    quantity_change     INT             NOT NULL,       -- dương là tăng, âm là giảm
+    quantity_after      INT             NOT NULL,
+    note                NVARCHAR(255)   NULL,
+    reference           VARCHAR(40)     NULL,           -- mã hóa đơn, chỉ có ở lần bán hàng
+    actor_id            BIGINT          NULL FOREIGN KEY REFERENCES users(id),
+    actor_name          NVARCHAR(150)   NULL,
+    created_at          DATETIME2       NOT NULL DEFAULT SYSDATETIME()
+);
+GO
+IF NOT EXISTS (SELECT 1 FROM sys.indexes WHERE name = 'ix_stock_movements_product'
+               AND object_id = OBJECT_ID('dbo.concession_stock_movements'))
+    CREATE INDEX ix_stock_movements_product ON concession_stock_movements(product_id, created_at DESC);
+GO
+IF NOT EXISTS (SELECT 1 FROM sys.indexes WHERE name = 'ix_stock_movements_created'
+               AND object_id = OBJECT_ID('dbo.concession_stock_movements'))
+    CREATE INDEX ix_stock_movements_created ON concession_stock_movements(created_at DESC);
+GO

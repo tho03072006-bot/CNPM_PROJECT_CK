@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout" layout:decorate="~{layout/base}">
+<head><title th:text="|Kho · ${item.name()}|">Kho bắp nước</title></head>
+<body><div layout:fragment="content">
+    <a class="inventory-back" th:href="@{/nhan-vien/kho-bap-nuoc}">← Kho bắp nước</a>
+
+    <section class="module1-admin-head inventory-detail-head">
+        <div class="inventory-item">
+            <span class="inventory-icon inventory-icon-lg" aria-hidden="true" th:text="${item.icon()}">🍿</span>
+            <div>
+                <span class="module1-kicker" th:text="|MÃ ${item.code()}|">MÃ POPCORN-M</span>
+                <h1 th:text="${item.name()}">Bắp rang cỡ vừa</h1>
+                <p class="text-muted">
+                    Giá bán <strong th:text="|${#numbers.formatDecimal(item.price(), 0, 'POINT', 0, 'COMMA')} đ|">55.000 đ</strong>
+                    <span th:unless="${#lists.isEmpty(item.usedInCombos())}"
+                          th:text="| · Dùng trong ${#strings.listJoin(item.usedInCombos(), ', ')}|"> · Dùng trong Combo</span>
+                </p>
+            </div>
+        </div>
+        <div class="inventory-head-badges">
+            <span class="badge" th:classappend="${item.level().badgeClass}" th:text="${item.level().label}">Còn hàng</span>
+            <span class="badge" th:unless="${item.active()}">Không bán lẻ</span>
+        </div>
+    </section>
+
+    <div class="inventory-detail-layout">
+        <section class="card inventory-summary" aria-labelledby="stock-now-title">
+            <h2 id="stock-now-title" class="inventory-summary-label">Tồn kho hiện tại</h2>
+            <p class="inventory-big" th:classappend="|is-${#strings.toLowerCase(item.level().name())}|">
+                <strong id="current-stock" th:text="${item.stock()}" th:attr="data-stock=${item.stock()}">120</strong>
+                <span>phần</span>
+            </p>
+            <p class="text-muted" th:text="|Còn ${item.lowStockThreshold()} phần trở xuống thì báo “Sắp hết” trên thanh menu nhân viên.|">
+                Còn 10 phần trở xuống thì báo sắp hết.
+            </p>
+
+            <form class="inventory-threshold-form" method="post"
+                  th:action="@{/nhan-vien/kho-bap-nuoc/{id}/nguong(id=${item.id()})}">
+                <label class="form-field" for="low-stock-threshold">
+                    <span>Ngưỡng báo sắp hết</span>
+                    <input class="form-control" id="low-stock-threshold" name="lowStockThreshold" type="number"
+                           min="0" max="10000" step="1" required th:value="${item.lowStockThreshold()}">
+                </label>
+                <button class="btn btn-ghost" type="submit">Lưu ngưỡng</button>
+            </form>
+        </section>
+
+        <section class="card inventory-form-card" aria-labelledby="adjust-title">
+            <h2 id="adjust-title">Cập nhật kho</h2>
+            <form method="post" th:object="${adjustmentForm}" id="stock-adjust-form"
+                  th:action="@{/nhan-vien/kho-bap-nuoc/{id}/dieu-chinh(id=${item.id()})}">
+                <fieldset class="inventory-type-picker">
+                    <legend>Bạn đang làm gì?</legend>
+                    <label class="inventory-type-option" th:each="type : ${movementTypes}">
+                        <input type="radio" th:field="*{type}" th:value="${type}">
+                        <span class="inventory-type-card">
+                            <strong th:text="${type.label}">Nhập kho</strong>
+                            <small th:switch="${type.name()}">
+                                <th:block th:case="'IMPORT'">Hàng mới về quầy, cộng thêm vào kho</th:block>
+                                <th:block th:case="'WRITE_OFF'">Hàng hỏng, hết hạn, đổ vỡ: trừ khỏi kho</th:block>
+                                <th:block th:case="*">Đếm thực tế trên kệ, ghi đè số trong sổ</th:block>
+                            </small>
+                        </span>
+                    </label>
+                </fieldset>
+
+                <div class="form-field">
+                    <label for="adjust-quantity" id="adjust-quantity-label">Số phần nhập thêm</label>
+                    <input class="form-control" id="adjust-quantity" type="number" min="0" max="100000" step="1"
+                           required inputmode="numeric" th:field="*{quantity}" placeholder="Ví dụ: 50">
+                </div>
+                <div class="form-field">
+                    <label for="adjust-note" id="adjust-note-label">Ghi chú (không bắt buộc)</label>
+                    <input class="form-control" id="adjust-note" type="text" maxlength="255" th:field="*{note}"
+                           placeholder="Ví dụ: nhập theo phiếu số 12, bắp bị ỉu, kiểm kê cuối ca tối">
+                </div>
+                <p class="inventory-preview" aria-live="polite">
+                    Tồn kho sau khi lưu: <strong id="stock-preview" th:text="${item.stock()}">120</strong> phần
+                </p>
+                <button class="btn btn-accent account-submit" type="submit">Lưu cập nhật kho</button>
+            </form>
+        </section>
+    </div>
+
+    <section class="card inventory-panel" aria-labelledby="item-history-title">
+        <div class="inventory-panel-head">
+            <h2 id="item-history-title">Lịch sử kho của món này</h2>
+            <p class="text-muted">50 lần thay đổi mới nhất, gồm cả các lần khách mua.</p>
+        </div>
+        <p class="text-muted" th:if="${#lists.isEmpty(movements)}">Món này chưa có lần nhập, hủy, kiểm kê hay bán nào.</p>
+        <div class="table-wrap" th:unless="${#lists.isEmpty(movements)}">
+            <table th:replace="~{staff/inventory-history :: movementTable(${movements}, false)}"></table>
+        </div>
+    </section>
+
+    <!-- Đổi nhãn và xem trước tồn kho theo thao tác đang chọn. Tắt JavaScript thì form vẫn gửi bình thường. -->
+    <script th:inline="none">
+        (() => {
+            const form = document.getElementById('stock-adjust-form');
+            if (!form) return;
+            const stock = Number(document.getElementById('current-stock').dataset.stock || 0);
+            const quantity = document.getElementById('adjust-quantity');
+            const quantityLabel = document.getElementById('adjust-quantity-label');
+            const noteLabel = document.getElementById('adjust-note-label');
+            const note = document.getElementById('adjust-note');
+            const preview = document.getElementById('stock-preview');
+            const labels = {
+                IMPORT: ['Số phần nhập thêm', 'Ghi chú (không bắt buộc)', false],
+                WRITE_OFF: ['Số phần xuất hủy', 'Lý do xuất hủy (bắt buộc)', true],
+                STOCKTAKE: ['Số đếm được thực tế trên kệ', 'Ghi chú (không bắt buộc)', false]
+            };
+            function selectedType() {
+                const checked = form.querySelector('input[name="type"]:checked');
+                return checked ? checked.value : 'IMPORT';
+            }
+            function update() {
+                const type = selectedType();
+                const [quantityText, noteText, noteRequired] = labels[type] || labels.IMPORT;
+                quantityLabel.textContent = quantityText;
+                noteLabel.textContent = noteText;
+                note.required = noteRequired;
+                quantity.min = type === 'STOCKTAKE' ? 0 : 1;
+                quantity.max = type === 'WRITE_OFF' ? Math.max(stock, 1) : (type === 'STOCKTAKE' ? 100000 : 10000);
+                const value = quantity.value === '' ? null : Number(quantity.value);
+                let after = stock;
+                if (value !== null && Number.isFinite(value)) {
+                    after = type === 'IMPORT' ? stock + value : (type === 'WRITE_OFF' ? stock - value : value);
+                }
+                preview.textContent = after.toLocaleString('vi-VN');
+                preview.classList.toggle('is-invalid', after < 0);
+            }
+            form.addEventListener('change', update);
+            quantity.addEventListener('input', update);
+            update();
+        })();
+    </script>
+</div></body></html>

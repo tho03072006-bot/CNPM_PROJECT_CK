@@ -1,7 +1,8 @@
 package edu.hcmute.cnpm.cinema.controller;
 
+import edu.hcmute.cnpm.cinema.dto.receipt.ReceiptView;
 import edu.hcmute.cnpm.cinema.entity.User;
-import edu.hcmute.cnpm.cinema.service.BookingOrderService;
+import edu.hcmute.cnpm.cinema.service.ReceiptService;
 import jakarta.servlet.http.HttpSession;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -11,10 +12,10 @@ import org.springframework.web.bind.annotation.PathVariable;
 @Controller
 public class ReceiptController {
 
-    private final BookingOrderService bookingOrderService;
+    private final ReceiptService receiptService;
 
-    public ReceiptController(BookingOrderService bookingOrderService) {
-        this.bookingOrderService = bookingOrderService;
+    public ReceiptController(ReceiptService receiptService) {
+        this.receiptService = receiptService;
     }
 
     @GetMapping("/hoa-don/{receiptCode}")
@@ -23,7 +24,9 @@ public class ReceiptController {
         if (viewer == null) {
             return SessionUsers.redirectToLogin("/hoa-don/" + receiptCode);
         }
-        model.addAttribute("order", bookingOrderService.findReceiptForUser(receiptCode, viewer));
+        ReceiptView receipt = receiptService.findReceipt(receiptCode, viewer);
+        model.addAttribute("receipt", receipt);
+        model.addAttribute("order", receipt.order());
         return "account/receipt";
     }
 }

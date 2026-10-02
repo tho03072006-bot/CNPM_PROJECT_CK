@@ -31,17 +31,20 @@ public class BookingOrderService {
     private final TicketRepository ticketRepository;
     private final UserRepository userRepository;
     private final ShowtimeRepository showtimeRepository;
+    private final ConcessionInventoryService inventoryService;
 
     public BookingOrderService(BookingOrderRepository bookingOrderRepository,
                                ConcessionProductRepository productRepository,
                                TicketRepository ticketRepository,
                                UserRepository userRepository,
-                               ShowtimeRepository showtimeRepository) {
+                               ShowtimeRepository showtimeRepository,
+                               ConcessionInventoryService inventoryService) {
         this.bookingOrderRepository = bookingOrderRepository;
         this.productRepository = productRepository;
         this.ticketRepository = ticketRepository;
         this.userRepository = userRepository;
         this.showtimeRepository = showtimeRepository;
+        this.inventoryService = inventoryService;
     }
 
     @Transactional(readOnly = true)
@@ -61,6 +64,11 @@ public class BookingOrderService {
         if (products.size() != selected.size() || products.stream().anyMatch(product -> !product.isActive())) {
             throw new BusinessException("Có món không còn được bán. Bạn tải lại danh sách bắp nước và chọn lại nhé.");
         }
+        Map<ConcessionProduct, Integer> selection = new LinkedHashMap<>();
+        for (ConcessionProduct product : products) {
+            selection.put(product, selected.get(product.getId()));
+        }
+        inventoryService.requireInStock(selection);
 
         List<BookingOrderItem> items = new ArrayList<>();
         BigDecimal concessionSubtotal = BigDecimal.ZERO;
@@ -110,6 +118,8 @@ public class BookingOrderService {
     public BookingOrder completeOrder(Long userId, Long showtimeId, List<Ticket> tickets,
                                       PaymentMethod paymentMethod, String paymentRef, LocalDateTime paidAt) {
         BookingOrder order = prepareDraft(userId, showtimeId, tickets);
+        // Hết hàng thì ném lỗi ở đây, cả lần thanh toán bị hủy (MoMo tự hoàn tiền).
+        inventoryService.deductForPaidOrder(order);
         order.setStatus(BookingOrderStatus.PAID);
         order.setPaymentMethod(paymentMethod);
         order.setPaymentRef(paymentRef);

@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout" layout:decorate="~{layout/base}">
+<head><title>Kho bắp nước</title></head>
+<body><div layout:fragment="content">
+    <section class="module1-admin-head">
+        <div>
+            <span class="module1-kicker">NHÂN VIÊN RẠP · KHO</span>
+            <h1>Kho bắp nước</h1>
+            <p class="text-muted">Nhập hàng, xuất hủy và kiểm kê cuối ca. Khách thanh toán xong thì hệ thống tự trừ kho.</p>
+        </div>
+    </section>
+
+    <div class="module1-stats-grid" aria-label="Tóm tắt kho bắp nước">
+        <div class="module1-stat-card"><span>Món lẻ trong kho</span><strong th:text="${#lists.size(inventory.items())}">3</strong></div>
+        <div class="module1-stat-card" th:classappend="${inventory.lowCount() > 0} ? 'is-warning' : ''">
+            <span>Sắp hết</span><strong th:text="${inventory.lowCount()}">1</strong>
+        </div>
+        <div class="module1-stat-card" th:classappend="${inventory.outCount() > 0} ? 'inventory-stat-out' : ''">
+            <span>Hết hàng</span><strong th:text="${inventory.outCount()}">0</strong>
+        </div>
+        <div class="module1-stat-card is-active">
+            <span>Phần bán hôm nay</span><strong th:text="${inventory.soldToday()}">12</strong>
+        </div>
+    </div>
+
+    <section class="card inventory-panel" aria-labelledby="stock-items-title">
+        <div class="inventory-panel-head">
+            <h2 id="stock-items-title">Món lẻ</h2>
+            <p class="text-muted">Bấm “Cập nhật kho” để nhập thêm, xuất hủy hoặc ghi số kiểm kê.</p>
+        </div>
+        <div class="module1-empty" th:if="${#lists.isEmpty(inventory.items())}">
+            <h2>Chưa có món nào</h2>
+            <p>Chạy database/seed-data.sql để có sẵn bắp rang và nước ngọt.</p>
+        </div>
+        <div class="table-wrap" th:unless="${#lists.isEmpty(inventory.items())}">
+            <table class="admin-table inventory-table">
+                <thead><tr><th>Món</th><th>Giá bán</th><th>Tồn kho</th><th>Trạng thái</th><th><span class="sr-only">Thao tác</span></th></tr></thead>
+                <tbody>
+                <tr th:each="item : ${inventory.items()}" th:classappend="|is-${#strings.toLowerCase(item.level().name())}|">
+                    <td>
+                        <div class="inventory-item">
+                            <span class="inventory-icon" aria-hidden="true" th:text="${item.icon()}">🍿</span>
+                            <span class="inventory-item-text">
+                                <strong th:text="${item.name()}">Bắp rang cỡ vừa</strong>
+                                <small th:text="|Mã ${item.code()}|">Mã POPCORN-M</small>
+                                <small th:unless="${#lists.isEmpty(item.usedInCombos())}"
+                                       th:text="|Dùng trong: ${#strings.listJoin(item.usedInCombos(), ', ')}|">Dùng trong: Combo</small>
+                            </span>
+                        </div>
+                    </td>
+                    <td th:text="|${#numbers.formatDecimal(item.price(), 0, 'POINT', 0, 'COMMA')} đ|">55.000 đ</td>
+                    <td>
+                        <span class="inventory-stock"><strong th:text="${item.stock()}">120</strong> phần</span>
+                        <small class="inventory-threshold" th:text="|Báo sắp hết khi còn ≤ ${item.lowStockThreshold()}|">Báo sắp hết khi còn ≤ 10</small>
+                    </td>
+                    <td>
+                        <span class="badge" th:classappend="${item.level().badgeClass}" th:text="${item.level().label}">Còn hàng</span>
+                        <span class="badge" th:unless="${item.active()}">Không bán lẻ</span>
+                    </td>
+                    <td class="inventory-action">
+                        <a class="btn btn-sm" th:href="@{/nhan-vien/kho-bap-nuoc/{id}(id=${item.id()})}"
+                           th:attr="aria-label=|Cập nhật kho ${item.name()}|">Cập nhật kho</a>
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+    </section>
+
+    <section class="card inventory-panel" aria-labelledby="combo-title" th:unless="${#lists.isEmpty(inventory.combos())}">
+        <div class="inventory-panel-head">
+            <h2 id="combo-title">Combo</h2>
+            <p class="text-muted">Combo không có kho riêng. Số combo còn bán được tính theo món thành phần còn ít nhất.</p>
+        </div>
+        <div class="inventory-combo-grid">
+            <article class="inventory-combo" th:each="combo : ${inventory.combos()}">
+                <span class="inventory-icon" aria-hidden="true" th:text="${combo.icon()}">🍿🥤</span>
+                <div class="inventory-combo-body">
+                    <h3 th:text="${combo.name()}">Combo một người</h3>
+                    <ul class="inventory-recipe">
+                        <li th:each="line : ${combo.recipe()}" th:text="${line}">1 × Bắp rang cỡ vừa</li>
+                    </ul>
+                </div>
+                <div class="inventory-combo-state">
+                    <strong th:text="${combo.available()}">45</strong>
+                    <span>combo còn bán được</span>
+                    <span class="badge" th:classappend="${combo.level().badgeClass}" th:text="${combo.level().label}">Còn hàng</span>
+                    <span class="badge" th:unless="${combo.active()}">Ngừng bán</span>
+                </div>
+            </article>
+        </div>
+    </section>
+
+    <section class="card inventory-panel" aria-labelledby="history-title">
+        <div class="inventory-panel-head">
+            <h2 id="history-title">Lịch sử kho gần đây</h2>
+            <p class="text-muted">20 lần thay đổi mới nhất của cả kho.</p>
+        </div>
+        <p class="text-muted" th:if="${#lists.isEmpty(movements)}">Chưa có lần nhập, hủy, kiểm kê hay bán hàng nào.</p>
+        <div class="table-wrap" th:unless="${#lists.isEmpty(movements)}">
+            <table th:replace="~{staff/inventory-history :: movementTable(${movements}, true)}"></table>
+        </div>
+    </section>
+</div></body></html>

@@ -71,6 +71,15 @@
                       th:text="${pendingSupportCount > 99 ? '99+' : pendingSupportCount}"
                       th:attr="aria-label=|${pendingSupportCount} yêu cầu mới từ khách hàng|">1</span>
             </a>
+            <a th:if="${session.LOGGED_IN_USER != null and session.LOGGED_IN_USER.role.name() != 'CUSTOMER'}"
+               th:href="@{/nhan-vien/kho-bap-nuoc}" class="nav-with-badge"
+               th:classappend="${path.startsWith('/nhan-vien/kho-bap-nuoc')} ? 'is-active' : ''"
+               th:attr="aria-current=${path.startsWith('/nhan-vien/kho-bap-nuoc') ? 'page' : null}">
+                <span>Kho bắp nước</span>
+                <span class="nav-notification-badge" th:if="${restockCount > 0}"
+                      th:text="${restockCount > 99 ? '99+' : restockCount}"
+                      th:attr="aria-label=|${restockCount} món sắp hết hoặc đã hết|">1</span>
+            </a>
             <a th:if="${session.LOGGED_IN_USER != null and session.LOGGED_IN_USER.role.name() == 'ADMIN'}"
                th:href="@{/admin}" th:classappend="${path.startsWith('/admin')} ? 'is-active' : ''"
                th:attr="aria-current=${path.startsWith('/admin') ? 'page' : null}">Quản trị</a>
