@@ -2653,8 +2653,6 @@ main.container {
     padding-bottom: var(--space-4);
     border-bottom: 2px solid var(--paper-line-strong);
 }
-.invoice-brand { display: flex; align-items: flex-start; gap: var(--space-3); min-width: 0; }
-.invoice-logo { flex: 0 0 52px; width: 52px; height: 52px; color: var(--paper-brand); }
 .invoice-seller-info { display: grid; gap: 2px; min-width: 0; }
 .invoice-seller-label,
 .invoice-serial dt,
@@ -2749,26 +2747,26 @@ main.container {
 .invoice-sign > span { color: var(--paper-muted); font-size: var(--text-xs); font-style: italic; }
 .invoice-sign > .invoice-sign-name { margin-top: var(--space-7); color: var(--paper-text); font-size: var(--text-base); font-style: normal; font-weight: 700; }
 .invoice-esign {
-    display: flex;
-    align-items: center;
-    gap: var(--space-2);
+    display: grid;
+    gap: 2px;
     margin-top: var(--space-3);
     padding: var(--space-2) var(--space-3);
     border: 1.5px solid var(--esign-ink);
     border-radius: var(--radius-sm);
     color: var(--esign-ink);
-    text-align: left;
+    font-size: var(--text-xs);
 }
-.invoice-esign svg { flex: 0 0 26px; width: 26px; height: 26px; }
-.invoice-esign div { display: grid; font-size: var(--text-xs); }
 .invoice-esign b { font-size: var(--text-sm); }
 
-.invoice-footer { display: flex; align-items: center; gap: var(--space-4); margin-top: var(--space-6); padding-top: var(--space-4); border-top: 1px dashed var(--paper-line-strong); break-inside: avoid; }
-.invoice-qr { flex: 0 0 108px; width: 108px; background: var(--qr-bg); color: var(--qr-fg); }
-.invoice-qr .qr-svg { display: block; width: 100%; height: auto; }
-.invoice-footer-text p { margin: 0 0 var(--space-1); }
-.invoice-url { font-family: Consolas, "Courier New", monospace; font-size: var(--text-xs); overflow-wrap: anywhere; }
-.invoice-footer-text .invoice-thanks { margin: var(--space-2) 0 0; color: var(--paper-brand); font-weight: 800; }
+.invoice-footer {
+    margin-top: var(--space-6);
+    padding-top: var(--space-4);
+    border-top: 1px dashed var(--paper-line-strong);
+    text-align: center;
+    break-inside: avoid;
+}
+.invoice-footer p { margin: 0 0 var(--space-1); }
+.invoice-footer .invoice-thanks { margin: var(--space-2) 0 0; color: var(--paper-brand); font-weight: 800; }
 
 @media (max-width: 720px) {
     .invoice-paper { padding: var(--space-6) var(--space-4) var(--space-5); }
@@ -2784,7 +2782,6 @@ main.container {
     .invoice-summary { grid-template-areas: "totals" "words"; grid-template-columns: 1fr; }
     .invoice-signatures { grid-template-columns: 1fr; }
     .invoice-sign > .invoice-sign-name { margin-top: var(--space-4); }
-    .invoice-footer { flex-direction: column; text-align: center; }
 }
 
 /* In ra đúng một tờ A4, lề 0 để trình duyệt không chèn ngày giờ và đường dẫn vào đầu/cuối trang.
@@ -2807,7 +2804,6 @@ main.container {
     }
     /* Thu gọn khoảng trắng của bản màn hình để cả tờ vừa một trang A4. */
     .invoice-seller { padding-bottom: 10px; }
-    .invoice-logo { flex-basis: 44px; width: 44px; height: 44px; }
     .invoice-seller-info strong { font-size: 15px; }
     .invoice-serial .invoice-number { font-size: 18px; }
     .invoice-title { padding: 14px 0 10px; }
@@ -2823,5 +2819,4 @@ main.container {
     .invoice-signatures { margin-top: 16px; }
     .invoice-sign > .invoice-sign-name { margin-top: 26px; font-size: 13px; }
     .invoice-footer { margin-top: 16px; padding-top: 10px; }
-    .invoice-qr { flex-basis: 84px; width: 84px; }
 }
