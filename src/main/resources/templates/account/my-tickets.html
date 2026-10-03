@@ -27,7 +27,7 @@
             <!-- Nút huỷ chỉ hiện ở vé còn huỷ được theo chính sách hoàn tiền. -->
             <p class="ticket-cancel-row" th:if="${refundQuotes.containsKey(ticket.id)}">
                 <a class="btn btn-ghost btn-sm" th:href="@{/ve-cua-toi/{id}/huy(id=${ticket.id})}"
-                   th:text="|Huỷ vé #${ticket.id} · hoàn ${refundQuotes[ticket.id].refundPercent}%|">Huỷ vé</a>
+                   th:text="|Huỷ vé ${@ticketCodeService.codeFor(ticket.id)} · hoàn ${refundQuotes[ticket.id].refundPercent}%|">Huỷ vé</a>
             </p>
         </th:block>
     </div>
@@ -43,7 +43,7 @@
                     <th scope="col">Ghế</th><th scope="col">Hoàn lại</th><th scope="col">Hình thức</th>
                 </tr></thead>
                 <tbody><tr th:each="refund : ${refunds}">
-                    <td th:text="|#${refund.originalTicketId}|">#12</td>
+                    <td th:text="${@ticketCodeService.codeFor(refund.originalTicketId)}">#12</td>
                     <td th:text="${refund.movieTitle}">Tên phim</td>
                     <td th:text="${#temporals.format(refund.showtimeStart, 'HH:mm dd/MM/yyyy')}">19:00 27/09/2026</td>
                     <td th:text="|${refund.roomName} · ${refund.seatLabel}|">Cinema 1 · A1</td>

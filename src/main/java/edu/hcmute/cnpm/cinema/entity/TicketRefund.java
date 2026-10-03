@@ -28,6 +28,10 @@ public class TicketRefund {
     @Column(name = "original_ticket_id", nullable = false)
     private Long originalTicketId;
 
+    /** Hóa đơn gốc, giữ dưới dạng snapshot kể cả khi đơn bị xóa về sau. */
+    @Column(name = "booking_order_id")
+    private Long bookingOrderId;
+
     @Column(name = "user_id", nullable = false)
     private Long userId;
 
@@ -88,6 +92,8 @@ public class TicketRefund {
     public void setId(Long id) { this.id = id; }
     public Long getOriginalTicketId() { return originalTicketId; }
     public void setOriginalTicketId(Long originalTicketId) { this.originalTicketId = originalTicketId; }
+    public Long getBookingOrderId() { return bookingOrderId; }
+    public void setBookingOrderId(Long id) { bookingOrderId = id; }
     public Long getUserId() { return userId; }
     public void setUserId(Long userId) { this.userId = userId; }
     public Long getShowtimeId() { return showtimeId; }

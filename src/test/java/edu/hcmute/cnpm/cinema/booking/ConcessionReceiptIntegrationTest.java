@@ -29,6 +29,7 @@ class ConcessionReceiptIntegrationTest extends IntegrationTestBase {
     @Autowired private BookingOrderService bookingOrderService;
     @Autowired private PaymentService paymentService;
     @Autowired private TicketRefundService ticketRefundService;
+    @Autowired private edu.hcmute.cnpm.cinema.service.ReceiptService receiptService;
 
     @Test
     @DisplayName("Khách chọn combo trước thanh toán và in được hóa đơn sau khi trả tiền")
@@ -78,9 +79,9 @@ class ConcessionReceiptIntegrationTest extends IntegrationTestBase {
                         "Hai trăm ba mươi ba nghìn đồng chẵn.")))
                 .andExpect(content().string(org.hamcrest.Matchers.containsString("Vé xem phim - Ghế A1")))
                 .andReturn().getResponse().getContentAsString();
-        // Tờ hóa đơn cố ý chỉ có chữ: không logo, không mã QR (thanh menu phía trên thì vẫn có logo).
+        // Mỗi vé trên hóa đơn có QR và mã số riêng, dùng cùng định danh.
         String paper = html.substring(html.indexOf("invoice-paper"), html.indexOf("</article>"));
-        assertThat(paper).doesNotContain("<svg");
+        assertThat(paper).contains("<svg", receiptService.findReceipt(receiptCode, customer).admissionTickets().getFirst().code());
 
         assertThat(concessionProductRepository.findById(combo.getId()).orElseThrow().getStockQuantity())
                 .as("Thanh toán xong phải trừ kho đúng 2 phần khách mua")

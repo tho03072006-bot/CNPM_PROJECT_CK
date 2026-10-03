@@ -87,7 +87,10 @@ class DemoWalletIntegrationTest extends IntegrationTestBase {
         mvc.perform(get(qrUrl+"/status").session(laptop).accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk()).andExpect(jsonPath("$.status").value("SUCCESS"))
                 .andExpect(jsonPath("$.token").doesNotExist()).andExpect(jsonPath("$.userId").doesNotExist());
-        mvc.perform(get(qrUrl+"/finish").session(laptop)).andExpect(redirectedUrl("/thanh-toan/hoan-tat"));
+        String invoice = "/hoa-don/" + bookingOrderRepository.findAll().getFirst().getReceiptCode();
+        mvc.perform(get(qrUrl+"/finish").session(laptop)).andExpect(redirectedUrl(invoice));
+        mvc.perform(get(invoice).session(laptop)).andExpect(status().isOk())
+                .andExpect(content().string(org.hamcrest.Matchers.containsString("Mã vé (8 số)")));
         assertThat(ticketRepository.findAll()).allMatch(t->t.getStatus()==TicketStatus.PAID&&t.getPaymentMethod()==PaymentMethod.MOMO_DEMO);
         verifyNoInteractions(momoApiClient);
     }

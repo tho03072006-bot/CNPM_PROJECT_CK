@@ -50,9 +50,8 @@ public class DemoWalletController {
     public String finish(@PathVariable String publicId,HttpSession session,RedirectAttributes redirect){
         Long userId=currentUserId(session);List<Long> ids=wallet.paidTicketIds(publicId,userId);
         if(ids.isEmpty())return "redirect:/ve-cua-toi";
-        redirect.addFlashAttribute("paidTicketIds",ids);
-        orders.findReceiptCodeByTicketId(ids.getFirst(),userId).ifPresent(code->redirect.addFlashAttribute("receiptCode",code));
-        return "redirect:/thanh-toan/hoan-tat";}
+        return orders.findReceiptCodeByTicketId(ids.getFirst(),userId)
+                .map(code->"redirect:/hoa-don/"+code).orElse("redirect:/ve-cua-toi");}
     private Long currentUserId(HttpSession session){
         User customer=SessionUsers.current(session);
         if(customer==null)throw new BusinessException("Phiên đăng nhập đã hết. Vui lòng đăng nhập lại để xem vé.");

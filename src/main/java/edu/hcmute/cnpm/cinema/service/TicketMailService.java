@@ -23,8 +23,10 @@ public class TicketMailService {
     private static final DateTimeFormatter TIME_FORMAT = DateTimeFormatter.ofPattern("HH:mm dd/MM/yyyy");
 
     private final MailDelivery mailDelivery;
+    private final TicketCodeService codes;
 
-    public TicketMailService(MailDelivery mailDelivery) {
+    public TicketMailService(MailDelivery mailDelivery, TicketCodeService codes) {
+        this.codes = codes;
         this.mailDelivery = mailDelivery;
     }
 
@@ -54,7 +56,7 @@ public class TicketMailService {
         if (customer == null || customer.getEmail() == null || refund == null) {
             return false;
         }
-        return mailDelivery.send(customer.getEmail(), "UTE Cinema - Xác nhận huỷ vé #" + refund.getOriginalTicketId(),
+        return mailDelivery.send(customer.getEmail(), "UTE Cinema - Xác nhận huỷ vé #" + codes.codeFor(refund.getOriginalTicketId()),
                 buildRefundBody(customer, refund));
     }
 
@@ -73,7 +75,7 @@ public class TicketMailService {
             }
             Ticket ticket = tickets.get(index);
             body.append(ticket.getSeat().getSeatRow()).append(ticket.getSeat().getSeatColumn())
-                .append(" (mã vé #").append(ticket.getId()).append(')');
+                .append(" (mã vé #").append(codes.codeFor(ticket.getId())).append(')');
         }
         body.append('\n');
         body.append("Tổng   : ").append(formatMoney(total)).append("\n\n");

@@ -10,6 +10,10 @@ import org.springframework.stereotype.Service;
 
 import java.nio.charset.StandardCharsets;
 import java.util.Map;
+import java.awt.image.BufferedImage;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import javax.imageio.ImageIO;
 
 /**
  * Vẽ mã QR thành SVG để nhúng thẳng vào trang.
@@ -23,6 +27,22 @@ public class QrCodeService {
 
     /** Vùng trắng quanh mã, đơn vị là số ô. Chuẩn QR yêu cầu tối thiểu 4. */
     private static final int QUIET_ZONE_MODULES = 4;
+
+    public byte[] toPng(String content) {
+        BitMatrix matrix = encode(content);
+        int scale = 8;
+        BufferedImage image = new BufferedImage(matrix.getWidth() * scale, matrix.getHeight() * scale,
+                BufferedImage.TYPE_INT_RGB);
+        for (int y = 0; y < image.getHeight(); y++)
+            for (int x = 0; x < image.getWidth(); x++)
+                image.setRGB(x, y, matrix.get(x / scale, y / scale) ? 0x000000 : 0xFFFFFF);
+        try (ByteArrayOutputStream output = new ByteArrayOutputStream()) {
+            if (!ImageIO.write(image, "png", output)) throw new IllegalStateException("Không xuất được ảnh QR.");
+            return output.toByteArray();
+        } catch (IOException exception) {
+            throw new IllegalStateException("Không xuất được ảnh QR.", exception);
+        }
+    }
 
     public String toSvg(String content, String accessibleLabel) {
         BitMatrix matrix = encode(content);

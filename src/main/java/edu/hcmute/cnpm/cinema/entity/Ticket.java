@@ -65,6 +65,11 @@ public class Ticket {
     @Column(name = "checked_in_at")
     private LocalDateTime checkedInAt;
 
+    @Transient
+    private String admissionCode;
+    public String getAdmissionCode() { return admissionCode; }
+    public void setAdmissionCode(String admissionCode) { this.admissionCode = admissionCode; }
+
     public Ticket() {}
 
     public Long getId() { return id; }

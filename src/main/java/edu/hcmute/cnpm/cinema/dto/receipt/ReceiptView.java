@@ -13,5 +13,6 @@ import java.util.List;
  */
 public record ReceiptView(BookingOrder order, String invoiceNumber, List<ReceiptLine> lines, String seats,
                           String paymentMethodLabel, String amountInWords,
-                          String sellerName, String sellerAddress, String sellerEmail) {
+                          String sellerName, String sellerAddress, String sellerEmail,
+                          List<ReceiptTicket> admissionTickets, String admissionQrSvg, String admissionPayload) {
 }

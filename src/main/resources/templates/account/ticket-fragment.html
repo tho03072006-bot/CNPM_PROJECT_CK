@@ -7,7 +7,8 @@
 
   Dùng class .ticket có sẵn trong design system (thẻ có răng cưa hai bên).
 -->
-<article th:fragment="ticketCard(ticket)" class="ticket account-ticket">
+<article th:fragment="ticketCard(ticket)" class="ticket account-ticket"
+         th:with="publicCode=${ticket.status.name() == 'PAID' ? @ticketCodeService.codeFor(ticket.id) : null}, grouped=${ticket.bookingOrder != null and #lists.size(ticket.bookingOrder.tickets) > 1}">
     <div class="account-ticket-head">
         <div>
             <h3 class="account-ticket-title" th:text="${ticket.showtime.movie.title}">Tên phim</h3>
@@ -27,7 +28,7 @@
         <!-- Mã vé để khách đưa nhân viên soát ở cửa phòng chiếu (/nhan-vien/soat-ve). -->
         <div>
             <dt>Mã vé</dt>
-            <dd class="account-ticket-code" th:text="|#${ticket.id}|">#12</dd>
+            <dd class="account-ticket-code" th:text="${publicCode != null} ? ${publicCode} : 'Chưa phát hành'">12345678</dd>
         </div>
         <div>
             <dt>Ghế</dt>
@@ -58,8 +59,16 @@
             <dd th:text="${#temporals.format(ticket.checkedInAt, 'HH:mm dd/MM/yyyy')}">19:05 27/09/2026</dd>
         </div>
     </dl>
+    <div class="ticket-entry-code" th:if="${ticket.status.name() == 'PAID' and !grouped}">
+        <img class="ticket-entry-qr" th:src="@{/ve/{id}/qr.png(id=${ticket.id})}"
+             th:alt="|QR vé ${publicCode}|" width="160" height="160">
+        <div><strong th:text="|Mã vé: ${publicCode}|">Mã vé: 12345678</strong>
+            <p th:text="${ticket.checkedInAt != null} ? 'Vé đã sử dụng' : 'Xuất trình QR hoặc mã số này khi vào rạp.'"></p>
+            <a th:href="@{/ve/{id}/qr.png(id=${ticket.id})}" th:download="|ve-${publicCode}.png|">Lưu ảnh QR vé</a>
+        </div>
+    </div>
     <a class="btn btn-ghost btn-sm" th:if="${ticket.bookingOrder != null and ticket.bookingOrder.status.name() == 'PAID'}"
-       th:href="@{/hoa-don/{code}(code=${ticket.bookingOrder.receiptCode})}">Hóa đơn điện tử</a>
+       th:href="@{/hoa-don/{code}(code=${ticket.bookingOrder.receiptCode})}" th:text="${grouped} ? 'Xem QR chung và mã ghế trên hóa đơn' : 'Hóa đơn điện tử'">Hóa đơn điện tử</a>
 </article>
 </body>
 </html>

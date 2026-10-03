@@ -7,7 +7,7 @@
     <section class="module1-section-head" aria-labelledby="cancel-title">
         <div>
             <span class="module1-kicker">VÉ CỦA TÔI</span>
-            <h1 id="cancel-title" th:text="|Huỷ vé #${quote.ticket.id}|">Huỷ vé #12</h1>
+            <h1 id="cancel-title" th:text="|Huỷ vé ${@ticketCodeService.codeFor(quote.ticket.id)}|">Huỷ vé 12345678</h1>
             <p class="text-muted">Kiểm tra số tiền được hoàn trước khi xác nhận. Huỷ rồi không lấy lại được.</p>
         </div>
     </section>

@@ -52,6 +52,8 @@ public abstract class IntegrationTestBase {
     @Autowired
     protected TicketRepository ticketRepository;
     @Autowired
+    protected edu.hcmute.cnpm.cinema.repository.TicketPublicCodeRepository ticketPublicCodeRepository;
+    @Autowired
     protected edu.hcmute.cnpm.cinema.repository.DemoPaymentRepository demoPaymentRepository;
     @Autowired
     protected ShowtimeRepository showtimeRepository;
@@ -112,6 +114,7 @@ public abstract class IntegrationTestBase {
 
     /** Xoa du lieu theo dung thu tu khoa ngoai: refund -> ticket -> showtime -> seat -> room -> movie -> user. */
     protected void cleanDatabase() {
+        ticketPublicCodeRepository.deleteAllInBatch();
         demoPaymentRepository.deleteAllInBatch();
         supportMessageRepository.deleteAllInBatch();
         supportConversationRepository.deleteAllInBatch();

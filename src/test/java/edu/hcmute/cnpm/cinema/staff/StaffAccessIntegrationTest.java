@@ -37,6 +37,7 @@ class StaffAccessIntegrationTest extends IntegrationTestBase {
 
     @Autowired
     private MockMvc mockMvc;
+    @Autowired private edu.hcmute.cnpm.cinema.service.TicketCodeService codes;
 
     @Test
     @DisplayName("Chưa đăng nhập thì bị đưa sang trang đăng nhập, khách hàng thì bị từ chối ở trang soát vé")
@@ -103,11 +104,11 @@ class StaffAccessIntegrationTest extends IntegrationTestBase {
         Showtime showtime = testDataFactory.createShowtime(movie, room, LocalDateTime.now().plusDays(1));
         Ticket held = ticketRepository.save(testDataFactory.newHeldTicket(showtime, seat, customer));
 
-        mockMvc.perform(get(STAFF_PAGE).param("ma", "#" + held.getId())
+        mockMvc.perform(get(STAFF_PAGE).param("ma", "#" + codes.codeFor(held.getId()))
                         .sessionAttr(Constants.SESSION_USER, staff))
                 .andExpect(status().isOk())
                 .andExpect(content().string(containsString("CHƯA THANH TOÁN")))
-                .andExpect(content().string(containsString("#" + held.getId())));
+                .andExpect(content().string(containsString("#" + codes.codeFor(held.getId()))));
     }
 
     @Test

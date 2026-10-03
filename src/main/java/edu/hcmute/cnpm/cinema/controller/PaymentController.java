@@ -5,7 +5,6 @@ import edu.hcmute.cnpm.cinema.entity.Ticket;
 import edu.hcmute.cnpm.cinema.entity.User;
 import edu.hcmute.cnpm.cinema.entity.BookingOrder;
 import edu.hcmute.cnpm.cinema.exception.BusinessException;
-import edu.hcmute.cnpm.cinema.repository.TicketRepository;
 import edu.hcmute.cnpm.cinema.service.MomoPaymentService;
 import edu.hcmute.cnpm.cinema.service.BookingOrderService;
 import edu.hcmute.cnpm.cinema.service.PaymentService;
@@ -22,7 +21,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
-import java.util.ArrayList;
 import java.util.List;
 
 /** Trang xác nhận thanh toán cho các ghế khách vừa giữ. */
@@ -33,7 +31,6 @@ public class PaymentController {
     private final edu.hcmute.cnpm.cinema.config.DemoWalletSettings demoWalletSettings;
     private final DemoWalletSessions demoWalletSessions;
     private final PaymentService paymentService;
-    private final TicketRepository ticketRepository;
     private final MomoPaymentService momoPaymentService;
     private final BookingOrderService bookingOrderService;
     private final PaymentOtpService paymentOtp;
@@ -42,7 +39,7 @@ public class PaymentController {
     private static final String PAYMENT_METHOD = "paymentOtpMethod";
 
     public PaymentController(PaymentService paymentService,
-                             TicketRepository ticketRepository, MomoPaymentService momoPaymentService,
+                             MomoPaymentService momoPaymentService,
                              BookingOrderService bookingOrderService,
                              edu.hcmute.cnpm.cinema.config.DemoWalletSettings demoWalletSettings,
                              DemoWalletSessions demoWalletSessions,
@@ -50,7 +47,6 @@ public class PaymentController {
         this.demoWalletSettings = demoWalletSettings;
         this.demoWalletSessions = demoWalletSessions;
         this.paymentService = paymentService;
-        this.ticketRepository = ticketRepository;
         this.momoPaymentService = momoPaymentService;
         this.bookingOrderService = bookingOrderService;
         this.paymentOtp = paymentOtp;
@@ -148,13 +144,7 @@ public class PaymentController {
         return "redirect:/thanh-toan/" + showtimeId + "/otp";
     }
 
-    /**
-     * Trang báo đặt vé thành công.
-     *
-     * Mã vé truyền qua flash attribute nên chỉ hiện đúng một lần ngay sau khi trả
-     * tiền. Khách tải lại trang thì không còn dữ liệu, lúc đó chuyển sang trang
-     * vé của tôi - vé vẫn ở đó, không mất đi đâu.
-     */
+    /** Tương thích đường dẫn cũ: chỉ chuyển tới hóa đơn đã thanh toán của chủ vé. */
     @GetMapping("/hoan-tat")
     public String showPaymentResult(HttpSession session, Model model) {
         User customer = SessionUsers.current(session);
@@ -168,21 +158,7 @@ public class PaymentController {
             return "redirect:/ve-cua-toi";
         }
 
-        List<Ticket> tickets = new ArrayList<>();
-        for (Ticket ticket : ticketRepository.findAllById(ticketIds)) {
-            // Chốt chặn: chỉ hiện vé của chính người đang đăng nhập.
-            if (ticket.getUser() != null && ticket.getUser().getId().equals(customer.getId())) {
-                tickets.add(ticket);
-            }
-        }
-        model.addAttribute("tickets", tickets);
-        model.addAttribute("total", paymentService.sumPrice(tickets));
-        Object receiptCode = model.getAttribute("receiptCode");
-        if (receiptCode == null && !tickets.isEmpty()) {
-            receiptCode = bookingOrderService.findReceiptCodeByTicketId(tickets.get(0).getId(), customer.getId())
-                    .orElse(null);
-        }
-        model.addAttribute("receiptCode", receiptCode);
-        return "account/payment-success";
+        return bookingOrderService.findReceiptCodeByTicketId(ticketIds.getFirst(), customer.getId())
+                .map(code -> "redirect:/hoa-don/" + code).orElse("redirect:/ve-cua-toi");
     }
 }

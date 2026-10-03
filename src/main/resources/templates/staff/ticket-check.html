@@ -1,7 +1,10 @@
 <!DOCTYPE html>
 <html lang="vi" xmlns:th="http://www.thymeleaf.org"
       xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout" layout:decorate="~{layout/base}">
-<head><title>Soát vé</title></head>
+<head><title>Soát vé</title>
+    <script defer th:src="@{/js/vendor/jsQR.js}"></script>
+    <script defer th:src="@{/js/ticket-scanner.js(v='20261002-v2')}"></script>
+</head>
 <body><div layout:fragment="content">
 
     <section class="module1-section-head" aria-labelledby="staff-title">
@@ -12,15 +15,33 @@
         </div>
     </section>
 
+    <section class="card ticket-scanner" id="ticket-scanner" aria-labelledby="scanner-title">
+        <h2 id="scanner-title">Quét QR trên vé</h2>
+        <p>Chỉ tra cứu thông tin vé. Sau khi kiểm tra, bấm “Cho vào phòng” để xác nhận khách vào rạp.</p>
+        <div class="scanner-actions">
+            <button class="btn" type="button" id="scanner-start">Mở camera laptop</button>
+            <button class="btn btn-ghost" type="button" id="scanner-stop" disabled>Tắt camera</button>
+            <label class="scanner-file-label" for="scanner-file">Chọn ảnh QR từ máy
+                <input type="file" id="scanner-file" accept="image/png,image/jpeg,image/webp,image/bmp">
+            </label>
+        </div>
+        <p class="form-hint">Trình duyệt sẽ hỏi quyền camera khi bạn bấm mở. Dùng HTTPS hoặc localhost.
+            Ảnh PNG, JPG, WEBP, BMP tối đa 10 MB, chứa một QR vé hoặc QR chung của hóa đơn; ảnh được đọc ngay trên máy.</p>
+        <video id="scanner-video" hidden autoplay muted playsinline aria-label="Hình ảnh camera quét vé"></video>
+        <canvas id="scanner-canvas" hidden></canvas>
+        <p id="scanner-status" class="scanner-status" role="status" aria-live="polite">Sẵn sàng quét vé.</p>
+    </section>
+
     <div class="staff-search-grid">
         <form class="card account-form" th:action="@{/nhan-vien/soat-ve}" method="get"
-              role="search" aria-labelledby="by-code-title">
+              id="ticket-code-form" role="search" aria-labelledby="by-code-title">
+            <input type="hidden" id="scanner-lookup" name="qr" disabled>
             <h2 id="by-code-title" class="staff-search-title">Tra theo mã vé</h2>
             <div class="form-field">
                 <label for="ma">Mã vé</label>
                 <input class="form-control" id="ma" name="ma" type="text" th:value="${ticketCode}"
-                       inputmode="numeric" autocomplete="off" required maxlength="20" placeholder="#12">
-                <span class="form-hint">In ở dòng đầu thẻ vé, có dạng #12.</span>
+                       inputmode="numeric" autocomplete="off" required maxlength="9" pattern="#?[1-9][0-9]{7}" placeholder="Ví dụ: 12345678">
+                <span class="form-hint">Nhập mã 8 số của ghế trên vé hoặc hóa đơn.</span>
             </div>
             <button class="btn" type="submit">Soát vé</button>
         </form>
@@ -38,6 +59,34 @@
         </form>
     </div>
 
+    <section class="card staff-result" th:if="${bookingResult != null}" aria-labelledby="booking-result-title">
+        <h2 id="booking-result-title">Kết quả QR hóa đơn</h2>
+        <p th:text="|Hóa đơn: ${bookingResult.order.receiptCode} · Khách: ${bookingResult.order.customerName}|"></p>
+        <p th:text="|Phim: ${bookingResult.order.showtime.movie.title} · Phòng: ${bookingResult.order.showtime.room.name} · Suất: ${#temporals.format(bookingResult.order.showtime.startTime, 'HH:mm dd/MM/yyyy')}|"></p>
+        <table class="admission-seats">
+            <thead><tr><th>Ghế</th><th>Mã vé</th><th>Kết quả kiểm tra</th></tr></thead>
+            <tbody>
+                <tr th:each="item : ${bookingResult.tickets}">
+                    <td th:text="|${item.ticket.seat.seatRow}${item.ticket.seat.seatColumn}|">A1</td>
+                    <td class="account-ticket-code" th:text="${item.ticketCode}">12345678</td>
+                    <td><strong th:text="${item.valid} ? 'Hợp lệ' : (${item.verdict.name() == 'CHECKED_IN'} ? 'Đã sử dụng' : 'Không hợp lệ')"></strong>
+                        <span th:text="${item.message}"></span></td>
+                </tr>
+                <tr th:each="item : ${bookingResult.refundedTickets}">
+                    <td th:text="${item.seatLabel()}"></td><td th:text="${item.code()}"></td>
+                    <td>Không hợp lệ · Vé đã hủy</td>
+                </tr>
+            </tbody>
+        </table>
+        <form class="staff-checkin" th:if="${bookingResult.canCheckIn()}"
+              th:action="@{/nhan-vien/soat-ve/hoa-don/{code}/vao-phong(code=${bookingResult.order.receiptCode})}" method="post">
+            <input type="hidden" name="checkInCsrf" th:value="${checkInCsrf}">
+            <input type="hidden" name="qr" th:value="${bookingQr}">
+            <button class="btn btn-accent" type="submit" th:text="|Cho vào phòng · ${bookingResult.validCount()} vé còn hợp lệ|">Cho vào phòng</button>
+        </form>
+        <p th:unless="${bookingResult.canCheckIn()}">Không thể xác nhận: các vé đã sử dụng hoặc không còn đủ điều kiện vào phòng. Hãy kiểm tra kết quả từng ghế.</p>
+    </section>
+
     <!-- ===== Kết quả tra theo mã vé ===== -->
     <section class="staff-result" th:if="${result != null}" aria-labelledby="result-title">
         <h2 id="result-title" class="sr-only">Kết quả soát vé</h2>
@@ -45,11 +94,12 @@
         <div class="alert staff-verdict" role="status"
              th:classappend="${result.valid} ? 'alert-success' : 'alert-error'">
             <strong class="staff-verdict-label" th:switch="${result.verdict.name()}">
-                <span th:case="'VALID'">CHO VÀO</span>
-                <span th:case="'NOT_PAID'">CHƯA THANH TOÁN</span>
-                <span th:case="'WRONG_DAY'">SAI NGÀY</span>
-                <span th:case="'CHECKED_IN'">ĐÃ VÀO PHÒNG</span>
-                <span th:case="*">ĐÃ HẾT SUẤT</span>
+                <span th:case="'VALID'">VÉ HỢP LỆ</span>
+                <span th:case="'NOT_PAID'">KHÔNG HỢP LỆ · CHƯA THANH TOÁN</span>
+                <span th:case="'WRONG_DAY'">KHÔNG HỢP LỆ · CHƯA ĐẾN NGÀY CHIẾU</span>
+                <span th:case="'CHECKED_IN'">ĐÃ SỬ DỤNG</span>
+                <span th:case="'INVALID'">KHÔNG HỢP LỆ</span>
+                <span th:case="*">KHÔNG HỢP LỆ · ĐÃ HẾT SUẤT</span>
             </strong>
             <span th:text="${result.message}">Lời giải thích</span>
         </div>
@@ -57,7 +107,9 @@
         <!-- Vé hợp lệ: bấm để ghi giờ vào phòng, từ đó vé không dùng lại được. -->
         <form class="staff-checkin" th:if="${result.valid}"
               th:action="@{/nhan-vien/soat-ve/{id}/vao-phong(id=${result.ticket.id})}" method="post">
-            <button class="btn btn-accent" type="submit" th:text="|Cho vào phòng · vé #${result.ticket.id}|">Cho vào phòng</button>
+            <input type="hidden" name="checkInCsrf" th:value="${checkInCsrf}">
+            <input type="hidden" name="ma" th:value="${result.ticketCode}">
+            <button class="btn btn-accent" type="submit" th:text="|Cho vào phòng · vé ${result.ticketCode}|">Cho vào phòng</button>
         </form>
 
         <p class="staff-customer"
@@ -89,9 +141,11 @@
                 </p>
                 <form class="staff-checkin" th:if="${item.valid}"
                       th:action="@{/nhan-vien/soat-ve/{id}/vao-phong(id=${item.ticket.id})}" method="post">
+            <input type="hidden" name="checkInCsrf" th:value="${checkInCsrf}">
                     <input type="hidden" name="email" th:value="${email}">
+                    <input type="hidden" name="ma" th:value="${item.ticketCode}">
                     <button class="btn btn-accent btn-sm" type="submit"
-                            th:text="|Cho vào phòng · vé #${item.ticket.id}|">Cho vào phòng</button>
+                            th:text="|Cho vào phòng · vé ${item.ticketCode}|">Cho vào phòng</button>
                 </form>
                 <div th:replace="~{account/ticket-fragment :: ticketCard(${item.ticket})}"></div>
             </div>

@@ -43,13 +43,15 @@ public class TicketRefundService {
     public static final int PARTIAL_REFUND_PERCENT = 50;
 
     private final BookingLockService locks;
+    private final TicketCodeService codes;
     private final TicketRepository ticketRepository;
     private final TicketRefundRepository refundRepository;
     private final MomoApiClient momoApiClient;
 
     public TicketRefundService(TicketRepository ticketRepository, TicketRefundRepository refundRepository,
-                               MomoApiClient momoApiClient, BookingLockService locks) {
+                               MomoApiClient momoApiClient, BookingLockService locks, TicketCodeService codes) {
         this.locks = locks;
+        this.codes = codes;
         this.ticketRepository = ticketRepository;
         this.refundRepository = refundRepository;
         this.momoApiClient = momoApiClient;
@@ -98,6 +100,7 @@ public class TicketRefundService {
         locks.lock(showtimeId);
         RefundQuote quote = quote(userId, ticketId, now);
         Ticket ticket = quote.getTicket();
+        codes.codeFor(ticket.getId()); // Giữ mã vĩnh viễn trước khi xóa vé.
         TicketRefund refund = snapshot(ticket, quote, now);
 
         // Xoá có điều kiện ngay trong câu lệnh: nhân viên vừa soát vé ở cửa đúng lúc khách
@@ -153,6 +156,7 @@ public class TicketRefundService {
     private TicketRefund snapshot(Ticket ticket, RefundQuote quote, LocalDateTime now) {
         TicketRefund refund = new TicketRefund();
         refund.setOriginalTicketId(ticket.getId());
+        refund.setBookingOrderId(ticket.getBookingOrder() == null ? null : ticket.getBookingOrder().getId());
         refund.setUserId(ticket.getUser().getId());
         refund.setShowtimeId(ticket.getShowtime().getId());
         refund.setMovieTitle(ticket.getShowtime().getMovie().getTitle());
