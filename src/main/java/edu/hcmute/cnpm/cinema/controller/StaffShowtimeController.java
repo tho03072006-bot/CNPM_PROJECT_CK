@@ -52,6 +52,12 @@ public class StaffShowtimeController {
                 .toList();
 
         model.addAttribute("board", dailyShowtimeService.buildBoard(day, roomId, now));
+        model.addAttribute("minDate", DailyShowtimeService.MIN_SUPPORTED_DATE);
+        model.addAttribute("maxDate", DailyShowtimeService.MAX_SUPPORTED_DATE);
+        model.addAttribute("previousDate", day.isAfter(DailyShowtimeService.MIN_SUPPORTED_DATE)
+                ? day.minusDays(1) : null);
+        model.addAttribute("nextDate", day.isBefore(DailyShowtimeService.MAX_SUPPORTED_DATE)
+                ? day.plusDays(1) : null);
         model.addAttribute("rooms", rooms);
         model.addAttribute("selectedRoomId", roomId);
         model.addAttribute("today", now.toLocalDate());

@@ -9,6 +9,7 @@ import edu.hcmute.cnpm.cinema.entity.Movie;
 import edu.hcmute.cnpm.cinema.entity.Room;
 import edu.hcmute.cnpm.cinema.entity.Showtime;
 import edu.hcmute.cnpm.cinema.entity.TicketStatus;
+import edu.hcmute.cnpm.cinema.exception.BusinessException;
 import edu.hcmute.cnpm.cinema.repository.SeatRepository;
 import edu.hcmute.cnpm.cinema.repository.ShowtimeRepository;
 import edu.hcmute.cnpm.cinema.repository.TicketRepository;
@@ -38,6 +39,10 @@ import java.util.Map;
 @Service
 public class DailyShowtimeService {
 
+    /** Phạm vi ngày của datetime2 trong SQL Server, cũng dùng cho bộ lọc trên giao diện. */
+    public static final LocalDate MIN_SUPPORTED_DATE = LocalDate.of(1, 1, 1);
+    public static final LocalDate MAX_SUPPORTED_DATE = LocalDate.of(9999, 12, 31);
+
     /** Mở cửa đón khách vào phòng trước giờ chiếu bao nhiêu phút. */
     public static final int DOORS_OPEN_MINUTES = 15;
     /** Thanh thời gian vẽ ít nhất từ 8 giờ sáng tới nửa đêm, có suất sớm hơn hay muộn hơn thì nới ra. */
@@ -66,11 +71,16 @@ public class DailyShowtimeService {
      */
     @Transactional(readOnly = true)
     public DailyShowtimeBoard buildBoard(LocalDate date, Long roomId, LocalDateTime now) {
+        if (date == null || date.isBefore(MIN_SUPPORTED_DATE) || date.isAfter(MAX_SUPPORTED_DATE)) {
+            throw new BusinessException("Ngày xem lịch không hợp lệ. Vui lòng chọn ngày khác.");
+        }
         int breakMinutes = showtimeService.getBreakMinutes();
-        List<Showtime> showtimes = showtimeRepository
-                .findByStartTimeGreaterThanEqualAndStartTimeLessThanOrderByStartTimeAsc(
-                        date.atStartOfDay(), date.plusDays(1).atStartOfDay())
-                .stream()
+        // Ngày cuối database không có mốc 0h hôm sau hợp lệ; không gửi năm 10000 vào JDBC.
+        List<Showtime> dayShowtimes = date.equals(MAX_SUPPORTED_DATE)
+                ? showtimeRepository.findByStartTimeGreaterThanEqualOrderByStartTimeAsc(date.atStartOfDay())
+                : showtimeRepository.findByStartTimeGreaterThanEqualAndStartTimeLessThanOrderByStartTimeAsc(
+                        date.atStartOfDay(), date.plusDays(1).atStartOfDay());
+        List<Showtime> showtimes = dayShowtimes.stream()
                 .filter(showtime -> roomId == null || showtime.getRoom().getId().equals(roomId))
                 .toList();
 
@@ -99,7 +109,7 @@ public class DailyShowtimeService {
         }
 
         boolean isToday = date.equals(now.toLocalDate());
-        int nowMinute = minuteOfDay(date, now);
+        int nowMinute = isToday ? minuteOfDay(date, now) : 0;
         String nowLeft = isToday && nowMinute >= window[0] && nowMinute <= window[1]
                 ? percent(nowMinute - window[0], window) : null;
         return new DailyShowtimeBoard(date, isToday, breakMinutes, DOORS_OPEN_MINUTES,

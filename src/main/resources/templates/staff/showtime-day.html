@@ -18,7 +18,8 @@
           role="search" aria-label="Chọn ngày và phòng chiếu">
         <div class="form-field">
             <label for="ngay">Ngày</label>
-            <input class="form-control" id="ngay" name="ngay" type="date" th:value="${board.date()}">
+            <input class="form-control" id="ngay" name="ngay" type="date" th:value="${board.date()}"
+                   th:attr="min=${minDate},max=${maxDate}">
         </div>
         <div class="form-field">
             <label for="phong">Phòng chiếu</label>
@@ -30,10 +31,12 @@
         </div>
         <div class="day-filter-actions">
             <button class="btn" type="submit">Xem lịch</button>
-            <a class="btn btn-ghost" th:href="@{/nhan-vien/suat-chieu(ngay=${board.date().minusDays(1)},phong=${selectedRoomId})}">← Hôm trước</a>
+            <a class="btn btn-ghost" th:if="${previousDate != null}"
+               th:href="@{/nhan-vien/suat-chieu(ngay=${previousDate},phong=${selectedRoomId})}">← Hôm trước</a>
             <a class="btn btn-ghost" th:unless="${board.isToday()}"
                th:href="@{/nhan-vien/suat-chieu(phong=${selectedRoomId})}">Hôm nay</a>
-            <a class="btn btn-ghost" th:href="@{/nhan-vien/suat-chieu(ngay=${board.date().plusDays(1)},phong=${selectedRoomId})}">Hôm sau →</a>
+            <a class="btn btn-ghost" th:if="${nextDate != null}"
+               th:href="@{/nhan-vien/suat-chieu(ngay=${nextDate},phong=${selectedRoomId})}">Hôm sau →</a>
         </div>
     </form>
 

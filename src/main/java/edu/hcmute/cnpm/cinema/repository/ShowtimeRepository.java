@@ -28,6 +28,9 @@ public interface ShowtimeRepository extends JpaRepository<Showtime, Long> {
     List<Showtime> findByStartTimeGreaterThanEqualAndStartTimeLessThanOrderByStartTimeAsc(
             LocalDateTime from, LocalDateTime until);
 
+    // Dùng cho ngày cuối phạm vi datetime2: database không thể có suất ở ngày sau đó.
+    List<Showtime> findByStartTimeGreaterThanEqualOrderByStartTimeAsc(LocalDateTime from);
+
     List<Showtime> findByRoomIdAndStartTimeLessThanAndEndTimeGreaterThan(
             Long roomId, LocalDateTime endTime, LocalDateTime startTime);
 

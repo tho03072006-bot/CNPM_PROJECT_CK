@@ -5,6 +5,7 @@ import edu.hcmute.cnpm.cinema.dto.booking.BookingDetailView;
 import edu.hcmute.cnpm.cinema.entity.BookingOrder;
 import edu.hcmute.cnpm.cinema.entity.BookingOrderStatus;
 import edu.hcmute.cnpm.cinema.entity.Movie;
+import edu.hcmute.cnpm.cinema.exception.BusinessException;
 import edu.hcmute.cnpm.cinema.exception.ResourceNotFoundException;
 import edu.hcmute.cnpm.cinema.repository.BookingHistoryRepository;
 import org.springframework.data.domain.Page;
@@ -31,6 +32,10 @@ public class BookingHistoryService {
 
     @Transactional(readOnly = true)
     public Page<BookingHistoryEntry> findHistory(Long userId, int page, BookingOrderStatus status) {
+        // JPA chỉ hỗ trợ offset trong phạm vi int, dù số trang nhận vào vẫn là int hợp lệ.
+        if (page > Integer.MAX_VALUE / PAGE_SIZE) {
+            throw new BusinessException("Số trang lịch sử không hợp lệ. Vui lòng chọn lại trang.");
+        }
         PageRequest request = PageRequest.of(Math.max(0, page), PAGE_SIZE,
                 Sort.by(Sort.Direction.DESC, "createdAt", "id"));
         Page<BookingOrder> result = status == null ? orders.findByUserId(userId, request)
