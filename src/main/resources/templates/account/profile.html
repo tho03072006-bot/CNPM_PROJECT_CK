@@ -25,7 +25,7 @@
         <div class="card account-stat">
             <span class="account-stat-label">Tổng đã chi</span>
             <strong class="account-stat-value"
-                    th:text="|${#numbers.formatDecimal(totalPaid, 0, 'POINT', 0, 'COMMA')} đ|">0 đ</strong>
+                    th:text="|${@money.number(totalPaid)} đ|">0 đ</strong>
         </div>
         <div class="card account-stat">
             <span class="account-stat-label">Số điện thoại</span>

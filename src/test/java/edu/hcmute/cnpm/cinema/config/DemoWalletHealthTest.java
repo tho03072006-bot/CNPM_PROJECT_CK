@@ -16,7 +16,7 @@ class DemoWalletHealthTest {
         when(connection.isValid(1)).thenReturn(true);
         var response = new DemoWalletHealthController(new DemoWalletSettings(true, "https://g8.test"), source).health();
         assertThat(response.getStatusCode().value()).isEqualTo(200);
-        assertThat(response.getBody()).containsEntry("status", "UP").hasSize(1);
+        assertThat(response.getBody()).containsEntry("status", "UP").containsEntry("checkoutVersion", "2").hasSize(2);
         verify(connection).close();
     }
     @Test void concealsDatabaseErrorAndReportsUnavailable() throws Exception {

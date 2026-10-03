@@ -2,6 +2,8 @@ package edu.hcmute.cnpm.cinema.controller;
 import edu.hcmute.cnpm.cinema.config.DemoWalletSettings;
 import edu.hcmute.cnpm.cinema.entity.User;
 import edu.hcmute.cnpm.cinema.exception.BusinessException;
+import edu.hcmute.cnpm.cinema.exception.DemoWalletUnavailableException;
+import edu.hcmute.cnpm.cinema.constants.Constants;
 import edu.hcmute.cnpm.cinema.service.*;
 import jakarta.servlet.http.HttpSession;
 import org.springframework.http.MediaType;
@@ -23,13 +25,18 @@ public class DemoWalletController {
         this.wallet=wallet;this.settings=settings;this.sessions=sessions;this.qrCodes=qrCodes;this.orders=orders;}
     @PostMapping("/thanh-toan/{showtimeId}/demo-wallet")
     public String create(@PathVariable Long showtimeId,@RequestParam(required=false) List<Long> ticketIds,
-            @RequestParam(required=false) String walletCsrf,HttpSession session){
+            @RequestParam(required=false) String walletCsrf,HttpSession session,RedirectAttributes redirect){
         User customer=SessionUsers.current(session);
         if(customer==null)return SessionUsers.redirectToLogin("/thanh-toan/"+showtimeId);
         sessions.verify(session,walletCsrf);
         synchronized(session){
-            DemoWalletService.Issued issued=wallet.create(customer.getId(),showtimeId,ticketIds,sessions.previous(session,showtimeId));
-            sessions.remember(session,issued);return "redirect:/thanh-toan/demo/qr/"+issued.publicId();
+            try {
+                DemoWalletService.Issued issued=wallet.create(customer.getId(),showtimeId,ticketIds,sessions.previous(session,showtimeId));
+                sessions.remember(session,issued);return "redirect:/thanh-toan/demo/qr/"+issued.publicId();
+            } catch (DemoWalletUnavailableException unavailable) {
+                redirect.addFlashAttribute(Constants.MODEL_ERROR_MESSAGE,unavailable.getMessage());
+                return "redirect:/thanh-toan/"+showtimeId;
+            }
         }}
     @GetMapping("/thanh-toan/demo/qr/{publicId}")
     public String merchant(@PathVariable String publicId,HttpSession session,Model model){
@@ -50,9 +57,8 @@ public class DemoWalletController {
     public String finish(@PathVariable String publicId,HttpSession session,RedirectAttributes redirect){
         Long userId=currentUserId(session);List<Long> ids=wallet.paidTicketIds(publicId,userId);
         if(ids.isEmpty())return "redirect:/ve-cua-toi";
-        redirect.addFlashAttribute("paidTicketIds",ids);
-        orders.findReceiptCodeByTicketId(ids.getFirst(),userId).ifPresent(code->redirect.addFlashAttribute("receiptCode",code));
-        return "redirect:/thanh-toan/hoan-tat";}
+        return orders.findReceiptCodeByTicketId(ids.getFirst(),userId)
+                .map(code->"redirect:/hoa-don/"+code).orElse("redirect:/ve-cua-toi");}
     private Long currentUserId(HttpSession session){
         User customer=SessionUsers.current(session);
         if(customer==null)throw new BusinessException("Phiên đăng nhập đã hết. Vui lòng đăng nhập lại để xem vé.");

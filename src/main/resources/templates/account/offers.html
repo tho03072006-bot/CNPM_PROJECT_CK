@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout" layout:decorate="~{layout/base}">
+<head><title>Ưu đãi</title></head>
+<body><div layout:fragment="content" class="offers-page">
+    <section class="module1-hero offers-hero" aria-labelledby="offers-title">
+        <div><span class="module1-eyebrow">UTE CINEMA · ƯU ĐÃI ĐANG ÁP DỤNG</span><h1 id="offers-title">Ưu đãi cho buổi xem phim</h1>
+            <p>Chọn suất chiếu yêu thích, nhập mã khi thanh toán và nhận ưu đãi cho vé của bạn.</p></div>
+        <a class="btn btn-accent" th:href="@{/lich-chieu}">Khám phá lịch chiếu <span aria-hidden="true">↗</span></a>
+    </section>
+    <div class="module1-empty" th:if="${#lists.isEmpty(offers)}">
+        <h2>Chưa có ưu đãi đang áp dụng</h2><p>Hãy quay lại để xem các chương trình mới của rạp.</p>
+    </div>
+    <div class="offers-grid">
+        <article class="card offer-card" th:each="offer : ${offers}">
+            <div class="offer-card-top"><span class="module1-kicker">VÉ XEM PHIM</span><span class="badge badge-ok">Đang áp dụng</span></div>
+            <p class="offer-value" th:text="${offer.percent > 0} ? |Giảm ${offer.percent}%| : |Giảm ${@money.number(offer.amount)} đ|">Giảm 10%</p>
+            <h2 th:text="${offer.title}">Ưu đãi vé xem phim</h2>
+            <div class="offer-code-panel"><span>Mã ưu đãi</span><strong class="offer-code" th:text="${offer.code}">UTE10</strong><small>Nhập mã tại bước thanh toán</small></div>
+            <dl class="offer-conditions">
+                <div><dt>Tiền vé tối thiểu</dt><dd th:text="|${@money.number(offer.minimum)} đ|">100.000 đ</dd></div>
+                <div><dt>Giảm tối đa</dt><dd th:text="|${@money.number(offer.maximum)} đ|">30.000 đ</dd></div>
+                <div th:if="${offer.startsOn != null}"><dt>Bắt đầu</dt><dd th:text="${#temporals.format(offer.startsOn, 'dd/MM/yyyy')}"></dd></div>
+                <div><dt>Thời hạn</dt><dd th:text="${offer.endsOn != null} ? |Đến hết ${#temporals.format(offer.endsOn, 'dd/MM/yyyy')}| : 'Đến khi có thông báo mới'"></dd></div>
+            </dl>
+            <a class="btn btn-ghost" th:href="@{/lich-chieu}">Chọn suất chiếu <span aria-hidden="true">→</span></a>
+        </article>
+    </div>
+    <p class="offers-note">Mỗi đơn dùng một mã, chỉ giảm tiền vé. Không áp dụng cho bắp nước; khi hủy vé, tiền hoàn dựa trên giá thực trả.</p>
+</div></body></html>

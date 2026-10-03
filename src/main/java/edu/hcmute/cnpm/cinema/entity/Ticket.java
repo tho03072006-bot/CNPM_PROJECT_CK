@@ -45,6 +45,9 @@ public class Ticket {
     @Column(nullable = false)
     private BigDecimal price;
 
+    @Column(name = "original_price", precision = 12, scale = 2)
+    private BigDecimal originalPrice;
+
     @Column(name = "held_at", nullable = false)
     private LocalDateTime heldAt = LocalDateTime.now();
 
@@ -65,6 +68,11 @@ public class Ticket {
     @Column(name = "checked_in_at")
     private LocalDateTime checkedInAt;
 
+    @Transient
+    private String admissionCode;
+    public String getAdmissionCode() { return admissionCode; }
+    public void setAdmissionCode(String admissionCode) { this.admissionCode = admissionCode; }
+
     public Ticket() {}
 
     public Long getId() { return id; }
@@ -81,6 +89,8 @@ public class Ticket {
     public void setStatus(TicketStatus status) { this.status = status; }
     public BigDecimal getPrice() { return price; }
     public void setPrice(BigDecimal price) { this.price = price; }
+    public BigDecimal getOriginalPrice() { return originalPrice == null ? price : originalPrice; }
+    public void setOriginalPrice(BigDecimal originalPrice) { this.originalPrice = originalPrice; }
     public LocalDateTime getHeldAt() { return heldAt; }
     public void setHeldAt(LocalDateTime heldAt) { this.heldAt = heldAt; }
     public LocalDateTime getPaidAt() { return paidAt; }

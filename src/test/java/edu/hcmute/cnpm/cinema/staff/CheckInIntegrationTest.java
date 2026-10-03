@@ -39,6 +39,7 @@ class CheckInIntegrationTest extends IntegrationTestBase {
 
     @Autowired
     private TicketLookupService ticketLookupService;
+    @Autowired private edu.hcmute.cnpm.cinema.service.TicketCodeService codes;
     @Autowired
     private MockMvc mockMvc;
 
@@ -65,7 +66,7 @@ class CheckInIntegrationTest extends IntegrationTestBase {
     void shouldReportCheckedIn_whenScannedAgainAfterEntry() {
         ticketLookupService.checkIn(paidTicket.getId(), SAME_DAY_BEFORE_START);
 
-        var rescan = ticketLookupService.checkTicketCode(String.valueOf(paidTicket.getId()), SAME_DAY_BEFORE_START.plusMinutes(5));
+        var rescan = ticketLookupService.checkTicketCode(codes.codeFor(paidTicket.getId()), SAME_DAY_BEFORE_START.plusMinutes(5));
         assertThat(rescan.getVerdict()).isEqualTo(Verdict.CHECKED_IN);
         assertThat(ticketRepository.findById(paidTicket.getId()).orElseThrow().getCheckedInAt())
                 .isEqualTo(SAME_DAY_BEFORE_START);
@@ -103,9 +104,12 @@ class CheckInIntegrationTest extends IntegrationTestBase {
         Ticket ticket = savePaid(testDataFactory.newHeldTicket(runningNow, seatA3, customer));
 
         mockMvc.perform(post("/nhan-vien/soat-ve/{id}/vao-phong", ticket.getId())
+                        .sessionAttr(edu.hcmute.cnpm.cinema.controller.StaffCheckInSecurity.SESSION_KEY, "a".repeat(64))
+                        .param("checkInCsrf", "a".repeat(64))
+                        .param("ma", codes.codeFor(ticket.getId()))
                         .sessionAttr(Constants.SESSION_USER, staff))
                 .andExpect(status().is3xxRedirection())
-                .andExpect(redirectedUrl("/nhan-vien/soat-ve?ma=" + ticket.getId()));
+                .andExpect(redirectedUrl("/nhan-vien/soat-ve?ma=" + codes.codeFor(ticket.getId())));
 
         assertThat(ticketRepository.findById(ticket.getId()).orElseThrow().getCheckedInAt()).isNotNull();
     }

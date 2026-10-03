@@ -13,16 +13,20 @@ IF COL_LENGTH('dbo.booking_orders', 'applied_voucher_code') IS NULL
     ALTER TABLE dbo.booking_orders ADD applied_voucher_code NVARCHAR(50) NULL;
 GO
 IF COL_LENGTH('dbo.booking_orders', 'applied_voucher_name') IS NULL
-    ALTER TABLE dbo.booking_orders ADD applied_voucher_name NVARCHAR(150) NULL;
+    ALTER TABLE dbo.booking_orders ADD applied_voucher_name NVARCHAR(200) NULL;
 GO
 IF COL_LENGTH('dbo.booking_orders', 'ticket_snapshot') IS NULL
     ALTER TABLE dbo.booking_orders ADD ticket_snapshot NVARCHAR(MAX) NULL;
 GO
 -- Khôi phục dữ liệu còn tồn tại, không suy đoán ghế của vé đã bị xóa từ trước.
+-- Cột giá gốc cần có trước backfill, kể cả chạy migration lịch sử trước ưu đãi.
+IF COL_LENGTH('dbo.tickets', 'original_price') IS NULL
+    ALTER TABLE dbo.tickets ADD original_price DECIMAL(12,2) NULL;
+GO
 UPDATE orders SET ticket_snapshot = (
     SELECT ticket.id AS ticketId,
            CONCAT(seat.seat_row, seat.seat_column) AS seatLabel,
-           seat.seat_type AS seatType, ticket.price AS price, ticket.held_at AS heldAt
+           seat.seat_type AS seatType, COALESCE(ticket.original_price, ticket.price) AS price, ticket.held_at AS heldAt
     FROM dbo.tickets AS ticket JOIN dbo.seats AS seat ON seat.id = ticket.seat_id
     WHERE ticket.booking_order_id = orders.id
     ORDER BY ticket.id FOR JSON PATH

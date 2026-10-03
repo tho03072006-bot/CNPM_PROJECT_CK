@@ -39,6 +39,7 @@ class TicketLookupServiceIntegrationTest extends IntegrationTestBase {
 
     @Autowired
     private TicketLookupService ticketLookupService;
+    @Autowired private edu.hcmute.cnpm.cinema.service.TicketCodeService codes;
 
     private User customer;
     private Showtime showtime;
@@ -65,7 +66,7 @@ class TicketLookupServiceIntegrationTest extends IntegrationTestBase {
     @DisplayName("Vé đã thanh toán, đúng ngày, suất chưa kết thúc thì cho vào")
     void shouldAllowEntry_whenPaidTicketIsForToday() {
         TicketCheckResult result = ticketLookupService.checkTicketCode(
-                String.valueOf(paidTicket.getId()), SAME_DAY_BEFORE_START);
+                codes.codeFor(paidTicket.getId()), SAME_DAY_BEFORE_START);
 
         assertThat(result.getVerdict()).isEqualTo(Verdict.VALID);
         assertThat(result.getMessage()).contains("Cinema 1", "A1");
@@ -75,7 +76,7 @@ class TicketLookupServiceIntegrationTest extends IntegrationTestBase {
     @DisplayName("Nhận cả mã có dấu thăng và khoảng trắng thừa như in trên vé")
     void shouldAcceptHashPrefix_whenTicketCodeTypedLikeOnTicket() {
         TicketCheckResult result = ticketLookupService.checkTicketCode(
-                "  #" + paidTicket.getId() + " ", SAME_DAY_BEFORE_START);
+                "  #" + codes.codeFor(paidTicket.getId()) + " ", SAME_DAY_BEFORE_START);
 
         assertThat(result.getTicket().getId()).isEqualTo(paidTicket.getId());
     }
@@ -84,7 +85,7 @@ class TicketLookupServiceIntegrationTest extends IntegrationTestBase {
     @DisplayName("Vé mới giữ ghế chưa thanh toán thì không cho vào")
     void shouldRefuseEntry_whenTicketNotPaid() {
         TicketCheckResult result = ticketLookupService.checkTicketCode(
-                String.valueOf(heldTicket.getId()), SAME_DAY_BEFORE_START);
+                codes.codeFor(heldTicket.getId()), SAME_DAY_BEFORE_START);
 
         assertThat(result.getVerdict()).isEqualTo(Verdict.NOT_PAID);
         assertThat(result.isValid()).isFalse();
@@ -94,7 +95,7 @@ class TicketLookupServiceIntegrationTest extends IntegrationTestBase {
     @DisplayName("Vé của suất ngày mai đem tới hôm nay thì báo sai ngày")
     void shouldReportWrongDay_whenShowtimeIsOnLaterDate() {
         TicketCheckResult result = ticketLookupService.checkTicketCode(
-                String.valueOf(paidTicket.getId()), SHOW_DAY.minusDays(1).atTime(19, 0));
+                codes.codeFor(paidTicket.getId()), SHOW_DAY.minusDays(1).atTime(19, 0));
 
         assertThat(result.getVerdict()).isEqualTo(Verdict.WRONG_DAY);
     }
@@ -105,7 +106,7 @@ class TicketLookupServiceIntegrationTest extends IntegrationTestBase {
         LocalDateTime afterEnd = showtime.getEndTime().plusMinutes(1);
 
         TicketCheckResult result = ticketLookupService.checkTicketCode(
-                String.valueOf(paidTicket.getId()), afterEnd);
+                codes.codeFor(paidTicket.getId()), afterEnd);
 
         assertThat(result.getVerdict()).isEqualTo(Verdict.ENDED);
     }
@@ -116,9 +117,9 @@ class TicketLookupServiceIntegrationTest extends IntegrationTestBase {
         assertThatThrownBy(() -> ticketLookupService.checkTicketCode("abc", SAME_DAY_BEFORE_START))
                 .isInstanceOf(BusinessException.class)
                 .hasMessageContaining("chỉ gồm chữ số");
-        assertThatThrownBy(() -> ticketLookupService.checkTicketCode("999999", SAME_DAY_BEFORE_START))
+        assertThatThrownBy(() -> ticketLookupService.checkTicketCode("99999999", SAME_DAY_BEFORE_START))
                 .isInstanceOf(BusinessException.class)
-                .hasMessage("Không tìm thấy vé có mã #999999.");
+                .hasMessage("Không tìm thấy vé có mã 99999999.");
     }
 
     @Test

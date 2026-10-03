@@ -13,6 +13,8 @@ import java.util.concurrent.*;
 /** © Nhóm 8. Cổng điện thoại chỉ công khai ví, không công khai web rạp/quản trị. */
 @Component
 public class DemoWalletGateway implements SmartLifecycle {
+    private static final Set<String> VERSIONED_ASSETS = Set.of(
+            "/css/style.css", "/js/demo-wallet.js", "/js/money.js", "/images/favicon.svg");
     private final boolean enabled;
     private final int port;
     private final String address;
@@ -35,9 +37,14 @@ public class DemoWalletGateway implements SmartLifecycle {
     }
     static boolean allowed(String method,String path){
         String uuid="[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}";
-        if("GET".equals(method))return Set.of("/demo-wallet","/demo-wallet/health","/css/style.css","/js/demo-wallet.js","/images/favicon.svg").contains(path)
+        if("GET".equals(method))return Set.of("/demo-wallet","/demo-wallet/health","/css/style.css","/js/demo-wallet.js","/js/money.js","/images/favicon.svg").contains(path)
                 || path.matches("/demo-wallet/pay/"+uuid);
         return "POST".equals(method)&&path.matches("/demo-wallet/api/"+uuid+"/(status|confirm|cancel)");
+    }
+    static boolean allowed(String method,String path,String query){
+        if (!allowed(method,path)) return false;
+        return query == null || ("GET".equals(method) && VERSIONED_ASSETS.contains(path)
+                && query.matches("v=[A-Za-z0-9][A-Za-z0-9_-]{0,79}"));
     }
     @Override public synchronized void start(){
         if(!enabled||server!=null)return;
@@ -52,11 +59,12 @@ public class DemoWalletGateway implements SmartLifecycle {
     private void handle(HttpExchange exchange)throws IOException{
         try(exchange){
             URI uri=exchange.getRequestURI();String path=uri.getRawPath(),method=exchange.getRequestMethod();
-            if(uri.getRawQuery()!=null||!allowed(method,path)){reply(exchange,404,"Không có trang này trên ví giả lập.");return;}
+            if(!allowed(method,path,uri.getRawQuery())){reply(exchange,404,"Không có trang này trên ví giả lập.");return;}
             byte[] body=exchange.getRequestBody().readNBytes(4097);
             if(body.length>4096){reply(exchange,413,"Nội dung yêu cầu quá dài.");return;}
             if("GET".equals(method)&&body.length>0){reply(exchange,400,"Yêu cầu không hợp lệ.");return;}
-            HttpRequest.Builder request=HttpRequest.newBuilder(upstream.resolve(path)).timeout(Duration.ofSeconds(12))
+            String target=path+(uri.getRawQuery()==null ? "" : "?"+uri.getRawQuery());
+            HttpRequest.Builder request=HttpRequest.newBuilder(upstream.resolve(target)).timeout(Duration.ofSeconds(12))
                     .header("X-Forwarded-Proto","https");
             for(String header:List.of("Accept","Content-Type","Cookie","X-Demo-Wallet-CSRF","X-Requested-With")){
                 String value=exchange.getRequestHeaders().getFirst(header);

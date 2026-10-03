@@ -34,7 +34,7 @@
             </span>
         </a>
 
-        <nav class="header-nav" aria-label="Điều hướng chính">
+        <nav class="header-nav header-primary-nav" aria-label="Điều hướng chính">
             <a th:href="@{/}" th:classappend="${path == '/'} ? 'is-active' : ''"
                th:attr="aria-current=${path == '/' ? 'page' : null}">Trang chủ</a>
             <a th:href="@{/movies}" th:classappend="${path.startsWith('/movies')} ? 'is-active' : ''"
@@ -53,9 +53,6 @@
               Lối vào theo vai trò. Ẩn nút ở đây chỉ để giao diện gọn - quyền thật do
               AdminAccessInterceptor và StaffAccessInterceptor chặn ở phía máy chủ.
             -->
-            <a th:if="${session.LOGGED_IN_USER != null and session.LOGGED_IN_USER.role.name() == 'CUSTOMER'}"
-               th:href="@{/lich-su-dat-ve}" th:classappend="${path.startsWith('/lich-su-dat-ve') or path.startsWith('/ve-cua-toi')} ? 'is-active' : ''"
-               th:attr="aria-current=${path.startsWith('/lich-su-dat-ve') or path.startsWith('/ve-cua-toi') ? 'page' : null}">Lịch sử đặt vé</a>
             <a th:if="${session.LOGGED_IN_USER != null and session.LOGGED_IN_USER.role.name() == 'CUSTOMER'}"
                th:href="@{/ho-tro}" th:classappend="${path.startsWith('/ho-tro')} ? 'is-active' : ''"
                th:attr="aria-current=${path.startsWith('/ho-tro') ? 'page' : null}">Hỗ trợ</a>
@@ -87,20 +84,8 @@
                th:href="@{/admin}" th:classappend="${path.startsWith('/admin')} ? 'is-active' : ''"
                th:attr="aria-current=${path.startsWith('/admin') ? 'page' : null}">Quản trị</a>
 
-            <a th:if="${session.LOGGED_IN_USER == null}" th:href="@{/dang-nhap}"
-               th:classappend="${path.startsWith('/dang-nhap')} ? 'is-active' : ''">Đăng nhập</a>
-            <a th:if="${session.LOGGED_IN_USER != null}" th:href="@{/tai-khoan}" class="nav-account"
-               th:classappend="${path.startsWith('/tai-khoan')} ? 'is-active' : ''"
-               th:attr="aria-current=${path.startsWith('/tai-khoan') ? 'page' : null}">
-                <span class="nav-account-avatar" aria-hidden="true"
-                      th:text="${#strings.substring(session.LOGGED_IN_USER.fullName, 0, 1)}">N</span>
-                <span class="nav-account-copy">
-                    <strong th:text="${session.LOGGED_IN_USER.fullName}">Tên tài khoản</strong>
-                    <small th:text="${session.LOGGED_IN_USER.role.name() == 'ADMIN' ? 'Quản trị viên' : (session.LOGGED_IN_USER.role.name() == 'STAFF' ? 'Nhân viên rạp' : 'Khách hàng')}">Vai trò</small>
-                </span>
-            </a>
-            <a th:if="${session.LOGGED_IN_USER != null}" th:href="@{/dang-xuat}" class="nav-logout">Đăng xuất</a>
-
+        </nav>
+        <div class="header-actions header-nav">
             <!--
               Nút đổi sáng/tối. Nhãn aria-label do theme.js đặt lại theo chế độ
               đang dùng, nên người dùng trình đọc màn hình biết bấm vào sẽ ra gì.
@@ -119,7 +104,32 @@
                     <path d="M12 2v2.5M12 19.5V22M2 12h2.5M19.5 12H22M4.9 4.9l1.8 1.8M17.3 17.3l1.8 1.8M19.1 4.9l-1.8 1.8M6.7 17.3l-1.8 1.8"/>
                 </svg>
             </button>
-        </nav>
+            <a th:if="${session.LOGGED_IN_USER == null}" th:href="@{/dang-nhap}"
+               th:classappend="${path.startsWith('/dang-nhap')} ? 'is-active' : ''">Đăng nhập</a>
+            <details th:if="${session.LOGGED_IN_USER != null}" class="account-dropdown">
+            <summary class="nav-account" aria-label="Mở menu tài khoản">
+                <span class="nav-account-avatar" aria-hidden="true"
+                      th:text="${#strings.substring(session.LOGGED_IN_USER.fullName, 0, 1)}">N</span>
+                <span class="nav-account-copy">
+                    <strong th:text="${session.LOGGED_IN_USER.fullName}">Tên tài khoản</strong>
+                    <small th:text="${session.LOGGED_IN_USER.role.name() == 'ADMIN' ? 'Quản trị viên' : (session.LOGGED_IN_USER.role.name() == 'STAFF' ? 'Nhân viên rạp' : 'Khách hàng')}">Vai trò</small>
+                </span>
+                <span aria-hidden="true">▾</span>
+            </summary>
+            <nav class="account-dropdown-menu" aria-label="Tài khoản">
+                <a th:href="@{/tai-khoan}" th:classappend="${path.startsWith('/tai-khoan')} ? 'is-current' : ''"
+                   th:attr="aria-current=${path.startsWith('/tai-khoan') ? 'page' : null}">Hồ sơ của tôi</a>
+                <a th:href="@{/uu-dai}" th:classappend="${path.startsWith('/uu-dai')} ? 'is-current' : ''"
+                   th:attr="aria-current=${path.startsWith('/uu-dai') ? 'page' : null}">Ưu đãi</a>
+                <a th:href="@{/lich-su-dat-ve}"
+                   th:classappend="${path.startsWith('/lich-su-dat-ve') or path.startsWith('/ve-cua-toi')} ? 'is-current' : ''"
+                   th:attr="aria-current=${path.startsWith('/lich-su-dat-ve') or path.startsWith('/ve-cua-toi') ? 'page' : null}">Lịch sử đặt vé</a>
+                <a th:href="@{/dang-xuat}" class="nav-logout">Đăng xuất</a>
+            </nav>
+            </details>
+
+
+        </div>
     </div>
 </header>
 </body>

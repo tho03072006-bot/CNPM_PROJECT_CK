@@ -4,7 +4,7 @@ Triển khai mục 4 của `phan-cong-bo-sung-chuc-nang.txt`, trên nền Tuấn
 
 ## Code của nhóm
 
-Đã fetch ngày 02/10/2026: `origin/Tuấn_Thanh` vẫn ở `27576de` (17:04 +0700), `origin/Hữu_Thắng` vẫn ở `6e6a0e7` (16:22 +0700). Cả hai đã nằm trong lịch sử HEAD đang dùng; không có commit mới để pull. Chưa có đầy đủ voucher/menu tài khoản và QR/camera theo phân công của hai bạn trên các remote này.
+Bản tích hợp ngày 03/10/2026 dùng Hữu_Thắng `60740b7`, develop `c85b882` (đã gồm Hữu_Tài `3ad1e66` và Minh_Thọ `23ac661`) và Tuấn_Thanh `0660e5d`. Đã kết hợp voucher/menu, lịch sử/chi tiết, mã vé 8 số, QR chung và camera soát vé. Xem [báo cáo rà soát](MODULE_2_INTEGRATION_REVIEW.md).
 
 ## Một nơi xem lại vé
 
@@ -16,7 +16,7 @@ Triển khai mục 4 của `phan-cong-bo-sung-chuc-nang.txt`, trên nền Tuấn
 
 ## Tích hợp Hữu Thắng
 
-`BookingTicketDataService` dựng dữ liệu vé chung cho `ReceiptService` và `BookingDetailService`. Fragment `booking/ticket-passes.html` dùng cùng mã số/QR trên chi tiết và hóa đơn. QR dùng `QrCodeService` hiện có, chứa ID vé dạng số tương thích bộ soát vé. Route tải SVG kiểm tra chủ đơn/trạng thái, hóa đơn có QR từng vé để in.
+`BookingTicketDataService` dựng dữ liệu vé chung cho `ReceiptService` và `BookingDetailService`. Sau khi tích hợp Module 2, mã vé công khai có 8 số; QR riêng chứa `UTE-CINEMA:TICKET:V2:<mã>`. Trang chi tiết giữ QR từng vé và kiểm tra chủ đơn khi tải SVG. Hóa đơn nhiều ghế dùng một QR chung `UTE-CINEMA:BOOKING:V2:<receiptCode>` cùng bảng mã ghế để in A4. Vé hủy giữ nguyên mã và không còn QR vào phòng.
 
 Giữ nguyên `ticket-fragment.html`, controller thanh toán và soát vé. Các điểm chung cần sửa để tích hợp gồm `ReceiptService`, `ReceiptView`, template hóa đơn, dịch vụ giữ/hủy vé. Khi gộp bản mới của Thắng cần giữ một nguồn dữ liệu vé/QR.
 
@@ -26,9 +26,9 @@ Snapshot vé được lưu ngay khi giữ ghế: ID, ghế, loại ghế, giá v
 
 `BookingOrder` lưu `discountAmount`, `appliedVoucherCode`, `appliedVoucherName`, `ticketSnapshot`. Lịch sử và hóa đơn đọc dữ liệu đã lưu.
 
-Thanh gọi `BookingOrderService.applyValidatedOffer(userId, showtimeId, code, name, amount)` **sau khi kiểm tra điều kiện voucher**. Dịch vụ kiểm tra số tiền và lưu ưu đãi vào đúng đơn; không có endpoint nhận mức giảm tùy ý từ trình duyệt. Đổi vé/combo sẽ xóa ưu đãi cũ để cần kiểm tra lại, kể cả đổi hai sản phẩm cùng giá.
+Giao diện gọi `BookingOrderService.applyVoucher(userId, showtimeId, code, expectedIds)`. Server kiểm tra CSRF, đúng lượt giữ, ngày hiệu lực, mức tối thiểu và mức giảm. Voucher được tính lại khi đổi combo; bắp nước không được giảm. Giá vé/lượt giữ thay đổi cần áp dụng mã lại. `applyValidatedOffer` giữ làm API nội bộ cho ưu đãi đã xác thực; loại này bị xóa khi đổi vé/combo. Trình duyệt không gửi mức giảm tùy ý.
 
-Phần lưu/hiển thị ưu đãi của Tài đã có và được test. Giao diện nhập mã và quy tắc voucher thuộc Thanh chưa có trên remote đã fetch, nên chưa thể kiểm tra toàn bộ luồng voucher qua giao diện. Menu tài khoản mới dùng `/lich-su-dat-ve`; liên kết `/ve-cua-toi` cũ cũng tới cùng trang, tránh hai mục trùng nội dung.
+Đã kiểm thử giao diện nhập/bỏ mã, QR cũ khi tổng tiền đổi, thanh toán, hóa đơn và hoàn tiền sau giảm. Tên ưu đãi hỗ trợ 200 ký tự trên voucher và đơn. Menu tài khoản dùng `/lich-su-dat-ve`; `/ve-cua-toi` cũ chuyển tới cùng trang.
 
 ## Database và chạy ứng dụng
 
@@ -40,11 +40,11 @@ Java 21: `C:\Users\ADMIN\.jdks\ms-21.0.8`. `scripts/mvn21.ps1` hỗ trợ tìm J
 
 ## Kiểm tra
 
-- `mvn -q test`: **479/479**, không lỗi/bỏ qua.
-- `node --test src/test/js/*.test.cjs`: **21/21**.
+- Bộ kiểm thử tích hợp ngày 03/10/2026: **543/543 Java**, không lỗi/bỏ qua, trên SQL Server riêng.
+- `node --test src/test/js/*.test.cjs`: **35/35**.
 - `mvn -q -DskipTests package`: thành công bằng Java 21.
 - Test tích hợp dùng dịch vụ/database thật trên database test: đăng nhập/chủ đơn, phân trang/lọc, lịch sử khớp hóa đơn, QR/tải ảnh, hủy/hoàn tiền, hết hạn vẫn giữ dữ liệu vé, đặt lại không ghi đè lịch sử, ưu đãi đã lưu và không hoàn quá tiền thực trả, đổi combo cùng giá xóa ưu đãi.
-- Test tương thích cập nhật kỳ vọng `/ve-cua-toi` chuyển sang lịch sử và hóa đơn có QR từng vé theo phân công.
+- Test tương thích giữ `/ve-cua-toi` chuyển sang lịch sử; chi tiết có QR từng vé, hóa đơn nhiều ghế có một QR chung và mã 8 số cho mỗi ghế.
 - Kiểm tra bản JAR thực trên 8082: đăng nhập tài khoản demo, liên kết cũ chuyển đúng trang, chi tiết/hóa đơn khớp 3 mã vé và tổng tiền, tải thành công SVG vé 30, nút hủy hiển thị đúng mức hoàn theo chính sách. Đã kiểm tra màn hình 390/1280 px và giao diện sáng/tối; ba trang không tràn ngang. Ảnh giao diện lưu tại `.local-backup/booking-history-integrated-final.png`.
 
-Chỉ lưu thay đổi tại máy để Tài kiểm tra; không commit hoặc push.
+Thông tin kiểm tra giao diện thủ công phía trên là của bản Tài trước tích hợp. Kết quả hiện tại và việc đồng bộ GitHub/Render được ghi trong báo cáo rà soát.

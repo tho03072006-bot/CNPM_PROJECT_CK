@@ -14,6 +14,7 @@ import java.util.List;
 public record ReceiptView(BookingOrder order, String invoiceNumber, List<ReceiptLine> lines, String seats,
                           String paymentMethodLabel, String amountInWords,
                           String sellerName, String sellerAddress, String sellerEmail,
+                          List<ReceiptTicket> admissionTickets, String admissionQrSvg, String admissionPayload,
                           List<edu.hcmute.cnpm.cinema.dto.booking.BookingHistoryTicket> tickets,
                           java.math.BigDecimal refundedAmount) {
 }

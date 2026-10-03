@@ -46,6 +46,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.redirectedUrlPattern;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.flash;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -176,7 +177,7 @@ class MomoPaymentIntegrationTest extends IntegrationTestBase {
 
         mockMvc.perform(request)
                 .andExpect(status().is3xxRedirection())
-                .andExpect(redirectedUrl("/thanh-toan/hoan-tat"));
+                .andExpect(redirectedUrlPattern("/hoa-don/UTE-*"));
     }
 
     @Test
@@ -279,8 +280,7 @@ class MomoPaymentIntegrationTest extends IntegrationTestBase {
 
         mockMvc.perform(get(qrPage + "/xong").session(session))
                 .andExpect(status().is3xxRedirection())
-                .andExpect(redirectedUrl("/thanh-toan/hoan-tat"))
-                .andExpect(flash().attribute("paidTicketIds", hasSize(2)));
+                .andExpect(redirectedUrl("/hoa-don/" + bookingOrderRepository.findAll().getFirst().getReceiptCode()));
     }
 
     private String orderIdOf(User owner) {

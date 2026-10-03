@@ -33,33 +33,46 @@ public class TicketLookupService {
 
     private final TicketRepository ticketRepository;
     private final UserRepository userRepository;
+    private final TicketCodeService codes;
+    private final BookingClock clock;
+    private final BookingLockService locks;
+    private final edu.hcmute.cnpm.cinema.repository.BookingOrderRepository orders;
+    private final ReceiptService receipts;
 
-    public TicketLookupService(TicketRepository ticketRepository, UserRepository userRepository) {
+    public TicketLookupService(TicketRepository ticketRepository, UserRepository userRepository,
+                               TicketCodeService codes, BookingClock clock, BookingLockService locks,
+                               edu.hcmute.cnpm.cinema.repository.BookingOrderRepository orders, ReceiptService receipts) {
+        this.orders = orders; this.receipts = receipts;
         this.ticketRepository = ticketRepository;
         this.userRepository = userRepository;
+        this.codes = codes;
+        this.clock = clock;
+        this.locks = locks;
     }
 
-    @Transactional(readOnly = true)
+    @Transactional
     public TicketCheckResult checkTicketCode(String ticketCode) {
-        return checkTicketCode(ticketCode, LocalDateTime.now());
+        return checkTicketCode(ticketCode, clock.now());
     }
 
     /**
      * Soát một tấm vé theo mã in trên vé.
      *
-     * Nhận cả "12" lẫn "#12" vì trên vé in kèm dấu thăng, nhân viên gõ kiểu nào cũng được.
+     * Chỉ nhận mã công khai 8 số hoặc QR phiên bản 2, không nhận ID nội bộ.
      */
-    @Transactional(readOnly = true)
+    @Transactional
     public TicketCheckResult checkTicketCode(String ticketCode, LocalDateTime now) {
-        Long ticketId = parseTicketCode(ticketCode);
+        String publicCode = codes.parse(ticketCode);
+        Long ticketId = codes.resolve(publicCode);
         Ticket ticket = ticketRepository.findById(ticketId)
-                .orElseThrow(() -> new BusinessException("Không tìm thấy vé có mã #" + ticketId + "."));
+                .orElseThrow(() -> new BusinessException("Vé không còn hiệu lực hoặc đã hủy."));
+        ticket.setAdmissionCode(publicCode);
         return assess(ticket, now);
     }
 
-    @Transactional(readOnly = true)
+    @Transactional
     public List<TicketCheckResult> findUpcomingTicketsByEmail(String email) {
-        return findUpcomingTicketsByEmail(email, LocalDateTime.now());
+        return findUpcomingTicketsByEmail(email, clock.now());
     }
 
     /**
@@ -67,12 +80,14 @@ public class TicketLookupService {
      *
      * Vé của suất đã chiếu xong thì bỏ qua: đứng ở cửa phòng không ai cần xem lại chúng.
      */
-    @Transactional(readOnly = true)
+    @Transactional
     public List<TicketCheckResult> findUpcomingTicketsByEmail(String email, LocalDateTime now) {
         String normalizedEmail = email == null ? "" : email.trim().toLowerCase(Locale.ROOT);
         if (normalizedEmail.isEmpty()) {
             throw new BusinessException("Bạn hãy nhập email của khách.");
         }
+        if (normalizedEmail.length() > 150 || !normalizedEmail.matches("[^\\s@]+@[^\\s@]+\\.[^\\s@]+"))
+            throw new BusinessException("Email của khách không hợp lệ.");
         User customer = userRepository.findByEmail(normalizedEmail)
                 .orElseThrow(() -> new BusinessException("Không có tài khoản nào dùng email " + normalizedEmail + "."));
 
@@ -87,7 +102,7 @@ public class TicketLookupService {
 
     @Transactional
     public TicketCheckResult checkIn(Long ticketId) {
-        return checkIn(ticketId, LocalDateTime.now());
+        return checkIn(ticketId, (LocalDateTime) null);
     }
 
     /**
@@ -98,14 +113,20 @@ public class TicketLookupService {
      */
     @Transactional
     public TicketCheckResult checkIn(Long ticketId, LocalDateTime now) {
+        if (ticketId == null || ticketId <= 0) throw new BusinessException("Mã vé phải là số nguyên dương.");
+        Long showtimeId = ticketRepository.findShowtimeIdByTicketId(ticketId)
+                .orElseThrow(() -> new BusinessException("Vé không còn hiệu lực hoặc đã hủy."));
+        // Chung khóa với hoàn vé, thanh toán và cập nhật suất chiếu.
+        locks.lock(showtimeId);
+        if (now == null) now = clock.now();
         Ticket ticket = ticketRepository.findById(ticketId)
-                .orElseThrow(() -> new BusinessException("Không tìm thấy vé có mã #" + ticketId + "."));
+                .orElseThrow(() -> new BusinessException("Vé không còn hiệu lực hoặc đã hủy."));
         TicketCheckResult current = assess(ticket, now);
         if (!current.isValid()) {
             throw new BusinessException(current.getMessage());
         }
-        if (ticketRepository.markCheckedIn(ticketId, now, TicketStatus.PAID) == 0) {
-            throw new BusinessException("Vé #" + ticketId + " vừa được soát ở cửa khác, không cho vào lần hai.");
+        if (ticketRepository.markCheckedIn(ticketId, now, TicketStatus.PAID, now.toLocalDate().plusDays(1).atStartOfDay(), null) == 0) {
+            throw new BusinessException("Vé vừa thay đổi trạng thái hoặc đã được soát ở cửa khác. Hãy tra cứu lại.");
         }
         return current;
     }
@@ -113,6 +134,8 @@ public class TicketLookupService {
     /** Đưa ra kết luận cho một tấm vé tại thời điểm {@code now}. */
     TicketCheckResult assess(Ticket ticket, LocalDateTime now) {
         Showtime showtime = ticket.getShowtime();
+        if (ticket.getStatus() == TicketStatus.PAID && ticket.getAdmissionCode() == null)
+            ticket.setAdmissionCode(codes.codeFor(ticket.getId()));
 
         if (ticket.getStatus() != TicketStatus.PAID) {
             String message = ticket.getStatus() == TicketStatus.HELD
@@ -125,6 +148,12 @@ public class TicketLookupService {
                     "Vé đã được soát vào phòng lúc " + ticket.getCheckedInAt().format(TIME_FORMAT)
                             + " ngày " + ticket.getCheckedInAt().format(DATE_FORMAT) + ", không dùng lại được.");
         }
+        if (!Boolean.TRUE.equals(showtime.getMovie().getActive()))
+            return new TicketCheckResult(ticket, Verdict.INVALID, "Vé không hợp lệ: phim đã ngừng chiếu. Vui lòng liên hệ quầy hỗ trợ.");
+        if (showtime.getStartTime() == null || showtime.getEndTime() == null
+                || !showtime.getEndTime().isAfter(showtime.getStartTime())
+                || !ticket.getSeat().getRoom().getId().equals(showtime.getRoom().getId()))
+            return new TicketCheckResult(ticket, Verdict.INVALID, "Vé không hợp lệ: thông tin suất chiếu hoặc ghế không khớp.");
         if (!showtime.getEndTime().isAfter(now)) {
             return new TicketCheckResult(ticket, Verdict.ENDED,
                     "Suất chiếu đã kết thúc lúc " + showtime.getEndTime().format(TIME_FORMAT)
@@ -140,17 +169,49 @@ public class TicketLookupService {
                         + ticket.getSeat().getSeatRow() + ticket.getSeat().getSeatColumn() + ".");
     }
 
-    private Long parseTicketCode(String ticketCode) {
-        String digits = ticketCode == null ? "" : ticketCode.trim();
-        if (digits.startsWith("#")) {
-            digits = digits.substring(1).trim();
-        }
-        if (digits.isEmpty()) {
-            throw new BusinessException("Bạn hãy nhập mã vé.");
-        }
-        if (!digits.matches("\\d{1,18}")) {
-            throw new BusinessException("Mã vé chỉ gồm chữ số, ví dụ #12.");
-        }
-        return Long.valueOf(digits);
+    @Transactional
+    public TicketCheckResult checkIn(Long ticketId, String expectedCode) {
+        if (!codes.resolve(expectedCode).equals(ticketId))
+            throw new BusinessException("Mã vé và ghế cần xác nhận không khớp. Hãy quét lại.");
+        return checkIn(ticketId);
+    }
+    @Transactional
+    public edu.hcmute.cnpm.cinema.dto.staff.BookingTicketCheckResult checkBookingQr(String payload) {
+        return assessBooking(codes.parseBooking(payload), clock.now());
+    }
+    private edu.hcmute.cnpm.cinema.dto.staff.BookingTicketCheckResult assessBooking(String receiptCode, LocalDateTime now) {
+        var order = orders.findByReceiptCode(receiptCode)
+                .filter(o -> o.getStatus() == edu.hcmute.cnpm.cinema.entity.BookingOrderStatus.PAID)
+                .orElseThrow(() -> new BusinessException("QR hóa đơn không tồn tại hoặc chưa thanh toán."));
+        var result = order.getTickets().stream().sorted(Comparator
+                .comparing((Ticket t) -> t.getSeat().getSeatRow()).thenComparing(t -> t.getSeat().getSeatColumn()))
+                .map(t -> {
+                    if (!t.getUser().getId().equals(order.getUser().getId())
+                            || !t.getShowtime().getId().equals(order.getShowtime().getId())) {
+                        t.setAdmissionCode(codes.codeFor(t.getId()));
+                        return new TicketCheckResult(t, Verdict.INVALID, "Vé không khớp khách hoặc suất chiếu của hóa đơn.");
+                    }
+                    return assess(t, now);
+                }).toList();
+        var refunded = receipts.findReceipt(receiptCode, order.getUser()).admissionTickets().stream()
+                .filter(t -> "REFUNDED".equals(t.state())).toList();
+        return new edu.hcmute.cnpm.cinema.dto.staff.BookingTicketCheckResult(order, result, refunded);
+    }
+    @Transactional
+    public int checkInBooking(String receiptCode, String qrPayload) {
+        if (!codes.parseBooking(qrPayload).equals(receiptCode))
+            throw new BusinessException("QR và hóa đơn cần xác nhận không khớp.");
+        Long showtimeId = orders.findShowtimeIdByReceiptCode(receiptCode)
+                .orElseThrow(() -> new BusinessException("Không tìm thấy hóa đơn cần soát vé."));
+        locks.lock(showtimeId);
+        LocalDateTime now = clock.now();
+        var booking = assessBooking(receiptCode, now);
+        if (!booking.canCheckIn())
+            throw new BusinessException("Đơn vé không còn ghế hợp lệ để cho vào. Hãy kiểm tra trạng thái từng ghế.");
+        var ids = booking.tickets().stream().filter(TicketCheckResult::isValid).map(t -> t.getTicket().getId()).toList();
+        for (Long id : ids)
+            if (ticketRepository.markCheckedIn(id, now, TicketStatus.PAID, now.toLocalDate().plusDays(1).atStartOfDay(), booking.order().getId()) != 1)
+                throw new BusinessException("Một vé vừa thay đổi trạng thái. Chưa xác nhận nhóm vé; hãy quét lại.");
+        return ids.size();
     }
 }

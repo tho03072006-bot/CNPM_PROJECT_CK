@@ -10,5 +10,5 @@ import java.math.BigDecimal;
  * @param refunded vé đã hủy và hoàn tiền sau khi thanh toán; hóa đơn vẫn giữ dòng như lúc phát hành
  */
 public record ReceiptLine(int number, String description, String detail, String unit, int quantity,
-                          BigDecimal unitPrice, BigDecimal amount, boolean refunded) {
+                          BigDecimal unitPrice, BigDecimal amount, boolean refunded, String ticketCode, String qrSvg) {
 }

@@ -63,12 +63,15 @@ public class BookingOrder {
     @Column(name = "discount_amount", nullable = false, precision = 12, scale = 2)
     private BigDecimal discountAmount = BigDecimal.ZERO;
 
+    @Column(name = "voucher_code", length = 40)
+    private String voucherCode;
+
     @Nationalized
     @Column(name = "applied_voucher_code", length = 50)
     private String appliedVoucherCode;
 
     @Nationalized
-    @Column(name = "applied_voucher_name", length = 150)
+    @Column(name = "applied_voucher_name", length = 200)
     private String appliedVoucherName;
 
     /** Bản lưu ghế/mã/giá vé, không mất khi ghế được trả lại cho người khác. */
@@ -135,6 +138,8 @@ public class BookingOrder {
     public void setTotalAmount(BigDecimal totalAmount) { this.totalAmount = totalAmount; }
     public BigDecimal getDiscountAmount() { return discountAmount; }
     public void setDiscountAmount(BigDecimal discountAmount) { this.discountAmount = discountAmount; }
+    public String getVoucherCode() { return voucherCode; }
+    public void setVoucherCode(String voucherCode) { this.voucherCode = voucherCode; }
     public String getAppliedVoucherCode() { return appliedVoucherCode; }
     public void setAppliedVoucherCode(String appliedVoucherCode) { this.appliedVoucherCode = appliedVoucherCode; }
     public String getAppliedVoucherName() { return appliedVoucherName; }

@@ -110,7 +110,7 @@ class BookingSafetyTest {
     void shouldRejectOldPaymentForm_whenHoldWasReplaced() {
         held(20L);
         BookingOrderService orders = mock(BookingOrderService.class);
-        PaymentService payments = new PaymentService(fixture.ticketRepository, orders, fixture.locks, fixture.clock);
+        PaymentService payments = new PaymentService(fixture.ticketRepository, orders, fixture.locks, fixture.clock, mock(edu.hcmute.cnpm.cinema.service.TicketCodeService.class));
         assertThatThrownBy(() -> payments.confirmCounterPayment(1L, 1L, List.of(10L)))
                 .isInstanceOf(InvalidBookingException.class);
         verifyNoInteractions(orders);
@@ -120,7 +120,7 @@ class BookingSafetyTest {
     void shouldRejectOldGatewayAnchor_whenNewHoldHasSamePrice() {
         held(20L);
         BookingOrderService orders = mock(BookingOrderService.class);
-        PaymentService payments = new PaymentService(fixture.ticketRepository, orders, fixture.locks, fixture.clock);
+        PaymentService payments = new PaymentService(fixture.ticketRepository, orders, fixture.locks, fixture.clock, mock(edu.hcmute.cnpm.cinema.service.TicketCodeService.class));
         assertThatThrownBy(() -> payments.confirmPayment(1L, 1L, PaymentMethod.MOMO, "trans",
                 List.of(20L), 10L, 75000L)).isInstanceOf(InvalidBookingException.class);
         verifyNoInteractions(orders);
