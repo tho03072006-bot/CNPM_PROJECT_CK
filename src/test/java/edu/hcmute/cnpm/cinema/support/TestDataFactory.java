@@ -29,6 +29,17 @@ import java.time.LocalDateTime;
  */
 @Component
 public class TestDataFactory {
+    @org.springframework.beans.factory.annotation.Autowired
+    private edu.hcmute.cnpm.cinema.repository.VoucherRepository voucherRepository;
+
+    public edu.hcmute.cnpm.cinema.entity.Voucher createVoucher(String code) {
+        var voucher = new edu.hcmute.cnpm.cinema.entity.Voucher();
+        voucher.setCode(code); voucher.setTitle("Ưu đãi từ database");
+        voucher.setPercent(10); voucher.setAmount(BigDecimal.ZERO);
+        voucher.setMinimum(new BigDecimal("100000"));
+        voucher.setMaximum(new BigDecimal("30000")); voucher.setActive(true);
+        return voucherRepository.saveAndFlush(voucher);
+    }
 
     private static final BigDecimal DEFAULT_BASE_PRICE = new BigDecimal("75000.00");
 

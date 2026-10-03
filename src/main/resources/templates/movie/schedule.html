@@ -95,7 +95,7 @@
                     <span th:text="|${entry.movie.durationMin} phút|">120 phút</span>
                     <span th:text="|${entry.totalShowtimes} suất|">5 suất</span>
                     <span th:if="${entry.lowestPrice != null}"
-                          th:text="|Giá từ ${#numbers.formatDecimal(entry.lowestPrice, 0, 'POINT', 0, 'COMMA')} đ|">
+                          th:text="|Giá từ ${@money.number(entry.lowestPrice)} đ|">
                         Giá từ</span>
                 </div>
 
@@ -105,13 +105,13 @@
                           th:classappend="|room-badge-${group.value[0].room.roomType.cssModifier}|">Phòng thường</span>
                     <div class="schedule-times">
                         <a class="schedule-time" th:each="showtime : ${group.value}"
-                           th:with="availability=${availabilityByShowtimeId[showtime.id]}"
+                           th:with="availability=${availabilityByShowtimeId[showtime.id]},priceText=${@money.number(showtime.basePrice)}"
                            th:href="${availability.soldOut} ? null : @{/booking/showtime/{id}(id=${showtime.id})}"
                            th:classappend="(${group.key == 'Gold Class'} ? ' is-gold' :
                                            (${group.key == 'Premium'} ? ' is-premium' : '')) +
                                            (${availability.soldOut} ? ' is-soldout' : '')"
                            th:attr="aria-disabled=${availability.soldOut}"
-                           th:aria-label="|Đặt vé suất ${#temporals.format(showtime.startTime, 'HH:mm')} phim ${entry.movie.title} tại ${showtime.room.name}, giá ${#numbers.formatDecimal(showtime.basePrice, 0, 'POINT', 0, 'COMMA')} đồng|">
+                           th:aria-label="|Đặt vé suất ${#temporals.format(showtime.startTime, 'HH:mm')} phim ${entry.movie.title} tại ${showtime.room.name}, giá ${priceText} đồng|">
                             <span class="schedule-time-hour"
                                   th:text="${#temporals.format(showtime.startTime, 'HH:mm')}">18:00</span>
                             <span class="schedule-time-room" th:text="${showtime.room.name}">Cinema 1</span>

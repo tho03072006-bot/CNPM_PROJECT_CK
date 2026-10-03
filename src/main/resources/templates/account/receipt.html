@@ -9,7 +9,7 @@
       Tờ hóa đơn luôn nền trắng chữ đen ở cả chế độ tối, in ra giấy A4 cũng y như trên màn hình.
     -->
     <div class="receipt-toolbar receipt-actions">
-        <a class="btn btn-ghost receipt-back" th:href="@{/ve-cua-toi}">← Về Vé của tôi</a>
+        <a class="btn btn-ghost receipt-back" th:href="@{/lich-su-dat-ve}">← Về lịch sử đặt vé</a>
         <button class="btn btn-accent" type="button" onclick="window.print()">In hóa đơn và vé</button>
     </div>
 
@@ -91,11 +91,13 @@
             <dl class="invoice-totals">
                 <div><dt>Cộng tiền vé</dt><dd th:text="${#numbers.formatDecimal(order.ticketSubtotal, 0, 'POINT', 0, 'COMMA')}">225.000</dd></div>
                 <div><dt>Cộng tiền bắp nước</dt><dd th:text="${#numbers.formatDecimal(order.concessionSubtotal, 0, 'POINT', 0, 'COMMA')}">55.000</dd></div>
+                <div th:if="${order.discountAmount.signum() > 0}"><dt>Ưu đãi <span th:if="${order.appliedVoucherCode != null}" th:text="|(${order.appliedVoucherCode})|"></span></dt><dd th:text="|−${#numbers.formatDecimal(order.discountAmount, 0, 'POINT', 0, 'COMMA')} đ|">−20.000 đ</dd></div>
                 <div class="invoice-grand-total">
                     <dt>Tổng cộng thanh toán</dt>
                     <dd th:text="|${#numbers.formatDecimal(order.totalAmount, 0, 'POINT', 0, 'COMMA')} đ|">280.000 đ</dd>
                 </div>
             </dl>
+            <p th:if="${order.appliedVoucherName != null}" th:text="${order.appliedVoucherName}">Ưu đãi đã áp dụng</p>
             <p class="invoice-words">
                 <span>Số tiền viết bằng chữ:</span>
                 <em th:text="${receipt.amountInWords()}">Hai trăm tám mươi nghìn đồng chẵn.</em>
@@ -111,7 +113,7 @@
                     <tbody><tr th:each="ticket : ${receipt.admissionTickets()}">
                         <td th:text="${ticket.seatLabel()}">C5</td>
                         <td class="invoice-ticket-number" th:text="${ticket.code()}">12345678</td>
-                        <td th:text="${ticket.state() == 'REFUNDED'} ? 'Đã hủy' : (${ticket.state() == 'CHECKED_IN'} ? 'Đã sử dụng' : 'Đã thanh toán')">Đã thanh toán</td>
+                        <td th:text="${ticket.state() == 'REFUNDED'} ? 'Đã hủy' : (${ticket.state() == 'CHECKED_IN'} ? 'Đã sử dụng' : (${ticket.state() == 'INVALID'} ? 'Không còn hiệu lực' : 'Đã thanh toán'))">Đã thanh toán</td>
                     </tr></tbody>
                 </table>
             </div>

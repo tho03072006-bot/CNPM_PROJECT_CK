@@ -84,6 +84,19 @@
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
             </plugin>
+            <!--
+              Chay test theo gio Viet Nam tren moi may. Code dat ve dung BookingClock (gio Viet
+              Nam), con test tao gio bang LocalDateTime.now() theo gio cua may. May CI cua GitHub
+              dat gio UTC nen lech 7 tieng: suat "4 phut nua" thanh "da bat dau", ghe vua giu
+              thanh "het han" -> develop do CI tu PR #54 du tren may ca nhan van xanh.
+            -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <configuration>
+                    <argLine>-Duser.timezone=Asia/Ho_Chi_Minh</argLine>
+                </configuration>
+            </plugin>
         </plugins>
     </build>
 

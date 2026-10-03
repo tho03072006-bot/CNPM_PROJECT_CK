@@ -79,7 +79,7 @@
                               th:text="${showtime.room.roomType.label}">Phòng thường</span>
                         <strong class="module1-room-name"><span aria-hidden="true">▰</span> <span th:text="${showtime.room.name}">Phòng chiếu</span></strong>
                         <span th:text="|Kết thúc ${#temporals.format(showtime.endTime, 'HH:mm')}${showtime.endTime.toLocalDate().isAfter(showtime.startTime.toLocalDate()) ? ' (+1 ngày)' : ''}|">Giờ kết thúc</span>
-                        <strong class="module1-slot-price" th:text="|Từ ${#numbers.formatDecimal(showtime.basePrice, 0, 'POINT', 0, 'COMMA')} đ|">Giá vé</strong>
+                        <strong class="module1-slot-price" th:text="|Từ ${@money.number(showtime.basePrice)} đ|">Giá vé</strong>
                         <span class="module1-seat-status"
                               th:classappend="${availability.soldOut} ? ' is-soldout' : (${availability.almostFull} ? ' is-low' : '')"
                               th:text="${availability.label}">Còn ghế</span>

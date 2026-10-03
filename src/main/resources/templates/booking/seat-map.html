@@ -45,7 +45,7 @@
                             <span class="seat-row-label" aria-hidden="true"
                                   th:style="|grid-row: ${row.gridRow}; grid-column: 1;|" th:text="${row.rowLabel}">A</span>
                             <button th:each="seat : ${row.seats}" type="button" class="seat"
-                                    th:with="priceText=${#numbers.formatDecimal(seat.price, 0, 'POINT', 0, 'COMMA')}"
+                                    th:with="priceText=${@money.number(seat.price)}"
                                     th:classappend="|${seat.available ? 'available' : (seat.status == 'PAID' ? 'booked' : 'held')} seat-${seat.cssModifier}|"
                                     th:style="|grid-row: ${row.gridRow}; grid-column: ${seat.seatColumn + 1};|"
                                     th:disabled="${!seat.available}"
@@ -65,7 +65,7 @@
                         <span th:each="option : ${seatMap.seatTypeOptions}">
                             <i class="legend-type" th:classappend="|legend-type-${option.cssModifier()}|" aria-hidden="true"></i>
                             <span th:text="${option.label()}">Ghế thường</span>
-                            <strong th:text="|${#numbers.formatDecimal(option.price(), 0, 'POINT', 0, 'COMMA')} đ|">115.000 đ</strong>
+                            <strong th:text="|${@money.number(option.price())} đ|">115.000 đ</strong>
                             <small th:if="${option.capacity() > 1}" th:text="|(${option.capacity()} người)|">(2 người)</small>
                         </span>
                     </div>
@@ -84,7 +84,7 @@
                 <p id="selected-seats" aria-live="polite">Bạn chưa chọn ghế.</p>
                 <p>
                     Số chỗ: <strong id="admission-count" th:text="|0/${maximumAdmissions}|">0/8</strong>
-                    · Tổng tiền dự kiến: <strong id="total-price">0 ₫</strong>
+                    · Tổng tiền dự kiến: <strong id="total-price">0 đ</strong>
                 </p>
                 <p id="selection-hint" class="form-hint" role="status" aria-live="polite">
                     Bấm vào ghế còn trống để chọn, bấm lần nữa để bỏ chọn.
@@ -132,7 +132,7 @@
                             Ghế: <strong id="held-seat-labels"
                                          th:text="${activeHold != null ? #strings.listJoin(activeHold.seatLabels, ', ') : ''}"></strong>
                             · Tổng tiền: <strong id="held-total-price"
-                                                 th:text="${activeHold != null ? #numbers.formatDecimal(activeHold.totalPrice, 0, 'POINT', 0, 'COMMA') + ' ₫' : ''}"></strong>
+                                                 th:text="${activeHold != null ? @money.number(activeHold.totalPrice) + ' đ' : ''}"></strong>
                         </p>
                     </div>
                     <div class="seat-hold-timer-actions">

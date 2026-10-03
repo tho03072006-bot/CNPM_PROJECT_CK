@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout" layout:decorate="~{layout/base}">
+<head><title>Lịch sử đặt vé</title><link rel="stylesheet" th:href="@{/css/booking-history.css(v='20261003-integrated-2')}"></head>
+<body><div layout:fragment="content" class="booking-history-page">
+    <section class="module1-hero booking-history-hero" aria-labelledby="history-title">
+        <div>
+            <span class="module1-eyebrow">UTE CINEMA · TÀI KHOẢN CỦA BẠN</span>
+            <h1 id="history-title">Lịch sử đặt vé</h1>
+            <p>Mỗi lần đặt vé, một trải nghiệm điện ảnh. Xem lại vé, combo và thông tin thanh toán của bạn.</p>
+        </div>
+        <a class="btn btn-accent" th:href="@{/lich-chieu}">Đặt vé mới <span aria-hidden="true">↗</span></a>
+    </section>
+
+    <div class="booking-history-tools">
+        <div><h2>Các lần đặt vé</h2><p class="text-muted" th:text="|${history.totalElements} giao dịch${selectedStatus != null ? ' phù hợp' : ''} · Mới nhất trước|">Các giao dịch</p></div>
+        <form method="get" th:action="@{/lich-su-dat-ve}" class="booking-status-filter">
+            <label for="booking-status">Trạng thái</label>
+            <select id="booking-status" name="status" class="form-control">
+                <option value="">Tất cả</option>
+                <option value="PAID" th:selected="${selectedStatus != null and selectedStatus.name() == 'PAID'}">Đã thanh toán</option>
+                <option value="DRAFT" th:selected="${selectedStatus != null and selectedStatus.name() == 'DRAFT'}">Chưa thanh toán</option>
+                <option value="CANCELLED" th:selected="${selectedStatus != null and selectedStatus.name() == 'CANCELLED'}">Đã hủy</option>
+            </select>
+            <button type="submit" class="btn btn-ghost btn-sm">Lọc</button>
+        </form>
+    </div>
+
+    <section class="module1-empty" th:if="${history.empty}">
+        <span class="module1-empty-icon" aria-hidden="true">◷</span>
+        <h2 th:text="${selectedStatus != null ? 'Chưa có giao dịch ở trạng thái này' : (history.number > 0 ? 'Trang này chưa có giao dịch' : 'Chuyến đi điện ảnh đang chờ bạn')}">Chưa có lịch sử đặt vé</h2>
+        <p th:text="${selectedStatus != null or history.number > 0} ? 'Xem lại toàn bộ lịch sử đặt vé của bạn.' : 'Các đơn vé và bắp nước sẽ được lưu ở đây khi bạn chuyển đến bước thanh toán.'">Thông tin</p>
+        <a class="btn" th:href="${selectedStatus != null or history.number > 0} ? @{/lich-su-dat-ve} : @{/lich-chieu}"
+           th:text="${selectedStatus != null or history.number > 0} ? 'Xem tất cả giao dịch' : 'Khám phá lịch chiếu'">Xem lịch chiếu</a>
+    </section>
+
+    <div class="booking-history-grid" th:unless="${history.empty}">
+        <article class="movie-card booking-history-card" th:each="entry, iter : ${history.content}">
+            <a class="movie-poster module1-poster booking-history-poster" th:classappend="|module1-poster-tone-${iter.index % 5}|"
+               th:href="@{/lich-su-dat-ve/{code}(code=${entry.receiptCode})}" th:aria-label="|Xem đặt vé phim ${entry.movieTitle}|">
+                <img th:if="${entry.posterUrl != null and !#strings.isEmpty(entry.posterUrl)}"
+                     th:src="${entry.posterUrl}" th:alt="|Poster phim ${entry.movieTitle}|" loading="lazy" onerror="this.hidden=true">
+                <div class="module1-poster-art" aria-hidden="true">
+                    <span class="module1-poster-letter" th:text="${#strings.substring(entry.movieTitle, 0, 1)}">U</span>
+                    <span class="module1-poster-caption">UTE CINEMA</span>
+                </div>
+                <span class="badge booking-status-badge" th:classappend="${entry.status.name() == 'PAID'} ? 'badge-ok' : (${entry.status.name() == 'DRAFT'} ? 'badge-accent' : 'badge-danger')"
+                      th:text="${entry.statusLabel}">Đã thanh toán</span>
+            </a>
+            <div class="movie-body booking-history-body">
+                <p class="module1-card-overline" th:text="${entry.genre ?: 'Phim điện ảnh'}">Thể loại</p>
+                <h3 class="movie-title"><a th:href="@{/lich-su-dat-ve/{code}(code=${entry.receiptCode})}" th:text="${entry.movieTitle}">Tên phim</a></h3>
+                <p class="movie-meta" th:text="|${entry.durationMin} phút · ${entry.ageRating ?: 'Chưa phân loại'}|">Thời lượng</p>
+                <dl class="booking-card-meta">
+                    <div><dt>Suất chiếu</dt><dd th:text="${#temporals.format(entry.showtimeStart, 'HH:mm · dd/MM/yyyy')}">13:20 · 03/10/2026</dd></div>
+                    <div><dt>Phòng chiếu</dt><dd th:text="${entry.roomName}">Cinema 4</dd></div>
+                    <div><dt>Đặt lúc</dt><dd th:text="${#temporals.format(entry.createdAt, 'HH:mm · dd/MM/yyyy')}">10:00 · 02/10/2026</dd></div>
+                </dl>
+                <p class="booking-reference"><span>Mã đặt vé</span><strong th:text="${entry.receiptCode}">UTE-...</strong></p>
+                <div class="booking-card-bottom">
+                    <div><span>Tổng tiền</span><strong th:text="|${#numbers.formatDecimal(entry.totalAmount, 0, 'POINT', 0, 'COMMA')} đ|">135.000 đ</strong></div>
+                    <a class="btn btn-sm" th:href="@{/lich-su-dat-ve/{code}(code=${entry.receiptCode})}"
+                       th:aria-label="|Chi tiết đặt vé ${entry.receiptCode}|">Chi tiết <span aria-hidden="true">→</span></a>
+                </div>
+            </div>
+        </article>
+    </div>
+
+    <nav class="booking-pagination" th:if="${history.totalPages > 1}" aria-label="Phân trang lịch sử">
+        <a class="btn btn-ghost btn-sm" th:if="${history.hasPrevious()}" th:href="@{/lich-su-dat-ve(page=${history.number - 1},status=${selectedStatus})}">← Trang trước</a>
+        <span th:text="|Trang ${history.number + 1} / ${history.totalPages}|">Trang 1 / 2</span>
+        <a class="btn btn-ghost btn-sm" th:if="${history.hasNext()}" th:href="@{/lich-su-dat-ve(page=${history.number + 1},status=${selectedStatus})}">Trang sau →</a>
+    </nav>
+</div></body></html>

@@ -9,7 +9,7 @@
     const validId = /^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$/;
     const validToken = /^[A-Za-z0-9_-]{43}$/;
     const states = new Set(['PENDING', 'SUCCESS', 'CANCELLED', 'EXPIRED', 'INVALIDATED']);
-    const money = new Intl.NumberFormat('vi-VN', {style: 'currency', currency: 'VND'});
+    const money = window.CinemaMoney;
     let token = null, current = null, reliable = false, busy = false, syncing = false, revision = 0;
     let sampledAt = 0, remainingAtSample = 0, expiryAsked = false;
     let pendingTimer = null, actionError = null;
@@ -20,12 +20,20 @@
     }
     function remaining() { return Math.max(0, remainingAtSample - (performance.now() - sampledAt)); }
     function render() {
+        if (!wallet) {
+            const active = reliable && current?.status === 'PENDING' && remaining() > 0;
+            const visual = el('wallet-qr-visual');
+            if (visual) visual.hidden = !active;
+            const copy = el('wallet-copy');
+            if (copy) copy.disabled = !active;
+        }
         if (!current) return;
         const seconds = Math.ceil(remaining() / 1000);
         el('wallet-countdown').textContent = current.status !== 'PENDING' ? 'Đã kết thúc'
             : seconds > 0 ? String(Math.floor(seconds / 60)).padStart(2, '0') + ':' + String(seconds % 60).padStart(2, '0')
             : 'Đang xác minh hết hạn…';
         el('wallet-status').textContent = reliable ? current.message : 'Đang xác minh trạng thái thanh toán…';
+        el('wallet-status').hidden = reliable && current.status !== 'PENDING';
         if (wallet) {
             const pending = current.status === 'PENDING';
             el('wallet-actions').hidden = !pending;
@@ -35,9 +43,18 @@
         }
     }
     function apply(state, elapsed = 0) {
-        if (!state || !states.has(state.status) || !Array.isArray(state.seatLabels)
-            || !Number.isSafeInteger(state.amount) || state.amount <= 0
-            || !Number.isFinite(state.serverTimeMillis) || !Number.isFinite(state.expiresAtMillis))
+        if (!state || state.publicId !== publicId || !states.has(state.status)
+            || !Array.isArray(state.seatLabels) || !state.seatLabels.length || state.seatLabels.length > 20
+            || state.seatLabels.some(label => typeof label !== 'string' || !label.trim() || label.length > 50)
+            || new Set(state.seatLabels).size !== state.seatLabels.length
+            || !Number.isSafeInteger(state.amount) || state.amount <= 0 || state.amount > 1_000_000_000
+            || !Number.isSafeInteger(state.serverTimeMillis) || !Number.isSafeInteger(state.expiresAtMillis)
+            || typeof state.movieTitle !== 'string' || !state.movieTitle.trim() || state.movieTitle.length > 200
+            || typeof state.roomName !== 'string' || !state.roomName.trim() || state.roomName.length > 50
+            || typeof state.message !== 'string' || !state.message.trim() || state.message.length > 1000
+            || typeof state.showtimeStart !== 'string'
+            || !/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(\.\d{1,9})?$/.test(state.showtimeStart)
+            || !Number.isFinite(new Date(state.showtimeStart + '+07:00').getTime()))
             throw new Error('Phản hồi trạng thái chưa hợp lệ. Vui lòng kiểm tra lại.');
         current = state; reliable = true; sampledAt = performance.now();
         remainingAtSample = state.expiresAtMillis - state.serverTimeMillis - elapsed;
@@ -51,12 +68,6 @@
             el('wallet-seats').textContent = state.seatLabels.join(', ');
             el('wallet-order').textContent = state.publicId;
             el('wallet-amount').textContent = money.format(state.amount);
-        }
-        if (!wallet) {
-            const visual = el('wallet-qr-visual');
-            if (visual) visual.hidden = state.status !== 'PENDING';
-            const copy = el('wallet-copy');
-            if (copy) copy.disabled = state.status !== 'PENDING';
         }
         render();
         if (state.status !== 'PENDING') {

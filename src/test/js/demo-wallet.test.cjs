@@ -1,6 +1,11 @@
 const {test}=require('node:test'),assert=require('node:assert/strict'),fs=require('node:fs'),vm=require('node:vm');
 const source=fs.readFileSync('src/main/resources/static/js/demo-wallet.js','utf8');
 const id='aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee',token='A'.repeat(43);
+test('Phone wallet loads shared money formatting before payment behavior',()=>{
+    const template=fs.readFileSync('src/main/resources/templates/account/demo-wallet.html','utf8');
+    assert.ok(template.indexOf('/js/money.js') >= 0);
+    assert.ok(template.indexOf('/js/money.js') < template.indexOf('/js/demo-wallet.js'));
+});
 class Element {
     constructor(){this.dataset={};this.listeners={};this.hidden=false;this.disabled=true;this.checked=false;this.value='';}
     addEventListener(name,fn){(this.listeners[name]||=[]).push(fn)}
@@ -14,6 +19,7 @@ function setup({role='wallet',paymentId=id,hash='#token='+token,stored=null}={})
     root.dataset={role,paymentId,csrf:'device-csrf',statusUrl:'/merchant/status',finishUrl:'/merchant/finish'};
     const document=new Element();document.getElementById=i=>elements.get(i);document.documentElement=new Element();document.hidden=false;
     const window=new Element();window.matchMedia=()=>({matches:false});
+    vm.runInNewContext(fs.readFileSync('src/main/resources/static/js/money.js','utf8'), {window,Intl});
     const storage=new Map(stored?[['g8-wallet-'+id,stored]]:[]);
     const sessionStorage={getItem:k=>storage.get(k),setItem:(k,v)=>storage.set(k,v)};
     const location={hash,pathname:'/demo-wallet/pay/'+id,origin:'https://g8.test',assign:v=>{location.assigned=v},replace:v=>{location.replaced=v}};
@@ -73,6 +79,7 @@ test('An old polling response cannot overwrite successful confirmation',async()=
     app.nextStatus(()=>new Promise(done=>{resolve=done}));app.refresh();await flush();
     app.confirm();await flush();resolve({ok:true,json:async()=>state()});await flush();
     assert.equal(app.el('wallet-status').textContent,'SUCCESS');assert.equal(app.el('wallet-actions').hidden,true);
+    assert.equal(app.el('wallet-status').hidden,true);
 });
 test('Local deadline disables payment and asks backend for expiry',async()=>{
     const app=setup();await flush();app.consent();app.server(state('EXPIRED'));app.advance(300001);app.tick();await flush();
@@ -95,4 +102,24 @@ test('Merchant hides QR and disables copying after backend reports an ended paym
     const app=setup({role:'merchant'});await flush();assert.equal(app.el('wallet-qr-visual').hidden,false);
     app.server(state('EXPIRED'));app.refresh();await flush();
     assert.equal(app.el('wallet-qr-visual').hidden,true);assert.equal(app.el('wallet-copy').disabled,true);
+});
+
+test('Unverified merchant status hides QR and copying until a valid response arrives',async()=>{
+    const app=setup({role:'merchant'});await flush();app.offline(true);app.refresh();await flush();
+    assert.equal(app.el('wallet-qr-visual').hidden,true);assert.equal(app.el('wallet-copy').disabled,true);
+    app.offline(false);app.refresh();await flush();assert.equal(app.el('wallet-qr-visual').hidden,false);
+});
+
+test('Malformed or mismatched status cannot enable confirmation or redirect the merchant',async()=>{
+    const invalid = [s=>s.publicId='bbbbbbbb-bbbb-cccc-dddd-eeeeeeeeeeee',s=>s.amount=1_000_000_001,
+        s=>s.amount=150000.5,s=>s.serverTimeMillis=NaN,s=>s.expiresAtMillis='300000',
+        s=>s.showtimeStart='invalid-date',s=>s.movieTitle=null,s=>s.seatLabels=[],s=>s.seatLabels=['A1','A1']];
+    for (const mutate of invalid) {
+        const app=setup();await flush();app.consent();const wrong=state();mutate(wrong);app.server(wrong);app.refresh();await flush();
+        assert.equal(app.el('wallet-confirm').disabled,true);app.confirm();await flush();
+        assert.equal(app.requests.filter(r=>r.url.endsWith('/confirm')).length,0);
+        const merchant=setup({role:'merchant'});await flush();wrong.status='SUCCESS';merchant.server(wrong);merchant.refresh();await flush();
+        assert.equal(merchant.location.replaced,undefined);
+        assert.equal(merchant.el('wallet-qr-visual').hidden,true);
+    }
 });

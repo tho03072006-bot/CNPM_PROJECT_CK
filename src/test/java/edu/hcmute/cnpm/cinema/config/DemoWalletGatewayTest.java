@@ -13,7 +13,7 @@ class DemoWalletGatewayTest {
         "/demo-wallet/pay/bad-id","/demo-wallet/pay/"+ID+"/..","/demo-wallet/%2e%2e/admin","/demo-wallet;param=1","//demo-wallet"})
     void blocksNonWalletPages(String path){assertThat(DemoWalletGateway.allowed("GET",path)).isFalse();}
     @Test void forwardsOnlyWalletResourcesAndSupportedMethods(){
-        for(String path:new String[]{"/demo-wallet","/demo-wallet/health","/demo-wallet/pay/"+ID,"/css/style.css","/js/demo-wallet.js","/images/favicon.svg"})
+        for(String path:new String[]{"/demo-wallet","/demo-wallet/health","/demo-wallet/pay/"+ID,"/css/style.css","/js/demo-wallet.js","/js/money.js","/images/favicon.svg"})
             assertThat(DemoWalletGateway.allowed("GET",path)).isTrue();
         for(String action:new String[]{"status","confirm","cancel"}){
             assertThat(DemoWalletGateway.allowed("POST","/demo-wallet/api/"+ID+"/"+action)).isTrue();

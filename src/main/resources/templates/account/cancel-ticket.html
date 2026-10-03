@@ -19,7 +19,7 @@
     <div class="card account-summary">
         <div class="account-summary-line">
             <span th:text="|Được hoàn ${quote.refundPercent}%|">Được hoàn 100%</span>
-            <strong th:text="|${#numbers.formatDecimal(quote.refundAmount, 0, 'POINT', 0, 'COMMA')} đ|">115.000 đ</strong>
+            <strong th:text="|${@money.number(quote.refundAmount)} đ|">115.000 đ</strong>
         </div>
         <p class="text-muted account-summary-note" th:text="${quote.explanation}">Lý do</p>
         <p class="text-muted account-summary-note"

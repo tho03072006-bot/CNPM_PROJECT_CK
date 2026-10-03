@@ -94,6 +94,42 @@ class DemoWalletIntegrationTest extends IntegrationTestBase {
         assertThat(ticketRepository.findAll()).allMatch(t->t.getStatus()==TicketStatus.PAID&&t.getPaymentMethod()==PaymentMethod.MOMO_DEMO);
         verifyNoInteractions(momoApiClient);
     }
+    @Test @DisplayName("Áp dụng voucher vô hiệu QR giá cũ; QR mới thu đúng tiền vé sau giảm")
+    void shouldInvalidateOldQrAndPayDiscountedAmount_whenVoucherApplied() {
+        Fixture data = fixture();
+        testDataFactory.createVoucher("UTE10");
+        var old = issue(data);
+        orders.applyVoucher(data.user().getId(), data.showtime().getId(), "UTE10", data.ids());
+        assertThat(wallet.confirm(old.publicId(), confirm(old, 150000)).status()).isEqualTo("INVALIDATED");
+        assertHeld(data);
+        var current = issue(data);
+        assertThat(wallet.wallet(current.publicId(), current.token()).amount()).isEqualTo(135000);
+        assertThat(wallet.confirm(current.publicId(), confirm(current, 135000)).status()).isEqualTo("SUCCESS");
+        assertThat(ticketRepository.findAll()).allSatisfy(ticket -> {
+            assertThat(ticket.getStatus()).isEqualTo(TicketStatus.PAID);
+            assertThat(ticket.getPrice()).isEqualByComparingTo("67500");
+            assertThat(ticket.getOriginalPrice()).isEqualByComparingTo("75000");
+        });
+        var paidOrder = bookingOrderRepository.findAll().getFirst();
+        assertThat(paidOrder.getTotalAmount()).isEqualByComparingTo("135000");
+        assertThat(paidOrder.getDiscountAmount()).isEqualByComparingTo("15000");
+        verifyNoInteractions(momoApiClient);
+    }
+
+    @Test @DisplayName("Voucher ngừng áp dụng làm QR đã tạo mất hiệu lực trước khi thu tiền")
+    void shouldInvalidateDiscountedQr_whenVoucherDisabled() {
+        Fixture data = fixture();
+        testDataFactory.createVoucher("UTE10");
+        orders.applyVoucher(data.user().getId(), data.showtime().getId(), "UTE10", data.ids());
+        var old = issue(data);
+        jdbcTemplate.update("UPDATE vouchers SET active = 0 WHERE code = 'UTE10'");
+        assertThat(wallet.confirm(old.publicId(), confirm(old, 135000)).status()).isEqualTo("INVALIDATED");
+        assertHeld(data);
+        var current = issue(data);
+        assertThat(wallet.wallet(current.publicId(), current.token()).amount()).isEqualTo(150000);
+        assertThat(wallet.confirm(current.publicId(), confirm(current, 150000)).status()).isEqualTo("SUCCESS");
+    }
+
     @Test @DisplayName("Tạo lại cùng lượt giữ trong cùng phiên giữ nguyên QR và hạn")
     void shouldReuseQr_whenSameCheckoutIsRetried(){
         Fixture data=fixture();var issued=issue(data);

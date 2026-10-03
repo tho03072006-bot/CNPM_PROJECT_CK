@@ -44,7 +44,7 @@
         </div>
         <div>
             <dt>Giá vé</dt>
-            <dd th:text="|${#numbers.formatDecimal(ticket.price, 0, 'POINT', 0, 'COMMA')} đ|">115.000 đ</dd>
+            <dd th:text="|${@money.number(ticket.price)} đ|">115.000 đ</dd>
         </div>
         <div th:if="${ticket.paidAt != null}">
             <dt>Thanh toán lúc</dt>

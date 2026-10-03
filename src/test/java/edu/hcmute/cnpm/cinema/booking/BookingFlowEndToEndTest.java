@@ -137,6 +137,9 @@ class BookingFlowEndToEndTest extends IntegrationTestBase {
 
         // ---------- Module 3: ve nam trong trang ve cua toi ----------
         mockMvc.perform(get("/ve-cua-toi").session(session))
+                .andExpect(status().is3xxRedirection())
+                .andExpect(org.springframework.test.web.servlet.result.MockMvcResultMatchers.redirectedUrl("/lich-su-dat-ve"));
+        mockMvc.perform(get("/lich-su-dat-ve").session(session))
                 .andExpect(status().isOk())
                 .andExpect(content().string(containsString("Phim kiem thu end-to-end")))
                 .andExpect(content().string(containsString("Đã thanh toán")));

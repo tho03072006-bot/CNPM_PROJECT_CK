@@ -2,6 +2,8 @@ package edu.hcmute.cnpm.cinema.controller;
 import edu.hcmute.cnpm.cinema.config.DemoWalletSettings;
 import edu.hcmute.cnpm.cinema.entity.User;
 import edu.hcmute.cnpm.cinema.exception.BusinessException;
+import edu.hcmute.cnpm.cinema.exception.DemoWalletUnavailableException;
+import edu.hcmute.cnpm.cinema.constants.Constants;
 import edu.hcmute.cnpm.cinema.service.*;
 import jakarta.servlet.http.HttpSession;
 import org.springframework.http.MediaType;
@@ -23,13 +25,18 @@ public class DemoWalletController {
         this.wallet=wallet;this.settings=settings;this.sessions=sessions;this.qrCodes=qrCodes;this.orders=orders;}
     @PostMapping("/thanh-toan/{showtimeId}/demo-wallet")
     public String create(@PathVariable Long showtimeId,@RequestParam(required=false) List<Long> ticketIds,
-            @RequestParam(required=false) String walletCsrf,HttpSession session){
+            @RequestParam(required=false) String walletCsrf,HttpSession session,RedirectAttributes redirect){
         User customer=SessionUsers.current(session);
         if(customer==null)return SessionUsers.redirectToLogin("/thanh-toan/"+showtimeId);
         sessions.verify(session,walletCsrf);
         synchronized(session){
-            DemoWalletService.Issued issued=wallet.create(customer.getId(),showtimeId,ticketIds,sessions.previous(session,showtimeId));
-            sessions.remember(session,issued);return "redirect:/thanh-toan/demo/qr/"+issued.publicId();
+            try {
+                DemoWalletService.Issued issued=wallet.create(customer.getId(),showtimeId,ticketIds,sessions.previous(session,showtimeId));
+                sessions.remember(session,issued);return "redirect:/thanh-toan/demo/qr/"+issued.publicId();
+            } catch (DemoWalletUnavailableException unavailable) {
+                redirect.addFlashAttribute(Constants.MODEL_ERROR_MESSAGE,unavailable.getMessage());
+                return "redirect:/thanh-toan/"+showtimeId;
+            }
         }}
     @GetMapping("/thanh-toan/demo/qr/{publicId}")
     public String merchant(@PathVariable String publicId,HttpSession session,Model model){

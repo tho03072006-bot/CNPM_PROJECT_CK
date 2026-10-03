@@ -8,7 +8,7 @@
         <p class="text-muted">Quét QR bằng camera điện thoại để mở đúng giao dịch trên ví online. Trang này tự cập nhật khi thanh toán được xác nhận.</p></div></section>
     <p class="payment-sandbox-note">Ứng dụng mô phỏng của Nhóm 8, không thuộc hệ thống MoMo chính thức và không phát sinh tiền thật.</p>
     <div id="demo-wallet" data-role="merchant" class="momo-qr wallet-checkout"
-         th:attr="data-status-url=@{/thanh-toan/demo/qr/{id}/status(id=${merchant.payment.publicId})},
+         th:attr="data-payment-id=${merchant.payment.publicId},data-status-url=@{/thanh-toan/demo/qr/{id}/status(id=${merchant.payment.publicId})},
          data-finish-url=@{/thanh-toan/demo/qr/{id}/finish(id=${merchant.payment.publicId})}">
         <div class="card momo-qr-card wallet-checkout-card">
             <span class="momo-qr-brand">MoMo · GIẢ LẬP NHÓM 8</span>
@@ -17,7 +17,7 @@
                 <div class="momo-qr-frame" th:utext="${qrSvg}"></div>
                 <p class="wallet-qr-caption">Mở camera điện thoại, quét mã và chạm vào liên kết.</p>
             </div>
-            <p class="momo-qr-amount" th:text="|${#numbers.formatInteger(merchant.payment.amount,1,'POINT')} đ|">—</p>
+            <p class="momo-qr-amount" th:text="|${@money.number(merchant.payment.amount)} đ|">—</p>
             <p>Thời gian còn lại <strong id="wallet-countdown" role="timer">Đang xác minh…</strong></p>
             <p id="wallet-status" role="status" aria-live="polite" th:text="${merchant.payment.message}">Đang chờ…</p>
             <div class="alert alert-error" id="wallet-message" role="status" hidden></div>
@@ -56,5 +56,5 @@
             <p class="wallet-footer">© 2026 Nhóm 8. Bản quyền phần mềm giả lập thuộc Nhóm 8.</p>
         </div>
     </div>
-    <script defer th:src="@{/js/demo-wallet.js}"></script>
+    <script defer th:src="@{/js/demo-wallet.js(v='20261003-wallet-validation-3')}"></script>
 </div></body></html>

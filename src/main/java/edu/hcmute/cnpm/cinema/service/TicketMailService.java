@@ -1,5 +1,6 @@
 package edu.hcmute.cnpm.cinema.service;
 
+import edu.hcmute.cnpm.cinema.util.MoneyFormatter;
 import edu.hcmute.cnpm.cinema.entity.Ticket;
 import edu.hcmute.cnpm.cinema.entity.TicketRefund;
 import edu.hcmute.cnpm.cinema.entity.User;
@@ -8,7 +9,6 @@ import org.springframework.stereotype.Service;
 import java.math.BigDecimal;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
-import java.util.Locale;
 
 /**
  * Soạn nội dung thư gửi khách về vé: xác nhận đặt vé và xác nhận hoàn tiền.
@@ -106,6 +106,6 @@ public class TicketMailService {
     }
 
     private String formatMoney(BigDecimal amount) {
-        return String.format(Locale.US, "%,d đ", amount.longValue()).replace(',', '.');
+        return MoneyFormatter.format(amount);
     }
 }

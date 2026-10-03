@@ -35,7 +35,7 @@ public class DemoWalletGateway implements SmartLifecycle {
     }
     static boolean allowed(String method,String path){
         String uuid="[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}";
-        if("GET".equals(method))return Set.of("/demo-wallet","/demo-wallet/health","/css/style.css","/js/demo-wallet.js","/images/favicon.svg").contains(path)
+        if("GET".equals(method))return Set.of("/demo-wallet","/demo-wallet/health","/css/style.css","/js/demo-wallet.js","/js/money.js","/images/favicon.svg").contains(path)
                 || path.matches("/demo-wallet/pay/"+uuid);
         return "POST".equals(method)&&path.matches("/demo-wallet/api/"+uuid+"/(status|confirm|cancel)");
     }

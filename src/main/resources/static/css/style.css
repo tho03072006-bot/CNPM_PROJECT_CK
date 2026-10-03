@@ -2310,11 +2310,14 @@ main.container {
    ================================================================ */
 .concession-layout { display: grid; gap: var(--space-5); align-items: start; }
 .concession-grid { display: grid; gap: var(--space-4); }
-.concession-card { display: grid; grid-template-columns: auto 1fr auto; gap: var(--space-4); align-items: center; }
+.concession-card { display: grid; grid-template-columns: 80px minmax(0, 1fr) auto; gap: var(--space-4); align-items: center; }
 .concession-icon {
-    display: grid; place-items: center; width: 72px; height: 72px;
-    border-radius: var(--radius-lg); background: var(--tint-brand); font-size: 38px;
+    display: flex; align-items: center; justify-content: center; width: 80px; height: 80px;
+    padding: 4px; line-height: 1; white-space: nowrap; overflow: hidden;
+    border-radius: var(--radius-lg); background: var(--tint-brand); font-size: 36px;
 }
+.concession-icon--compact { font-size: 26px; }
+.concession-info { min-width: 0; overflow-wrap: anywhere; }
 .concession-info h2 { margin: 0 0 var(--space-1); font-size: var(--text-lg); }
 .concession-info p { margin: 0 0 var(--space-2); color: var(--text-muted); font-size: var(--text-sm); }
 .concession-quantity { display: grid; gap: var(--space-1); min-width: 92px; font-size: var(--text-sm); font-weight: 700; }
@@ -2326,7 +2329,7 @@ main.container {
     .concession-layout { grid-template-columns: minmax(0, 1fr) minmax(300px, 360px); }
 }
 @media (max-width: 620px) {
-    .concession-card { grid-template-columns: auto 1fr; }
+    .concession-card { grid-template-columns: 80px minmax(0, 1fr); }
     .concession-quantity { grid-column: 1 / -1; grid-template-columns: 1fr 100px; align-items: center; }
     .concession-summary { position: static; }
 }
@@ -3193,4 +3196,117 @@ main.container {
     .invoice-esign { margin-top: 6px; padding: 5px 8px; font-size: 10px; }
     .invoice-esign b { font-size: 11px; }
     .invoice-footer { margin-top: 10px; padding-top: 6px; font-size: 10px; }
+}
+/* Ưu đãi và menu tài khoản dùng chung. */
+.account-dropdown { position: relative; }
+.account-dropdown > summary { display: flex; align-items: center; gap: var(--space-2); cursor: pointer; list-style: none; color: var(--header-text); }
+.account-dropdown > summary::-webkit-details-marker { display: none; }
+.account-dropdown > summary { border-radius: var(--radius-md); }
+.account-dropdown > summary:focus-visible { outline: 2px solid var(--accent-400); outline-offset: 4px; }
+.account-dropdown-menu { position: absolute; right: 0; top: calc(100% + var(--space-3)); z-index: 100; display: grid; min-width: 210px; padding: var(--space-2); border: 1px solid var(--border); border-radius: var(--radius-md); background: var(--surface); box-shadow: var(--shadow-md); }
+.header-nav .account-dropdown-menu a { color: var(--text); padding: var(--space-3); border-radius: var(--radius-sm); }
+.header-nav .account-dropdown-menu a:hover, .header-nav .account-dropdown-menu a:focus-visible { background: var(--surface-2); color: var(--link); }
+.offers-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 280px), 1fr)); gap: var(--space-4); }
+.offer-card { padding: var(--space-5); }
+.offer-code { color: var(--link); letter-spacing: .08em; }
+.offers-hero { display: flex; align-items: center; justify-content: space-between; gap: var(--space-5); margin-bottom: var(--space-6); }
+.offers-hero .btn { flex-shrink: 0; }
+.offer-card { display: flex; flex-direction: column; gap: var(--space-4); min-width: 0; }
+.offer-card-top { display: flex; align-items: center; justify-content: space-between; gap: var(--space-2); }
+.offer-card h2 { margin: 0; font-size: var(--text-lg); overflow-wrap: anywhere; }
+.offer-value { margin: 0; font-size: var(--text-3xl); font-weight: 800; color: var(--link); letter-spacing: -.03em; }
+.offer-code-panel { display: grid; gap: var(--space-2); padding: var(--space-4); background: var(--tint-brand); border: 1px dashed var(--border-strong); border-radius: var(--radius-md); }
+.offer-code-panel > span, .offer-code-panel small { font-size: var(--text-xs); color: var(--text-muted); }
+.offer-code-panel .offer-code { font-size: var(--text-xl); overflow-wrap: anywhere; }
+.offer-conditions { display: grid; gap: var(--space-3); margin: 0 0 var(--space-2); }
+.offer-conditions > div { display: flex; justify-content: space-between; gap: var(--space-3); font-size: var(--text-sm); }
+.offer-conditions dt { color: var(--text-muted); }
+.offer-conditions dd { margin: 0; text-align: right; font-weight: 600; overflow-wrap: anywhere; }
+.offer-card > .btn { margin-top: auto; }
+.offers-note { margin-top: var(--space-5); color: var(--text-muted); font-size: var(--text-sm); line-height: 1.7; }
+.header-nav .account-dropdown-menu a.is-current { background: var(--tint-brand); color: var(--link); font-weight: 700; }
+.header-nav .account-dropdown-menu .nav-logout { margin-top: var(--space-1); border-top: 1px solid var(--border); border-radius: 0; }
+.payment-checkout-layout { display: grid; grid-template-columns: minmax(0, 1fr) minmax(320px, 440px); align-items: start; gap: var(--space-5); }
+.payment-checkout-layout > .account-ticket-list { min-width: 0; margin: 0; }
+.payment-checkout-summary { min-width: 0; }
+.payment-summary-title { margin: 0; font-size: var(--text-xl); }
+.payment-checkout-summary .account-summary-line { font-size: var(--text-sm); }
+.payment-checkout-summary .account-summary-line > span { min-width: 0; overflow-wrap: anywhere; }
+.payment-checkout-summary .account-summary-line strong { flex-shrink: 0; font-size: var(--text-lg); font-variant-numeric: tabular-nums; }
+.payment-checkout-summary .concession-grand-total strong { font-size: var(--text-2xl); }
+.payment-checkout-summary .voucher-panel { margin: 0; }
+.payment-checkout-summary .voucher-form label { flex-basis: 100%; font-size: var(--text-sm); font-weight: 600; }
+@media (max-width: 860px) {
+    .payment-checkout-layout { grid-template-columns: minmax(0, 1fr); }
+    .offers-hero { flex-direction: column; align-items: flex-start; }
+}
+@media (max-width: 640px) {
+    .payment-checkout-layout .account-ticket-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .payment-checkout-layout .account-ticket-grid dd { overflow-wrap: anywhere; }
+}
+.voucher-panel { margin-block: var(--space-4); padding-block: var(--space-4); border-block: 1px solid var(--border); }
+.voucher-panel h2 { font-size: var(--text-lg); }
+.voucher-form { display: flex; align-items: center; flex-wrap: wrap; gap: var(--space-2); margin-block: var(--space-3); }
+.voucher-form .form-control { flex: 1 1 180px; min-width: 0; }
+@media (max-width: 480px) {
+    .account-dropdown-menu { max-width: calc(100vw - 2 * var(--space-4)); }
+    .voucher-form label { flex-basis: 100%; }
+}
+
+/* Điều hướng bên trái, tài khoản bên phải; menu tài khoản không nằm trong vùng cuộn. */
+.site-header .header-inner { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; align-items: center; }
+.header-primary-nav { min-width: 0; justify-content: flex-start; }
+.header-actions { justify-content: flex-end; flex-wrap: nowrap; margin-left: auto; width: auto; overflow: visible; }
+@media (max-width: 960px) {
+    .site-header .header-inner { grid-template-columns: minmax(0, 1fr) auto; gap: var(--space-2); }
+    .header-inner > .logo { grid-column: 1; grid-row: 1; justify-self: start; }
+    .header-actions { grid-column: 2; grid-row: 1; padding-bottom: 0; }
+    .header-primary-nav { grid-column: 1 / -1; grid-row: 2; flex-wrap: nowrap; overflow-x: auto; width: 100%; scrollbar-width: thin; }
+    .header-primary-nav a { flex: none; }
+}
+@media (max-width: 640px) {
+    .site-header .header-inner { grid-template-columns: minmax(0, 1fr) auto; gap: var(--space-2); }
+    .header-inner > .logo { grid-column: 1; grid-row: 1; justify-self: start; padding: var(--space-2); gap: var(--space-2); }
+    .header-inner > .logo .logo-mark { width: 30px; height: 30px; }
+    .header-inner > .logo .logo-text { font-size: var(--text-sm); }
+    .header-inner > .logo .logo-text small { display: none; }
+    .header-actions { grid-column: 2; grid-row: 1; padding-bottom: 0; }
+    .header-primary-nav { grid-column: 1 / -1; grid-row: 2; }
+    .header-actions .nav-account-copy { display: none; }
+}
+
+/* Khôi phục mẫu hóa đơn dạng thẻ, hỗ trợ sáng/tối và in giấy. */
+.receipt-card { max-width: 880px; margin: 0 auto; padding: var(--space-5); }
+.receipt-head { display: flex; justify-content: space-between; align-items: flex-start; gap: var(--space-4); }
+.receipt-head h1 { margin-bottom: var(--space-1); }
+.receipt-meta { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--space-3); margin: var(--space-5) 0; }
+.receipt-meta div { min-width: 0; padding: var(--space-3); border-radius: var(--radius-md); background: var(--surface-2); }
+.receipt-meta dt { color: var(--text-muted); font-size: var(--text-xs); text-transform: uppercase; letter-spacing: .06em; }
+.receipt-meta dd { margin: var(--space-1) 0 0; font-weight: 700; overflow-wrap: anywhere; }
+.receipt-showtime { padding: var(--space-4); border-left: 4px solid var(--accent-500); background: var(--surface-2); }
+.receipt-showtime h2, .receipt-showtime p { margin: 0; }
+.receipt-showtime p { margin-top: var(--space-1); color: var(--text-muted); }
+.receipt-table { margin-top: var(--space-5); }
+.receipt-table th:not(:first-child), .receipt-table td:not(:first-child) { text-align: right; white-space: nowrap; }
+.receipt-table td small { display: block; }
+.receipt-totals { width: min(100%, 420px); margin: var(--space-5) 0 var(--space-4) auto; }
+.receipt-totals > div { display: flex; justify-content: space-between; gap: var(--space-4); padding: var(--space-2) 0; }
+.receipt-total { border-top: 2px solid var(--border-strong); font-size: var(--text-xl); }
+.receipt-note { padding: var(--space-3); background: var(--tint-brand); border-radius: var(--radius-md); }
+@media (max-width: 480px) {
+    .receipt-card { padding: var(--space-3); }
+    .receipt-head { flex-wrap: wrap; }
+    .receipt-meta { grid-template-columns: 1fr; }
+}
+@media print {
+    .receipt-card {
+        --text: #172033;
+        --text-muted: #5a6478;
+        --surface-2: #f3f6fc;
+        --border: #d3d9e6;
+        --border-strong: #2b3550;
+        color: var(--text);
+        background: #fff;
+    }
+    .receipt-card .table-wrap { overflow: visible; }
 }

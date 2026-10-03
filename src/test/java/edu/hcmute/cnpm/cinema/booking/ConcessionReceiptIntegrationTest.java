@@ -137,6 +137,9 @@ class ConcessionReceiptIntegrationTest extends IntegrationTestBase {
         jdbcTemplate.update("UPDATE ticket_refunds SET payment_method = 'MOMO_DEMO' WHERE id = ?", refund.getId());
 
         mockMvc.perform(get("/ve-cua-toi").sessionAttr(Constants.SESSION_USER, customer))
+                .andExpect(status().is3xxRedirection())
+                .andExpect(org.springframework.test.web.servlet.result.MockMvcResultMatchers.redirectedUrl("/lich-su-dat-ve"));
+        mockMvc.perform(get("/lich-su-dat-ve/{code}", order.getReceiptCode()).sessionAttr(Constants.SESSION_USER, customer))
                 .andExpect(status().isOk())
                 .andExpect(content().string(org.hamcrest.Matchers.containsString("MoMo giả lập Nhóm 8")))
                 .andExpect(content().string(org.hamcrest.Matchers.containsString("Hoàn tiền mô phỏng")));

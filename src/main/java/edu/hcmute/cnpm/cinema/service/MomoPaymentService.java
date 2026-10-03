@@ -1,5 +1,6 @@
 package edu.hcmute.cnpm.cinema.service;
 
+import edu.hcmute.cnpm.cinema.util.MoneyFormatter;
 import edu.hcmute.cnpm.cinema.config.MomoProperties;
 import edu.hcmute.cnpm.cinema.constants.Constants;
 import edu.hcmute.cnpm.cinema.dto.payment.MomoCheckout;
@@ -312,7 +313,7 @@ public class MomoPaymentService {
     }
 
     private static String formatMoney(long amount) {
-        return String.format(Locale.US, "%,d đ", amount).replace(',', '.');
+        return MoneyFormatter.format(amount);
     }
 
     private static String value(Map<String, String> params, String key) {

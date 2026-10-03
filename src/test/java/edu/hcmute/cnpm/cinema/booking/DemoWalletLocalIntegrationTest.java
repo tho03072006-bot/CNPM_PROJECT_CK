@@ -2,6 +2,8 @@ package edu.hcmute.cnpm.cinema.booking;
 
 import edu.hcmute.cnpm.cinema.constants.Constants;
 import edu.hcmute.cnpm.cinema.controller.DemoWalletSessions;
+import edu.hcmute.cnpm.cinema.config.DemoWalletCompatibility;
+import edu.hcmute.cnpm.cinema.exception.DemoWalletUnavailableException;
 import edu.hcmute.cnpm.cinema.entity.*;
 import edu.hcmute.cnpm.cinema.support.IntegrationTestBase;
 import java.time.LocalDateTime;
@@ -13,6 +15,9 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockHttpSession;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
+import static org.assertj.core.api.Assertions.*;
+import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 import static org.hamcrest.Matchers.*;
@@ -25,6 +30,7 @@ class DemoWalletLocalIntegrationTest extends IntegrationTestBase {
     private static final String ID="aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee";
     @Autowired MockMvc mvc;
     @Autowired DemoWalletSessions sessions;
+    @MockitoBean DemoWalletCompatibility compatibility;
     @Test void localWalletHomeRedirectsToOnline() throws Exception {
         mvc.perform(get("/demo-wallet")).andExpect(status().isFound())
                 .andExpect(header().string("Location","https://wallet.group8.test/demo-wallet"));
@@ -55,5 +61,20 @@ class DemoWalletLocalIntegrationTest extends IntegrationTestBase {
                 .andExpect(content().string(containsString("https://wallet.group8.test/demo-wallet/pay/")))
                 .andExpect(content().string(not(containsString("/demo-wallet/demo-wallet/"))))
                 .andExpect(content().string(not(containsString("http://localhost:8082/demo-wallet/pay/"))));
+    }
+    @Test void incompatibleWalletCannotIssueQrOrModifyDraftAndHeldTickets() throws Exception {
+        User user=testDataFactory.createCustomer("legacy-wallet@test.local");
+        Movie movie=testDataFactory.createMovie("Ví chưa đồng bộ"); Room room=testDataFactory.createRoom("Cinema 1",1,6);
+        Showtime showtime=testDataFactory.createShowtime(movie,room,LocalDateTime.now().plusDays(2));
+        Ticket ticket=ticketRepository.saveAndFlush(testDataFactory.newHeldTicket(showtime,testDataFactory.createSeat(room,"A",1),user));
+        var heldAtBefore=ticketRepository.findById(ticket.getId()).orElseThrow().getHeldAt();
+        doThrow(new DemoWalletUnavailableException("Ví chưa đồng bộ")).when(compatibility).requireCompatible();
+        MockHttpSession session=new MockHttpSession(); session.setAttribute(Constants.SESSION_USER,user);
+        mvc.perform(post("/thanh-toan/"+showtime.getId()+"/demo-wallet").session(session).accept(MediaType.APPLICATION_JSON)
+                .param("walletCsrf",sessions.csrf(session)).param("ticketIds",ticket.getId().toString()))
+                .andExpect(redirectedUrl("/thanh-toan/"+showtime.getId())).andExpect(flash().attribute(Constants.MODEL_ERROR_MESSAGE,"Ví chưa đồng bộ"));
+        assertThat(demoPaymentRepository.count()).isZero(); assertThat(bookingOrderRepository.count()).isZero();
+        assertThat(ticketRepository.findById(ticket.getId()).orElseThrow().getHeldAt()).isEqualTo(heldAtBefore);
+        assertThat(ticketRepository.findById(ticket.getId()).orElseThrow().getStatus()).isEqualTo(TicketStatus.HELD);
     }
 }

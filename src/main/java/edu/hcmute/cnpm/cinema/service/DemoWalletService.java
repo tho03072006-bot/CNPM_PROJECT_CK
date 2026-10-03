@@ -1,6 +1,7 @@
 package edu.hcmute.cnpm.cinema.service;
 
 import edu.hcmute.cnpm.cinema.config.DemoWalletSettings;
+import edu.hcmute.cnpm.cinema.config.DemoWalletCompatibility;
 import edu.hcmute.cnpm.cinema.constants.Constants;
 import edu.hcmute.cnpm.cinema.dto.payment.DemoWalletRequest;
 import edu.hcmute.cnpm.cinema.entity.*;
@@ -24,11 +25,14 @@ public class DemoWalletService {
     private final BookingClock clock;
     private final PaymentService paymentService;
     private final BookingOrderService orders;
+    private final DemoWalletCompatibility compatibility;
     public DemoWalletService(DemoWalletSettings settings, DemoWalletSecurity security,
             DemoPaymentRepository payments, TicketRepository tickets, BookingLockService locks,
-            BookingClock clock, PaymentService paymentService, BookingOrderService orders) {
+            BookingClock clock, PaymentService paymentService, BookingOrderService orders,
+            DemoWalletCompatibility compatibility) {
         this.settings=settings;this.security=security;this.payments=payments;this.tickets=tickets;
         this.locks=locks;this.clock=clock;this.paymentService=paymentService;this.orders=orders;
+        this.compatibility=compatibility;
     }
     public record Issued(String publicId, String token, Long showtimeId) implements java.io.Serializable {}
     public record View(String publicId, String status, String movieTitle, String roomName,
@@ -40,6 +44,7 @@ public class DemoWalletService {
     public Issued create(Long userId, Long showtimeId, List<Long> expectedIds, Issued previous) {
         settings.requireEnabled(); settings.getPublicBaseUrl();
         requireCustomer(userId); HoldIdentity.requireMatch(expectedIds, expectedIds == null ? List.of() : expectedIds);
+        compatibility.requireCompatible();
         locks.lock(showtimeId);
         PaymentService.Checkout checkout = paymentService.prepareCheckout(userId, showtimeId, expectedIds);
         if (!Boolean.TRUE.equals(checkout.tickets().getFirst().getShowtime().getMovie().getActive()))

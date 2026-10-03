@@ -47,14 +47,17 @@ public class TicketRefundService {
     private final TicketRepository ticketRepository;
     private final TicketRefundRepository refundRepository;
     private final MomoApiClient momoApiClient;
+    private final BookingSnapshotService snapshots;
 
     public TicketRefundService(TicketRepository ticketRepository, TicketRefundRepository refundRepository,
-                               MomoApiClient momoApiClient, BookingLockService locks, TicketCodeService codes) {
+                               MomoApiClient momoApiClient, BookingLockService locks, TicketCodeService codes,
+                               BookingSnapshotService snapshots) {
         this.locks = locks;
         this.codes = codes;
         this.ticketRepository = ticketRepository;
         this.refundRepository = refundRepository;
         this.momoApiClient = momoApiClient;
+        this.snapshots = snapshots;
     }
 
     /** Tính xem vé này huỷ được không và được hoàn bao nhiêu. Không huỷ được thì ném lỗi kèm lý do. */
@@ -145,7 +148,7 @@ public class TicketRefundService {
 
         boolean isFullRefund = timeLeft.compareTo(Duration.ofHours(FULL_REFUND_HOURS)) >= 0;
         int percent = isFullRefund ? 100 : PARTIAL_REFUND_PERCENT;
-        BigDecimal amount = ticket.getPrice().multiply(BigDecimal.valueOf(percent))
+        BigDecimal amount = paidPriceAfterDiscount(ticket).multiply(BigDecimal.valueOf(percent))
                 .divide(BigDecimal.valueOf(100), 0, RoundingMode.HALF_UP).setScale(2, RoundingMode.UNNECESSARY);
         String explanation = isFullRefund
                 ? "Còn từ " + FULL_REFUND_HOURS + " giờ trở lên trước giờ chiếu nên được hoàn đủ 100%."
@@ -163,7 +166,8 @@ public class TicketRefundService {
         refund.setRoomName(ticket.getShowtime().getRoom().getName());
         refund.setSeatLabel(ticket.getSeat().getSeatRow() + ticket.getSeat().getSeatColumn());
         refund.setShowtimeStart(ticket.getShowtime().getStartTime());
-        refund.setPaidPrice(ticket.getPrice());
+        refund.setPaidPrice(paidPriceAfterDiscount(ticket));
+        refund.setOriginalPrice(ticket.getOriginalPrice());
         refund.setRefundPercent(quote.getRefundPercent());
         refund.setRefundAmount(quote.getRefundAmount());
         // Vé trả trước ngày có cột payment_method để trống: coi như trả tại quầy.
@@ -172,5 +176,28 @@ public class TicketRefundService {
         refund.setPaidAt(ticket.getPaidAt());
         refund.setRefundedAt(now);
         return refund;
+    }
+
+    /** Phân bổ ưu đãi theo giá gốc, cộng dồn để không hoàn nhiều hơn số tiền đã trả. */
+    private BigDecimal paidPriceAfterDiscount(Ticket ticket) {
+        // Voucher đã phân bổ trực tiếp trên giá vé: không trừ ưu đãi lần thứ hai.
+        if (ticket.getBookingOrder() != null && ticket.getBookingOrder().getVoucherCode() != null)
+            return ticket.getPrice();
+        var order = ticket.getBookingOrder();
+        if (order == null || order.getDiscountAmount().signum() == 0) return ticket.getPrice();
+        BigDecimal subtotal = order.getTicketSubtotal().add(order.getConcessionSubtotal());
+        if (subtotal.signum() == 0) return BigDecimal.ZERO;
+        BigDecimal previous = BigDecimal.ZERO;
+        for (var saved : snapshots.read(order).stream()
+                .sorted(java.util.Comparator.comparing(edu.hcmute.cnpm.cinema.dto.booking.BookedTicketSnapshot::ticketId)).toList()) {
+            BigDecimal next = previous.add(saved.price());
+            if (saved.ticketId().equals(ticket.getId())) {
+                BigDecimal before = previous.multiply(order.getDiscountAmount()).divide(subtotal, 0, RoundingMode.DOWN);
+                BigDecimal after = next.multiply(order.getDiscountAmount()).divide(subtotal, 0, RoundingMode.DOWN);
+                return saved.price().subtract(after.subtract(before)).max(BigDecimal.ZERO);
+            }
+            previous = next;
+        }
+        throw new BusinessException("Thiếu thông tin phân bổ ưu đãi của vé. Vui lòng liên hệ hỗ trợ.");
     }
 }
