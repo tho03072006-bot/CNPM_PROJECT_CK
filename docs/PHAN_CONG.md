@@ -94,6 +94,17 @@ Không nằm trong kế hoạch ban đầu, làm thêm để sản phẩm dùng 
 Cách làm và lý do thiết kế: ADR-3 trong [`DATABASE.md`](DATABASE.md), test ở mục 3 và 9 của
 [`KE_HOACH_KIEM_THU.md`](KE_HOACH_KIEM_THU.md).
 
+## Đợt bổ sung tháng 10/2026
+
+| Người | Việc | Trang / chỗ đổi | Trạng thái |
+|---|---|---|---|
+| Thọ | 2.1. Suất chiếu trong ngày: lịch theo ngày và theo phòng, tên phim, phòng, giờ bắt đầu, giờ hết phim dự kiến, tình trạng từng suất, số khách đã vào, để nhân viên điều phối khách ra vào | `/nhan-vien/suat-chieu` | Xong, 10 test |
+| Thọ | 2.2. Sắp xếp giờ giữa các suất: không trùng giờ trong cùng phòng, nghỉ tối thiểu 15 phút giữa hai suất liên tiếp (nhóm thống nhất), báo giờ sớm nhất được bắt đầu khi xếp sai | `/admin/showtimes`, cấu hình `app.showtime.break-minutes` | Xong, 5 test |
+
+Phần 2.2 có sửa vào code suất chiếu của Module 1 (`ShowtimeService`, form thêm suất chiếu và
+`module1-forms.js`) để khoảng nghỉ lấy từ một dòng cấu hình thay vì viết cứng 15 phút ở ba nơi.
+Test ở mục "Bổ sung ngày 03/10" của [`KE_HOACH_KIEM_THU.md`](KE_HOACH_KIEM_THU.md).
+
 ---
 
 ## Trước khi bắt đầu code — làm đủ 4 bước này
