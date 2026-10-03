@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout" layout:decorate="~{layout/base}">
+<head><title>Soát vé</title></head>
+<body><div layout:fragment="content">
+
+    <section class="module1-section-head" aria-labelledby="staff-title">
+        <div>
+            <span class="module1-kicker">NHÂN VIÊN</span>
+            <h1 id="staff-title">Soát vé</h1>
+            <p class="text-muted">Tra theo mã in trên vé, hoặc theo email nếu khách quên mã.</p>
+        </div>
+    </section>
+
+    <div class="staff-search-grid">
+        <form class="card account-form" th:action="@{/nhan-vien/soat-ve}" method="get"
+              role="search" aria-labelledby="by-code-title">
+            <h2 id="by-code-title" class="staff-search-title">Tra theo mã vé</h2>
+            <div class="form-field">
+                <label for="ma">Mã vé</label>
+                <input class="form-control" id="ma" name="ma" type="text" th:value="${ticketCode}"
+                       inputmode="numeric" autocomplete="off" required maxlength="20" placeholder="#12">
+                <span class="form-hint">In ở dòng đầu thẻ vé, có dạng #12.</span>
+            </div>
+            <button class="btn" type="submit">Soát vé</button>
+        </form>
+
+        <form class="card account-form" th:action="@{/nhan-vien/soat-ve}" method="get"
+              role="search" aria-labelledby="by-email-title">
+            <h2 id="by-email-title" class="staff-search-title">Tra theo email khách</h2>
+            <div class="form-field">
+                <label for="email">Email</label>
+                <input class="form-control" id="email" name="email" type="email" th:value="${email}"
+                       autocomplete="off" required maxlength="150" placeholder="khach@example.com">
+                <span class="form-hint">Chỉ hiện vé của các suất chiếu chưa kết thúc.</span>
+            </div>
+            <button class="btn btn-ghost" type="submit">Tìm vé của khách</button>
+        </form>
+    </div>
+
+    <!-- ===== Kết quả tra theo mã vé ===== -->
+    <section class="staff-result" th:if="${result != null}" aria-labelledby="result-title">
+        <h2 id="result-title" class="sr-only">Kết quả soát vé</h2>
+
+        <div class="alert staff-verdict" role="status"
+             th:classappend="${result.valid} ? 'alert-success' : 'alert-error'">
+            <strong class="staff-verdict-label" th:switch="${result.verdict.name()}">
+                <span th:case="'VALID'">CHO VÀO</span>
+                <span th:case="'NOT_PAID'">CHƯA THANH TOÁN</span>
+                <span th:case="'WRONG_DAY'">SAI NGÀY</span>
+                <span th:case="'CHECKED_IN'">ĐÃ VÀO PHÒNG</span>
+                <span th:case="*">ĐÃ HẾT SUẤT</span>
+            </strong>
+            <span th:text="${result.message}">Lời giải thích</span>
+        </div>
+
+        <!-- Vé hợp lệ: bấm để ghi giờ vào phòng, từ đó vé không dùng lại được. -->
+        <form class="staff-checkin" th:if="${result.valid}"
+              th:action="@{/nhan-vien/soat-ve/{id}/vao-phong(id=${result.ticket.id})}" method="post">
+            <button class="btn btn-accent" type="submit" th:text="|Cho vào phòng · vé #${result.ticket.id}|">Cho vào phòng</button>
+        </form>
+
+        <p class="staff-customer"
+           th:text="|Khách: ${result.ticket.user.fullName} · ${result.ticket.user.email}${result.ticket.user.phone != null and !#strings.isEmpty(result.ticket.user.phone) ? ' · ' + result.ticket.user.phone : ''}|">
+            Khách: Họ tên · email</p>
+
+        <div class="account-ticket-list">
+            <div th:replace="~{account/ticket-fragment :: ticketCard(${result.ticket})}"></div>
+        </div>
+    </section>
+
+    <!-- ===== Kết quả tra theo email ===== -->
+    <section class="staff-result" th:if="${emailResults != null}" aria-labelledby="email-result-title">
+        <h2 id="email-result-title" class="pricing-block-title"
+            th:text="|Vé sắp tới của ${email}|">Vé sắp tới của khách</h2>
+
+        <div class="module1-empty" th:if="${#lists.isEmpty(emailResults)}">
+            <span class="module1-empty-icon" aria-hidden="true">◷</span>
+            <h3>Không có vé nào sắp tới</h3>
+            <p>Khách này không có vé cho suất chiếu nào chưa kết thúc.</p>
+        </div>
+
+        <div class="account-ticket-list" th:unless="${#lists.isEmpty(emailResults)}">
+            <div class="staff-email-item" th:each="item : ${emailResults}">
+                <p class="staff-email-verdict">
+                    <span class="badge" th:classappend="${item.valid} ? 'badge-ok' : 'badge-danger'"
+                          th:text="${item.valid} ? 'Cho vào' : 'Chưa cho vào'">Cho vào</span>
+                    <span th:text="${item.message}">Lời giải thích</span>
+                </p>
+                <form class="staff-checkin" th:if="${item.valid}"
+                      th:action="@{/nhan-vien/soat-ve/{id}/vao-phong(id=${item.ticket.id})}" method="post">
+                    <input type="hidden" name="email" th:value="${email}">
+                    <button class="btn btn-accent btn-sm" type="submit"
+                            th:text="|Cho vào phòng · vé #${item.ticket.id}|">Cho vào phòng</button>
+                </form>
+                <div th:replace="~{account/ticket-fragment :: ticketCard(${item.ticket})}"></div>
+            </div>
+        </div>
+    </section>
+
+</div></body></html>

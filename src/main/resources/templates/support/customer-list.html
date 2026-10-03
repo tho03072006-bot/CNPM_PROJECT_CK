@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout" layout:decorate="~{layout/base}">
+<head><title>Chăm sóc khách hàng</title></head>
+<body><div layout:fragment="content">
+    <section class="module1-admin-head">
+        <div>
+            <span class="module1-kicker">CHĂM SÓC KHÁCH HÀNG</span>
+            <h1>Rạp hỗ trợ bạn</h1>
+            <p class="text-muted">Gửi câu hỏi về vé, thanh toán, hoàn tiền hoặc dịch vụ tại rạp.</p>
+        </div>
+        <a class="btn btn-accent" th:href="@{/ho-tro/moi}">+ Gửi yêu cầu mới</a>
+    </section>
+
+    <div class="module1-empty" th:if="${#lists.isEmpty(conversations)}">
+        <span class="module1-empty-icon" aria-hidden="true">💬</span>
+        <h2>Bạn chưa có yêu cầu hỗ trợ</h2>
+        <p>Khi cần trợ giúp, tin nhắn của bạn sẽ được nhân viên rạp tiếp nhận tại đây.</p>
+    </div>
+
+    <div class="support-list" th:unless="${#lists.isEmpty(conversations)}">
+        <a class="card support-list-item" th:each="conversation : ${conversations}"
+           th:href="@{/ho-tro/{id}(id=${conversation.id})}">
+            <div>
+                <span class="support-category" th:text="${conversation.category.label}">Thanh toán</span>
+                <h2 th:text="${conversation.subject}">Tiêu đề</h2>
+                <p class="text-muted" th:text="|Cập nhật ${#temporals.format(conversation.updatedAt, 'HH:mm dd/MM/yyyy')}|">Cập nhật</p>
+            </div>
+            <span class="badge" th:classappend="${conversation.status.name() == 'RESOLVED'} ? 'badge-ok' : 'badge-accent'"
+                  th:text="${conversation.status.label}">Chờ rạp trả lời</span>
+        </a>
+    </div>
+</div></body></html>

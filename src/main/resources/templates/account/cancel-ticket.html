@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout" layout:decorate="~{layout/base}">
+<head><title>Huỷ vé</title></head>
+<body><div layout:fragment="content">
+
+    <section class="module1-section-head" aria-labelledby="cancel-title">
+        <div>
+            <span class="module1-kicker">VÉ CỦA TÔI</span>
+            <h1 id="cancel-title" th:text="|Huỷ vé #${quote.ticket.id}|">Huỷ vé #12</h1>
+            <p class="text-muted">Kiểm tra số tiền được hoàn trước khi xác nhận. Huỷ rồi không lấy lại được.</p>
+        </div>
+    </section>
+
+    <div class="account-ticket-list">
+        <div th:replace="~{account/ticket-fragment :: ticketCard(${quote.ticket})}"></div>
+    </div>
+
+    <div class="card account-summary">
+        <div class="account-summary-line">
+            <span th:text="|Được hoàn ${quote.refundPercent}%|">Được hoàn 100%</span>
+            <strong th:text="|${#numbers.formatDecimal(quote.refundAmount, 0, 'POINT', 0, 'COMMA')} đ|">115.000 đ</strong>
+        </div>
+        <p class="text-muted account-summary-note" th:text="${quote.explanation}">Lý do</p>
+        <p class="text-muted account-summary-note"
+           th:text="${quote.ticket.paymentMethod != null and quote.ticket.paymentMethod.name() == 'MOMO_DEMO'}
+                    ? 'Vé thanh toán thử nghiệm: hủy vé chỉ ghi nhận hoàn tiền mô phỏng, không chuyển tiền thật.'
+                    : (${quote.ticket.paymentMethod != null and quote.ticket.paymentMethod.name() == 'MOMO'}
+                       ? 'Vé trả qua MoMo nên tiền được hoàn thẳng về ví MoMo.'
+                       : 'Vé trả tại quầy nên bạn nhận lại tiền mặt tại quầy vé.')">Hoàn về đâu</p>
+
+        <details class="refund-policy">
+            <summary>Chính sách hoàn tiền của rạp</summary>
+            <ul>
+                <li th:text="|Huỷ trước giờ chiếu từ ${fullRefundHours} giờ trở lên: hoàn 100%.|">≥ 24 giờ: 100%</li>
+                <li th:text="|Huỷ trước giờ chiếu từ ${minCancelHours} tới dưới ${fullRefundHours} giờ: hoàn ${partialRefundPercent}%.|">2–24 giờ: 50%</li>
+                <li th:text="|Dưới ${minCancelHours} giờ, suất đã chiếu hoặc vé đã soát vào phòng: không nhận huỷ.|">Dưới 2 giờ: không huỷ</li>
+            </ul>
+        </details>
+
+        <div class="account-actions">
+            <form th:action="@{/ve-cua-toi/{id}/huy(id=${quote.ticket.id})}" method="post">
+                <button class="btn btn-accent" type="submit">Xác nhận huỷ vé</button>
+            </form>
+            <a class="btn btn-ghost" th:href="@{/ve-cua-toi}">Giữ lại vé</a>
+        </div>
+    </div>
+
+</div></body></html>

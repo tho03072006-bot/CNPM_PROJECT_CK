@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout/base}">
+<head>
+    <title>Bộ giao diện dùng chung</title>
+</head>
+<body>
+<!--
+  Trang trưng bày design system cho cả nhóm xem và chép lại (Thọ quản lý).
+  Mở http://localhost:8082/ui-kit để xem.
+
+  Thêm thành phần mới vào style.css thì nhớ thêm một mục minh hoạ ở đây,
+  không thì người khác không biết là đã có sẵn và lại tự chế thêm một kiểu nữa.
+-->
+<div layout:fragment="content">
+
+    <section class="animate-in">
+        <h1>Bộ giao diện dùng chung</h1>
+        <p class="text-muted">
+            Trang này liệt kê sẵn các thành phần giao diện của dự án. Cần dùng cái nào thì
+            chép đúng class ở đây về, đừng tự viết CSS riêng cho module mình — để giao diện
+            4 người làm ra nhìn như một người làm. Bấm nút góc trên bên phải để xem cả hai
+            chế độ sáng và tối.
+        </p>
+    </section>
+
+    <!-- ============================ NÚT ============================ -->
+    <section class="animate-in animate-in-delay-1">
+        <h2 class="section-title">Nút</h2>
+        <div class="card">
+            <div class="hero-actions" style="margin-top: 0;">
+                <button type="button" class="btn">Nút chính</button>
+                <button type="button" class="btn btn-accent">Nút nhấn mạnh</button>
+                <button type="button" class="btn btn-ghost">Nút viền</button>
+                <button type="button" class="btn btn-sm">Nút nhỏ</button>
+                <button type="button" class="btn" disabled>Nút bị khoá</button>
+            </div>
+            <p class="form-hint" style="margin-top: var(--space-4);">
+                <code>.btn</code> &middot; <code>.btn.btn-accent</code> &middot;
+                <code>.btn.btn-ghost</code> &middot; <code>.btn.btn-sm</code>
+            </p>
+        </div>
+    </section>
+
+    <!-- ========================= NHÃN TRẠNG THÁI ========================= -->
+    <section class="animate-in animate-in-delay-1">
+        <h2 class="section-title">Nhãn trạng thái</h2>
+        <div class="card">
+            <p>
+                <span class="badge badge-brand">Đang chiếu</span>
+                <span class="badge badge-accent">Ghế VIP</span>
+                <span class="badge badge-ok">Đã thanh toán</span>
+                <span class="badge badge-danger">Đã huỷ</span>
+            </p>
+            <p class="form-hint">
+                <code>.badge.badge-brand</code> &middot; <code>.badge-accent</code> &middot;
+                <code>.badge-ok</code> &middot; <code>.badge-danger</code>
+            </p>
+        </div>
+    </section>
+
+    <!-- ========================== THÔNG BÁO ========================== -->
+    <section class="animate-in animate-in-delay-2">
+        <h2 class="section-title">Thông báo</h2>
+        <div class="alert alert-success" role="status">Đã lưu phim mới thành công.</div>
+        <div class="alert alert-error" role="alert">Ghế này vừa có người khác giữ mất rồi. Vui lòng chọn ghế khác.</div>
+        <p class="form-hint">
+            Thực tế không cần tự viết 2 thẻ này: đặt
+            <code>Constants.MODEL_SUCCESS_MESSAGE</code> hoặc <code>MODEL_ERROR_MESSAGE</code>
+            vào model là fragment <code>alert</code> trong layout tự hiện.
+        </p>
+    </section>
+
+    <!-- ============================ THẺ ============================ -->
+    <section class="animate-in animate-in-delay-2">
+        <h2 class="section-title">Thẻ</h2>
+        <div class="card-grid">
+            <div class="card">
+                <h3>Thẻ thường</h3>
+                <p class="text-muted">Dùng cho khối nội dung bình thường. Class <code>.card</code>.</p>
+            </div>
+            <div class="card card-hover">
+                <h3>Thẻ bấm được</h3>
+                <p class="text-muted">Nhấc lên khi rê chuột. Thêm <code>.card-hover</code>.</p>
+            </div>
+            <div class="ticket">
+                <h3>Thẻ hình vé</h3>
+                <p class="text-muted">Có răng cưa hai bên, hợp với trang xác nhận vé. Class <code>.ticket</code>.</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- ========================== THẺ PHIM ========================== -->
+    <section class="animate-in animate-in-delay-3">
+        <h2 class="section-title">Thẻ phim</h2>
+        <div class="card-grid">
+            <article class="movie-card">
+                <div class="movie-poster">
+                    <span class="badge badge-accent">C16</span>
+                </div>
+                <div class="movie-body">
+                    <h3 class="movie-title">Tên phim hiển thị ở đây</h3>
+                    <p class="movie-meta">Hành động &middot; 120 phút</p>
+                    <p style="margin-top: auto;">
+                        <a class="btn btn-sm" th:href="@{/ui-kit}">Đặt vé</a>
+                    </p>
+                </div>
+            </article>
+            <article class="movie-card">
+                <div class="movie-poster">
+                    <span class="badge badge-brand">P</span>
+                </div>
+                <div class="movie-body">
+                    <h3 class="movie-title">Phim thứ hai, tên dài hơn một chút để thử xuống dòng</h3>
+                    <p class="movie-meta">Hoạt hình &middot; 95 phút</p>
+                    <p style="margin-top: auto;">
+                        <a class="btn btn-sm" th:href="@{/ui-kit}">Đặt vé</a>
+                    </p>
+                </div>
+            </article>
+        </div>
+        <p class="form-hint">
+            Khi Module 1 có dữ liệu thật thì đặt thẻ <code>&lt;img&gt;</code> poster vào trong
+            <code>.movie-poster</code>; chưa có ảnh thì ô này vẫn là nền xanh chuyển sắc, không bị vỡ bố cục.
+        </p>
+    </section>
+
+    <!-- ============================ FORM ============================ -->
+    <section class="animate-in animate-in-delay-3">
+        <h2 class="section-title">Form</h2>
+        <div class="card" style="max-width: 460px;">
+            <div class="form-field">
+                <label for="demo-email">Email</label>
+                <input class="form-control" id="demo-email" type="email" placeholder="ban@example.com">
+                <span class="form-hint">Vé sẽ được gửi về địa chỉ này.</span>
+            </div>
+            <div class="form-field">
+                <label for="demo-room">Phòng chiếu</label>
+                <select class="form-control" id="demo-room">
+                    <option>Phòng 1</option>
+                    <option>Phòng 2 (VIP)</option>
+                </select>
+            </div>
+            <div class="form-field">
+                <label for="demo-error">Ô đang báo lỗi</label>
+                <input class="form-control" id="demo-error" type="text" value="20:00"
+                       aria-describedby="demo-error-msg">
+                <span class="form-error" id="demo-error-msg">Giờ chiếu bị trùng với suất khác trong cùng phòng.</span>
+            </div>
+            <button type="button" class="btn">Lưu lại</button>
+        </div>
+    </section>
+
+    <!-- ============================ BẢNG ============================ -->
+    <section class="animate-in animate-in-delay-4">
+        <h2 class="section-title">Bảng dữ liệu</h2>
+        <div class="table-wrap">
+            <table class="admin-table">
+                <thead>
+                    <tr>
+                        <th>Mã vé</th>
+                        <th>Phim</th>
+                        <th>Ghế</th>
+                        <th>Trạng thái</th>
+                        <th>Giá</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>#1024</td>
+                        <td>Tên phim mẫu</td>
+                        <td>A1</td>
+                        <td><span class="badge badge-ok">Đã thanh toán</span></td>
+                        <td>75.000 đ</td>
+                    </tr>
+                    <tr>
+                        <td>#1025</td>
+                        <td>Tên phim mẫu</td>
+                        <td>A2</td>
+                        <td><span class="badge badge-accent">Đang giữ</span></td>
+                        <td>75.000 đ</td>
+                    </tr>
+                    <tr>
+                        <td>#1026</td>
+                        <td>Tên phim mẫu</td>
+                        <td>B5</td>
+                        <td><span class="badge badge-danger">Hết hạn giữ</span></td>
+                        <td>90.000 đ</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        <p class="form-hint">
+            Luôn bọc bảng trong <code>.table-wrap</code> để trên điện thoại bảng cuộn ngang
+            thay vì đẩy vỡ cả trang.
+        </p>
+    </section>
+
+    <!-- ========================== SƠ ĐỒ GHẾ ========================== -->
+    <section class="animate-in animate-in-delay-4">
+        <h2 class="section-title">Sơ đồ ghế</h2>
+        <div class="card">
+            <div class="screen">Màn hình</div>
+
+            <div class="seat-map-scroll">
+                <div class="seat-map" style="grid-template-columns: repeat(8, 34px);">
+                    <div class="seat available">A1</div>
+                    <div class="seat available">A2</div>
+                    <div class="seat selected">A3</div>
+                    <div class="seat held">A4</div>
+                    <div class="seat booked">A5</div>
+                    <div class="seat available">A6</div>
+                    <div class="seat available">A7</div>
+                    <div class="seat available">A8</div>
+                    <div class="seat available">B1</div>
+                    <div class="seat booked">B2</div>
+                    <div class="seat booked">B3</div>
+                    <div class="seat available">B4</div>
+                    <div class="seat available">B5</div>
+                    <div class="seat available">B6</div>
+                    <div class="seat held">B7</div>
+                    <div class="seat available">B8</div>
+                </div>
+            </div>
+
+            <div class="seat-legend">
+                <span><i class="legend-available"></i> Còn trống</span>
+                <span><i class="legend-selected"></i> Bạn đang chọn</span>
+                <span><i class="legend-held"></i> Người khác đang giữ</span>
+                <span><i class="legend-booked"></i> Đã bán</span>
+            </div>
+        </div>
+        <p class="form-hint">
+            Ghế đang giữ và ghế đã bán để <code>cursor: not-allowed</code> và không nhấc lên khi rê chuột
+            — người dùng nhìn là biết bấm cũng không được. Nhưng nhớ là chặn ở giao diện chỉ để cho dễ nhìn,
+            việc chặn đặt trùng thật sự vẫn nằm ở ràng buộc UNIQUE dưới database (ADR-1).
+        </p>
+    </section>
+
+    <!-- =========================== ĐANG TẢI =========================== -->
+    <section class="animate-in animate-in-delay-4">
+        <h2 class="section-title">Trạng thái đang xử lý</h2>
+        <div class="card">
+            <p>
+                <svg class="spinner" viewBox="0 0 48 48" aria-hidden="true" focusable="false">
+                    <g fill="currentColor">
+                        <rect x="21" y="1" width="6" height="11" rx="2"/>
+                        <rect x="21" y="36" width="6" height="11" rx="2"/>
+                        <rect x="1" y="21" width="11" height="6" rx="2"/>
+                        <rect x="36" y="21" width="11" height="6" rx="2"/>
+                        <g transform="rotate(45 24 24)">
+                            <rect x="21" y="1" width="6" height="11" rx="2"/>
+                            <rect x="21" y="36" width="6" height="11" rx="2"/>
+                            <rect x="1" y="21" width="11" height="6" rx="2"/>
+                            <rect x="36" y="21" width="11" height="6" rx="2"/>
+                        </g>
+                    </g>
+                    <circle cx="24" cy="24" r="14" fill="var(--surface)"/>
+                </svg>
+                Đang giữ ghế cho bạn…
+            </p>
+            <p class="form-hint">
+                Class <code>.spinner</code>. Đây là animation lặp vô hạn duy nhất được phép dùng,
+                và chỉ dùng khi thật sự đang chờ máy chủ trả lời.
+            </p>
+        </div>
+    </section>
+
+</div>
+</body>
+</html>

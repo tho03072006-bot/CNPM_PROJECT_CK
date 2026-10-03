@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout" layout:decorate="~{layout/base}">
+<head><title>Bảng giá vé</title></head>
+<body><div layout:fragment="content">
+
+    <section class="module1-section-head" aria-labelledby="pricing-title">
+        <div>
+            <span class="module1-kicker">UTE CINEMA · BẢNG GIÁ</span>
+            <h1 id="pricing-title">Giá vé</h1>
+            <p class="text-muted">Giá vé thay đổi theo ngày trong tuần và theo loại phòng.
+                Thứ Tư là ngày có giá ưu đãi.</p>
+        </div>
+    </section>
+
+    <section class="pricing-block" aria-labelledby="price-table-title">
+        <h2 id="price-table-title" class="pricing-block-title">Giá vé ghế thường</h2>
+
+        <!--
+          Đối chiếu giá công bố với giá thật đang gắn vào các suất chiếu sắp tới. Khách không
+          cần thấy việc này; chỉ quản trị viên thấy, và chỉ khi có chỗ lệch cần sửa.
+        -->
+        <div class="alert alert-error" role="alert"
+             th:with="lech=${priceRows.?[presentInSchedule and !matchingSchedule]}"
+             th:if="${session.LOGGED_IN_USER != null and session.LOGGED_IN_USER.role.name() == 'ADMIN' and !#lists.isEmpty(lech)}">
+            <strong>Giá trong lịch chiếu đang lệch với bảng giá công bố:</strong>
+            <span th:each="row, it : ${lech}"
+                  th:text="|${row.roomType} (${row.dayGroup}) đang để ${row.pricesInScheduleText} đ${it.last ? '.' : '; '}|">Premium</span>
+            Sửa giá ở trang quản trị suất chiếu.
+        </div>
+
+        <div class="pricing-table-wrap">
+            <table class="admin-table pricing-table">
+                <caption class="pricing-caption">
+                    Giá cho một ghế thường. Ghế VIP và ghế đôi tính thêm theo bảng phía dưới.
+                </caption>
+                <thead><tr>
+                    <th scope="col">Loại phòng</th>
+                    <th scope="col">Áp dụng cho</th>
+                    <th scope="col">Giá vé</th>
+                </tr></thead>
+                <tbody>
+                <tr th:each="row : ${priceRows}"
+                    th:classappend="${row.highlighted} ? ' is-deal' : ''">
+                    <th scope="row"><span class="room-badge" th:text="${row.roomType}"
+                        th:classappend="${row.roomType == 'Gold Class'} ? 'room-badge-gold' : (${row.roomType == 'Premium'} ? 'room-badge-premium' : 'room-badge-standard')">Phòng thường</span></th>
+                    <td>
+                        <span th:text="${row.dayGroup}">Thứ Hai, Thứ Ba, Thứ Năm</span>
+                        <span class="badge badge-accent pricing-deal-tag" th:if="${row.highlighted}">Ưu đãi</span>
+                    </td>
+                    <td class="pricing-amount"
+                        th:text="|${#numbers.formatDecimal(row.price, 0, 'POINT', 0, 'COMMA')} đ|">115.000 đ</td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+    </section>
+
+    <section class="pricing-block" aria-labelledby="surcharge-title">
+        <h2 id="surcharge-title" class="pricing-block-title">Phụ thu theo loại ghế</h2>
+
+        <div class="pricing-table-wrap">
+            <table class="admin-table pricing-table">
+                <caption class="pricing-caption">
+                    Cột ví dụ tính trên giá gốc
+                    <strong th:text="|${#numbers.formatDecimal(exampleBasePrice, 0, 'POINT', 0, 'COMMA')} đ|">115.000 đ</strong>.
+                </caption>
+                <thead><tr>
+                    <th scope="col">Loại ghế</th>
+                    <th scope="col">Giải thích</th>
+                    <th scope="col">Hệ số</th>
+                    <th scope="col">Thành tiền</th>
+                </tr></thead>
+                <tbody>
+                <tr th:each="seat : ${seatSurcharges}">
+                    <th scope="row" th:text="${seat.seatTypeLabel}">Ghế VIP</th>
+                    <td class="pricing-desc" th:text="${seat.description}">Giải thích</td>
+                    <td th:text="|x ${seat.multiplier}|">x 1.5</td>
+                    <td class="pricing-amount"
+                        th:text="|${#numbers.formatDecimal(seat.examplePrice, 0, 'POINT', 0, 'COMMA')} đ|">172.500 đ</td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+    </section>
+
+    <div class="pricing-actions">
+        <a class="btn btn-accent" th:href="@{/lich-chieu}">Xem lịch chiếu</a>
+        <a class="btn btn-ghost" th:href="@{/movies}">Danh sách phim</a>
+    </div>
+
+</div></body></html>

@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout/base}">
+<head>
+    <title>Chọn ghế</title>
+</head>
+<body>
+<div layout:fragment="content">
+    <section class="animate-in">
+        <h1>Chọn ghế xem phim</h1>
+        <h2 th:text="${seatMap.movieTitle}">Tên phim</h2>
+        <!-- Loại phòng có nhãn màu riêng, cùng kiểu với trang lịch chiếu và chi tiết phim. -->
+        <p class="seat-page-meta">
+            <span class="room-badge" th:classappend="|room-badge-${seatMap.roomType.cssModifier}|"
+                  th:text="${seatMap.roomType.label}">Phòng thường</span>
+            <span th:text="${seatMap.roomName}">Phòng chiếu</span> ·
+            <time th:text="${#temporals.format(seatMap.startTime, 'HH:mm dd/MM/yyyy')}">Giờ chiếu</time>
+        </p>
+        <p class="text-muted seat-page-room-note" th:text="${seatMap.roomType.description}">Mô tả loại phòng</p>
+        <p th:if="${session.LOGGED_IN_USER == null}" class="alert alert-error" role="status">
+            Bạn cần đăng nhập trước khi giữ ghế.
+        </p>
+        <p class="form-hint">
+            Đặt vé trực tuyến đóng trước giờ chiếu
+            <strong th:text="|${bookingCutoffMinutes} phút|">5 phút</strong>.
+        </p>
+        <noscript><p class="alert alert-error">Vui lòng bật JavaScript để chọn và giữ ghế.</p></noscript>
+
+        <form id="booking-form"
+              th:attr="data-hold-url=@{/booking/showtime/{id}/hold(id=${seatMap.showtimeId})},data-max-admissions=${maximumAdmissions},data-state-url=@{/booking/showtime/{id}/state(id=${seatMap.showtimeId})},data-suggestions-url=@{/booking/showtime/{id}/suggestions(id=${seatMap.showtimeId})}">
+            <div class="card">
+                <div class="screen">Màn hình</div>
+                <p th:if="${#lists.isEmpty(seatMap.seats)}" class="text-muted">
+                    Phòng chiếu chưa có ghế để đặt.
+                </p>
+                <div class="seat-map-scroll">
+                    <!--
+                      Lưới gồm cột nhãn hàng ở hai đầu và một cột cho mỗi số ghế. Ghế đặt đúng
+                      dòng, đúng cột theo dữ liệu, nên phòng có ghế bị thiếu vẫn không lệch hàng.
+                    -->
+                    <div class="seat-map" th:style="|grid-template-columns: 22px repeat(${seatMap.gridColumns}, 34px) 22px;|"
+                         role="group" aria-label="Sơ đồ ghế">
+                        <th:block th:each="row : ${seatMap.rows}">
+                            <span class="seat-row-label" aria-hidden="true"
+                                  th:style="|grid-row: ${row.gridRow}; grid-column: 1;|" th:text="${row.rowLabel}">A</span>
+                            <button th:each="seat : ${row.seats}" type="button" class="seat"
+                                    th:with="priceText=${#numbers.formatDecimal(seat.price, 0, 'POINT', 0, 'COMMA')}"
+                                    th:classappend="|${seat.available ? 'available' : (seat.status == 'PAID' ? 'booked' : 'held')} seat-${seat.cssModifier}|"
+                                    th:style="|grid-row: ${row.gridRow}; grid-column: ${seat.seatColumn + 1};|"
+                                    th:disabled="${!seat.available}"
+                                    th:attr="data-seat-id=${seat.id},data-seat-row=${seat.seatRow},data-seat-column=${seat.seatColumn},data-seat-status=${seat.status},data-capacity=${seat.capacity},data-price=${seat.price},data-type-short=${seat.seatTypeShortLabel},data-seat-owned=${activeHold != null && activeHold.containsSeat(seat.id)},data-seat-label=|Ghế ${seat.seatRow}${seat.seatColumn}, ${seat.seatTypeLabel}, ${priceText} đồng|,aria-label=|Ghế ${seat.seatRow}${seat.seatColumn}, ${seat.seatTypeLabel}, ${priceText} đồng, ${seat.statusLabel}|"
+                                    th:title="|${seat.seatTypeLabel} · ${priceText} đ · ${seat.statusLabel}|"
+                                    aria-pressed="false" th:text="|${seat.seatRow}${seat.seatColumn}|">A1</button>
+                            <span class="seat-row-label" aria-hidden="true"
+                                  th:style="|grid-row: ${row.gridRow}; grid-column: ${seatMap.gridColumns + 2};|" th:text="${row.rowLabel}">A</span>
+                        </th:block>
+                    </div>
+                </div>
+
+                <!-- Chú thích chia hai nhóm: loại ghế (kèm giá thật của suất này) và tình trạng ghế. -->
+                <div class="seat-legend-groups">
+                    <div class="seat-legend">
+                        <span class="seat-legend-title">Loại ghế</span>
+                        <span th:each="option : ${seatMap.seatTypeOptions}">
+                            <i class="legend-type" th:classappend="|legend-type-${option.cssModifier()}|" aria-hidden="true"></i>
+                            <span th:text="${option.label()}">Ghế thường</span>
+                            <strong th:text="|${#numbers.formatDecimal(option.price(), 0, 'POINT', 0, 'COMMA')} đ|">115.000 đ</strong>
+                            <small th:if="${option.capacity() > 1}" th:text="|(${option.capacity()} người)|">(2 người)</small>
+                        </span>
+                    </div>
+                    <div class="seat-legend">
+                        <span class="seat-legend-title">Tình trạng</span>
+                        <span><i class="legend-available"></i>Còn trống</span>
+                        <span><i class="legend-selected"></i>Bạn đang chọn</span>
+                        <span><i class="legend-held"></i>Đang giữ / chưa mở lại</span>
+                        <span><i class="legend-booked"></i>Đã bán</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card">
+                <h2 class="section-title">Ghế đã chọn</h2>
+                <p id="selected-seats" aria-live="polite">Bạn chưa chọn ghế.</p>
+                <p>
+                    Số chỗ: <strong id="admission-count" th:text="|0/${maximumAdmissions}|">0/8</strong>
+                    · Tổng tiền dự kiến: <strong id="total-price">0 ₫</strong>
+                </p>
+                <p id="selection-hint" class="form-hint" role="status" aria-live="polite">
+                    Bấm vào ghế còn trống để chọn, bấm lần nữa để bỏ chọn.
+                </p>
+                <!-- Quy định của dự án; kiểm tra tương ứng ở SeatSelectionPolicy. -->
+                <ul class="seat-rules">
+                    <li th:text="|Tối đa ${maximumAdmissions} chỗ mỗi lượt, ghế đôi tính là 2 chỗ.|">Tối đa 8 chỗ mỗi lượt.</li>
+                    <li>Ngồi hàng nào, chọn liền nhau hay tách ra là tuỳ bạn.</li>
+                    <li>Không để trống đúng một ghế lẻ sát bên ghế bạn chọn, vì ghế lẻ đó khó có người mua.</li>
+                </ul>
+                <div class="seat-suggestions">
+                    <h3>Gợi ý ghế liền nhau</h3>
+                    <div class="module1-form-grid"><div class="form-field"><label for="suggest-admissions">Số người</label>
+                    <input class="form-control" id="suggest-admissions" type="number" min="1" max="8" value="2"></div>
+                    <div class="form-field"><label for="suggest-type">Loại ghế</label>
+                    <select class="form-control" id="suggest-type"><option value="ANY">Bất kỳ</option><option value="NORMAL">Ghế thường</option>
+                        <option value="VIP">Ghế VIP</option><option value="COUPLE">Ghế đôi</option></select></div>
+                    <div class="form-field module1-field-full"><label for="suggest-budget">Ngân sách tối đa (đồng, có thể bỏ trống)</label>
+                    <input class="form-control" id="suggest-budget" type="number" min="1" step="1" placeholder="Ví dụ: 300000"></div></div>
+                    <button id="suggest-button" type="button" class="btn btn-ghost">Gợi ý ghế</button>
+                </div>
+                <p id="age-message" class="form-hint"></p>
+                <label><input id="age-confirmed" type="checkbox"> Tôi xác nhận tất cả người xem đáp ứng điều kiện độ tuổi và người giám hộ nêu trên.</label>
+                <p class="form-hint">Xác nhận này không thay giấy tờ kiểm tra độ tuổi tại rạp.</p>
+                <label><input id="terms-accepted" type="checkbox"> Tôi đồng ý quy định tối đa 8 chỗ, giữ ghế 5 phút,
+                    đóng đặt vé trước giờ chiếu 5 phút và không tạo ghế lẻ mới.</label>
+                <p id="sync-status" class="form-hint" role="status" aria-live="polite"></p>
+                <button id="hold-button" class="btn" type="submit" disabled
+                        th:attr="data-can-hold=${session.LOGGED_IN_USER != null}">Giữ ghế</button>
+                <button id="refresh-seats-button" class="btn btn-ghost" type="button">Cập nhật sơ đồ ghế</button>
+                <button id="cancel-edit-button" class="btn btn-ghost" type="button" hidden>Giữ nguyên ghế cũ</button>
+                <p id="booking-message" role="status" aria-live="polite" hidden></p>
+
+                <!--
+                  Đồng hồ đếm ngược thời gian giữ ghế (M2.5). Ẩn cho tới khi giữ ghế
+                  thành công. Dùng aria-live="off" vì số nhảy mỗi giây, để "polite"
+                  thì trình đọc màn hình sẽ đọc liên tục không cho người dùng làm gì.
+                -->
+                <div id="hold-timer" class="seat-hold-timer" hidden
+                     th:attr="data-cancel-url=@{/booking/showtime/{id}/cancel(id=${seatMap.showtimeId})},data-pay-url=@{/bap-nuoc/{id}(id=${seatMap.showtimeId})},data-expires-at=${activeHold != null ? activeHold.expiresAt : ''},data-held-seat-ids=${activeHold != null ? #strings.listJoin(activeHold.seatIds, ',') : ''}">
+                    <div>
+                        <p class="seat-hold-timer-label">Ghế đang được giữ cho bạn. Thời gian còn lại:</p>
+                        <p class="seat-hold-timer-value" id="hold-timer-value" role="timer" aria-live="off">05:00</p>
+                        <p class="text-muted" id="held-seat-summary">
+                            Ghế: <strong id="held-seat-labels"
+                                         th:text="${activeHold != null ? #strings.listJoin(activeHold.seatLabels, ', ') : ''}"></strong>
+                            · Tổng tiền: <strong id="held-total-price"
+                                                 th:text="${activeHold != null ? #numbers.formatDecimal(activeHold.totalPrice, 0, 'POINT', 0, 'COMMA') + ' ₫' : ''}"></strong>
+                        </p>
+                    </div>
+                    <div class="seat-hold-timer-actions">
+                        <a id="hold-pay-link" class="btn btn-accent" href="#">Tiếp tục chọn bắp nước</a>
+                        <button id="change-seats-button" class="btn btn-ghost" type="button">Đổi ghế</button>
+                        <button id="hold-cancel-button" class="btn btn-ghost" type="button">Huỷ giữ ghế</button>
+                    </div>
+                </div>
+            </div>
+        </form>
+    </section>
+
+    <!-- JavaScript chỉ dùng tại trang đặt ghế, không sửa tài nguyên dùng chung. -->
+    <script th:inline="javascript">window.cinemaBookingInitial = /*[[${initialState}]]*/ null;</script>
+    <script th:src="@{/js/seat-booking.js}" defer></script>
+</div>
+</body>
+</html>

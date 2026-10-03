@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout" layout:decorate="~{layout/base}">
+<head><title th:text="|Sơ đồ ${room.name}|">Sơ đồ phòng chiếu</title></head>
+<body><div layout:fragment="content">
+    <a class="module1-back-link" th:href="@{/admin/rooms}"><span aria-hidden="true">←</span> Quản lý phòng chiếu</a>
+
+    <div class="module1-admin-head">
+        <div>
+            <span class="module1-kicker">SƠ ĐỒ PHÒNG CHIẾU</span>
+            <h1 th:text="${room.name}">Phòng 1</h1>
+            <p class="text-muted" th:text="|${room.totalRows} hàng × ${room.totalColumns} cột · ${#lists.size(seats)} ghế|">
+                Kích thước phòng
+            </p>
+        </div>
+        <a class="btn btn-ghost" th:href="@{/admin/rooms/{id}/edit(id=${room.id})}">Sửa phòng</a>
+    </div>
+
+    <section class="card module1-room-preview" aria-labelledby="seat-map-title">
+        <div class="module1-room-preview-head">
+            <div>
+                <h2 id="seat-map-title">Sơ đồ ghế</h2>
+                <p class="text-muted">Xem trước bố cục ghế đã được tạo cho phòng này.</p>
+            </div>
+            <div class="module1-room-stats">
+                <span><strong th:text="${normalSeatCount}">60</strong> ghế thường</span>
+                <span><strong th:text="${vipSeatCount}">20</strong> ghế VIP</span>
+            </div>
+        </div>
+
+        <div class="screen">Màn hình</div>
+        <div class="seat-map-scroll">
+            <div class="seat-map module1-seat-preview"
+                 th:style="|grid-template-columns: repeat(${room.totalColumns}, 34px);|">
+                <span class="seat" th:each="seat : ${seats}"
+                      th:classappend="${seat.seatType == 'VIP'} ? ' vip' : ' available'"
+                      th:text="|${seat.seatRow}${seat.seatColumn}|"
+                      th:title="|Ghế ${seat.seatRow}${seat.seatColumn} · ${seat.seatType == 'VIP' ? 'VIP' : 'Thường'}|">
+                    A1
+                </span>
+            </div>
+        </div>
+        <div class="seat-legend">
+            <span><i class="legend-available"></i> Ghế thường</span>
+            <span><i class="module1-legend-vip"></i> Ghế VIP</span>
+        </div>
+    </section>
+</div></body></html>

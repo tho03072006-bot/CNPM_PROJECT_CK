@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<body>
+<!--
+  Fragment thông báo dùng chung (Thọ quản lý - không tự ý sửa).
+
+  Fragment này ĐÃ ĐƯỢC NHÚNG SẴN trong layout/base.html, nghĩa là mọi trang kế thừa
+  layout đều tự động có chỗ hiện thông báo - bạn KHÔNG cần gọi lại trong trang của mình.
+
+  Cách dùng trong Controller:
+    // báo thành công rồi chuyển trang
+    redirectAttributes.addFlashAttribute(Constants.MODEL_SUCCESS_MESSAGE, "Đã lưu phim mới.");
+    return "redirect:/admin/movies";
+
+    // báo lỗi ngay trên trang đang mở
+    model.addAttribute(Constants.MODEL_ERROR_MESSAGE, "Giờ chiếu bị trùng với suất khác.");
+    return "movie/showtime-form";
+
+  Lưu ý: các lỗi ném từ Service (BusinessException...) thì KHÔNG cần tự set thông báo ở đây,
+  GlobalExceptionHandler đã lo rồi.
+
+  role="status" / role="alert" để trình đọc màn hình đọc lên ngay khi thông báo xuất hiện.
+-->
+<div th:fragment="alert">
+    <div class="alert alert-success" role="status"
+         th:if="${successMessage}" th:text="${successMessage}"></div>
+    <div class="alert alert-error" role="alert"
+         th:if="${errorMessage}" th:text="${errorMessage}"></div>
+</div>
+</body>
+</html>

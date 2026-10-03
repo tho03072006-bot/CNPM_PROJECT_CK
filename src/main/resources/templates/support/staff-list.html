@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout" layout:decorate="~{layout/base}">
+<head><title>Hộp thư chăm sóc khách hàng</title></head>
+<body><div layout:fragment="content">
+    <section class="module1-admin-head">
+        <div><span class="module1-kicker">NHÂN VIÊN RẠP</span><h1>Hộp thư chăm sóc khách hàng</h1>
+            <p class="text-muted">Ưu tiên yêu cầu đang chờ rạp trả lời.</p></div>
+    </section>
+    <form class="card support-filter" method="get" th:action="@{/nhan-vien/ho-tro}">
+        <label for="status">Trạng thái</label>
+        <select id="status" class="form-control" name="status">
+            <option value="">Tất cả</option>
+            <option th:each="status : ${statuses}" th:value="${status}" th:text="${status.label}"
+                    th:selected="${selectedStatus == status}">Trạng thái</option>
+        </select>
+        <button class="btn" type="submit">Lọc</button>
+    </form>
+    <div class="module1-empty" th:if="${#lists.isEmpty(conversations)}"><h2>Không có yêu cầu phù hợp</h2></div>
+    <div class="support-list" th:unless="${#lists.isEmpty(conversations)}">
+        <a class="card support-list-item" th:each="conversation : ${conversations}"
+           th:href="@{/nhan-vien/ho-tro/{id}(id=${conversation.id})}">
+            <div><span class="support-category" th:text="${conversation.category.label}">Thanh toán</span>
+                <h2 th:text="${conversation.subject}">Tiêu đề</h2>
+                <p class="text-muted" th:text="|${conversation.customer.fullName} · ${conversation.customer.email}|">Khách hàng</p></div>
+            <div class="support-list-state"><span class="badge" th:classappend="${conversation.status.name() == 'RESOLVED'} ? 'badge-ok' : 'badge-accent'"
+                 th:text="${conversation.status.label}">Chờ trả lời</span>
+                <time th:text="${#temporals.format(conversation.updatedAt, 'HH:mm dd/MM/yyyy')}">10:00</time></div>
+        </a>
+    </div>
+</div></body></html>

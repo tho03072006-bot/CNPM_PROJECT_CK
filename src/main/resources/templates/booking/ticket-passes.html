@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org"><body>
+<!-- Dùng chung trên hóa đơn và trang chi tiết, mỗi QR cùng tham chiếu đến ID số của vé. -->
+<div th:fragment="passes(ticketViews,receiptCode,refundQuotes,interactive)" class="booking-ticket-passes">
+    <article class="booking-ticket-pass" th:each="ticket : ${ticketViews}" th:classappend="${ticket.refunded()} ? 'is-refunded' : ''">
+        <div class="booking-ticket-pass-copy">
+            <p class="booking-ticket-seat" th:text="|Ghế ${ticket.seatLabel()}|">Ghế D6</p>
+            <p class="text-muted" th:text="${ticket.seatTypeLabel()}">Ghế thường</p>
+            <dl><div><dt>Mã vé</dt><dd th:text="|#${ticket.ticketId()}|">#48</dd></div><div><dt>Giá vé</dt><dd th:text="|${#numbers.formatDecimal(ticket.price(), 0, 'POINT', 0, 'COMMA')} đ|">135.000 đ</dd></div></dl>
+            <span class="booking-ticket-state" th:text="${ticket.statusLabel()}">Đã thanh toán</span>
+            <div class="booking-ticket-actions" th:if="${interactive}">
+                <a class="module1-card-link" th:if="${ticket.qrSvg() != null}"
+                   th:href="@{/lich-su-dat-ve/{code}/ve/{id}/qr.svg(code=${receiptCode},id=${ticket.ticketId()})}"
+                   th:attr="download=|ute-cinema-ve-${ticket.ticketId()}.svg|">Lưu ảnh QR</a>
+                <a class="btn btn-ghost btn-sm" th:if="${refundQuotes != null and refundQuotes.containsKey(ticket.ticketId())}"
+                   th:href="@{/ve-cua-toi/{id}/huy(id=${ticket.ticketId()})}"
+                   th:text="|Hủy vé · hoàn ${refundQuotes[ticket.ticketId()].refundPercent}%|">Hủy vé</a>
+            </div>
+        </div>
+        <div class="booking-ticket-qr" th:if="${ticket.qrSvg() != null}" th:utext="${ticket.qrSvg()}"></div>
+    </article>
+</div></body></html>

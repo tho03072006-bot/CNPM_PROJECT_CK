@@ -1,0 +1,124 @@
+package edu.hcmute.cnpm.cinema.service;
+
+import edu.hcmute.cnpm.cinema.constants.Constants;
+import edu.hcmute.cnpm.cinema.dto.booking.SeatMapView;
+import edu.hcmute.cnpm.cinema.dto.booking.SeatView;
+import edu.hcmute.cnpm.cinema.entity.Seat;
+import edu.hcmute.cnpm.cinema.entity.Showtime;
+import edu.hcmute.cnpm.cinema.entity.Ticket;
+import edu.hcmute.cnpm.cinema.entity.TicketStatus;
+import edu.hcmute.cnpm.cinema.exception.InvalidBookingException;
+import edu.hcmute.cnpm.cinema.exception.ResourceNotFoundException;
+import edu.hcmute.cnpm.cinema.repository.SeatRepository;
+import edu.hcmute.cnpm.cinema.repository.ShowtimeRepository;
+import edu.hcmute.cnpm.cinema.repository.TicketRepository;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.time.LocalDateTime;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+@Service
+@Transactional(readOnly = true)
+public class SeatService {
+    private static final int ONLINE_BOOKING_CUTOFF_MINUTES = 5;
+
+    private final BookingClock clock;
+    private final ShowtimeRepository showtimeRepository;
+    private final SeatRepository seatRepository;
+    private final TicketRepository ticketRepository;
+    private final SeatPricingService seatPricingService;
+
+    public SeatService(ShowtimeRepository showtimeRepository, SeatRepository seatRepository,
+                       TicketRepository ticketRepository, SeatPricingService seatPricingService, BookingClock clock) {
+        this.clock = clock;
+        this.showtimeRepository = showtimeRepository;
+        this.seatRepository = seatRepository;
+        this.ticketRepository = ticketRepository;
+        this.seatPricingService = seatPricingService;
+    }
+
+    public SeatMapView findSeatMap(Long showtimeId) {
+        return buildSeatMap(findBookableShowtime(showtimeId));
+    }
+
+    /**
+     * Hiển thị lại sơ đồ cho khách đã có lượt giữ ghế còn hiệu lực.
+     * Khách vẫn được thanh toán hoặc huỷ trong thời gian giữ, nhưng không thể
+     * tạo lượt giữ mới sau mốc đóng bán trực tuyến.
+     */
+    public SeatMapView findSeatMapForActiveHold(Long showtimeId) {
+        return buildSeatMap(findFutureShowtime(showtimeId));
+    }
+
+    public SeatMapView buildSeatMap(Showtime showtime) {
+        Long showtimeId = showtime.getId();
+        Map<Long, String> seatStatuses = new HashMap<>();
+        LocalDateTime currentTime = clock.now();
+        List<Ticket> tickets = ticketRepository.findByShowtimeIdAndStatusIn(
+                showtimeId, List.of(TicketStatus.values()));
+        for (Ticket ticket : tickets) {
+            seatStatuses.put(ticket.getSeat().getId(), determineSeatStatus(ticket, currentTime));
+        }
+
+        List<SeatView> seats = seatRepository.findByRoomId(showtime.getRoom().getId()).stream()
+                .sorted(Comparator.comparing(Seat::getSeatRow).thenComparing(Seat::getSeatColumn))
+                .map(seat -> new SeatView(seat.getId(), seat.getSeatRow(), seat.getSeatColumn(),
+                        seat.getSeatType(),
+                        seatPricingService.calculateSeatPrice(showtime.getBasePrice(), seat.getSeatType()),
+                        seatStatuses.getOrDefault(seat.getId(), "AVAILABLE")))
+                .toList();
+        return new SeatMapView(showtimeId, showtime.getMovie().getTitle(), showtime.getRoom().getName(),
+                showtime.getStartTime(), showtime.getRoom().getTotalColumns(), seats);
+    }
+
+    public Showtime findBookableShowtime(Long showtimeId) {
+        Showtime showtime = findFutureShowtime(showtimeId);
+        LocalDateTime currentTime = clock.now();
+        if (!showtime.getStartTime().minusMinutes(ONLINE_BOOKING_CUTOFF_MINUTES)
+                .isAfter(currentTime)) {
+            throw new InvalidBookingException("Đặt vé trực tuyến đã đóng trước giờ chiếu "
+                    + ONLINE_BOOKING_CUTOFF_MINUTES + " phút. Bạn vui lòng chọn suất chiếu khác.");
+        }
+        return showtime;
+    }
+
+    public Showtime findFutureShowtime(Long showtimeId) {
+        if (showtimeId == null || showtimeId <= 0) {
+            throw new InvalidBookingException("Mã suất chiếu phải là số nguyên dương.");
+        }
+        Showtime showtime = showtimeRepository.findById(showtimeId)
+                .orElseThrow(() -> new ResourceNotFoundException("suất chiếu", showtimeId));
+        if (showtime.getStartTime() == null || !showtime.getStartTime().isAfter(clock.now())) {
+            throw new InvalidBookingException("Suất chiếu này đã bắt đầu, bạn không thể đặt vé nữa.");
+        }
+        if (showtime.getMovie() == null || !Boolean.TRUE.equals(showtime.getMovie().getActive())) {
+            throw new InvalidBookingException("Phim này hiện không nhận đặt vé.");
+        }
+        if (showtime.getRoom() == null || showtime.getRoom().getTotalColumns() == null
+                || showtime.getRoom().getTotalColumns() <= 0) {
+            throw new InvalidBookingException("Phòng chiếu chưa có cấu hình ghế hợp lệ.");
+        }
+        return showtime;
+    }
+
+    public int getOnlineBookingCutoffMinutes() {
+        return ONLINE_BOOKING_CUTOFF_MINUTES;
+    }
+
+    private String determineSeatStatus(Ticket ticket, LocalDateTime currentTime) {
+        if (ticket.getStatus() == TicketStatus.PAID) {
+            return "PAID";
+        }
+        if (ticket.getStatus() == TicketStatus.HELD && ticket.getHeldAt() != null
+                && ticket.getHeldAt().plusMinutes(Constants.SEAT_HOLD_MINUTES).isAfter(currentTime)) {
+            return "HELD";
+        }
+        // Nếu tác vụ dọn vé chưa kịp chạy thì UNIQUE vẫn còn giữ chỗ cho dòng cũ;
+        // không hiển thị ghế trống trước khi database thật sự giải phóng ghế.
+        return "UNAVAILABLE";
+    }
+}

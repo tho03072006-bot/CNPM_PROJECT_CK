@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<body>
+<!--
+  Thanh điều hướng dùng chung. Thêm mục menu thì nhắn nhóm một câu cho mọi
+  người biết, vì file này mọi trang đều dùng.
+
+  Hình logo: bánh răng lấy ý tưởng từ logo trường, ở giữa là lỗ phim.
+  Màu lấy từ biến CSS nên đổi tông màu cả trang thì hình này tự đổi theo.
+-->
+<header th:fragment="header" class="site-header" th:with="path=${currentPath ?: ''}">
+    <div class="container header-inner">
+        <a th:href="@{/}" class="logo">
+            <svg class="logo-mark" viewBox="0 0 48 48" aria-hidden="true" focusable="false">
+                <g fill="currentColor">
+                    <rect x="21" y="1" width="6" height="11" rx="2"/>
+                    <rect x="21" y="36" width="6" height="11" rx="2"/>
+                    <rect x="1" y="21" width="11" height="6" rx="2"/>
+                    <rect x="36" y="21" width="11" height="6" rx="2"/>
+                    <g transform="rotate(45 24 24)">
+                        <rect x="21" y="1" width="6" height="11" rx="2"/>
+                        <rect x="21" y="36" width="6" height="11" rx="2"/>
+                        <rect x="1" y="21" width="11" height="6" rx="2"/>
+                        <rect x="36" y="21" width="11" height="6" rx="2"/>
+                    </g>
+                </g>
+                <circle cx="24" cy="24" r="15" fill="currentColor"/>
+                <circle cx="24" cy="24" r="9.5" fill="var(--surface-inverse)"/>
+                <circle cx="24" cy="24" r="3.2" fill="currentColor"/>
+            </svg>
+            <span class="logo-text">
+                UTE Cinema
+                <small>Đặt vé xem phim</small>
+            </span>
+        </a>
+
+        <nav class="header-nav" aria-label="Điều hướng chính">
+            <a th:href="@{/}" th:classappend="${path == '/'} ? 'is-active' : ''"
+               th:attr="aria-current=${path == '/' ? 'page' : null}">Trang chủ</a>
+            <a th:href="@{/movies}" th:classappend="${path.startsWith('/movies')} ? 'is-active' : ''"
+               th:attr="aria-current=${path.startsWith('/movies') ? 'page' : null}">Phim</a>
+            <a th:href="@{/lich-chieu}" th:classappend="${path.startsWith('/lich-chieu')} ? 'is-active' : ''"
+               th:attr="aria-current=${path.startsWith('/lich-chieu') ? 'page' : null}">Lịch chiếu</a>
+            <a th:href="@{/gia-ve}" th:classappend="${path.startsWith('/gia-ve')} ? 'is-active' : ''"
+               th:attr="aria-current=${path.startsWith('/gia-ve') ? 'page' : null}">Giá vé</a>
+
+            <!--
+              Phiên đăng nhập nằm trong session dưới tên LOGGED_IN_USER
+              (xem Constants.SESSION_USER). Chưa đăng nhập thì hiện nút đăng nhập,
+              đăng nhập rồi thì hiện tên và lối vào trang tài khoản.
+            -->
+            <!--
+              Lối vào theo vai trò. Ẩn nút ở đây chỉ để giao diện gọn - quyền thật do
+              AdminAccessInterceptor và StaffAccessInterceptor chặn ở phía máy chủ.
+            -->
+            <a th:if="${session.LOGGED_IN_USER != null and session.LOGGED_IN_USER.role.name() == 'CUSTOMER'}"
+               th:href="@{/lich-su-dat-ve}" th:classappend="${path.startsWith('/lich-su-dat-ve') or path.startsWith('/ve-cua-toi')} ? 'is-active' : ''"
+               th:attr="aria-current=${path.startsWith('/lich-su-dat-ve') or path.startsWith('/ve-cua-toi') ? 'page' : null}">Lịch sử đặt vé</a>
+            <a th:if="${session.LOGGED_IN_USER != null and session.LOGGED_IN_USER.role.name() == 'CUSTOMER'}"
+               th:href="@{/ho-tro}" th:classappend="${path.startsWith('/ho-tro')} ? 'is-active' : ''"
+               th:attr="aria-current=${path.startsWith('/ho-tro') ? 'page' : null}">Hỗ trợ</a>
+            <a th:if="${session.LOGGED_IN_USER != null and session.LOGGED_IN_USER.role.name() != 'CUSTOMER'}"
+               th:href="@{/nhan-vien/soat-ve}" th:classappend="${path.startsWith('/nhan-vien/soat-ve')} ? 'is-active' : ''"
+               th:attr="aria-current=${path.startsWith('/nhan-vien/soat-ve') ? 'page' : null}">Soát vé</a>
+            <a th:if="${session.LOGGED_IN_USER != null and session.LOGGED_IN_USER.role.name() != 'CUSTOMER'}"
+               th:href="@{/nhan-vien/ho-tro}" class="nav-cskh"
+               th:classappend="${path.startsWith('/nhan-vien/ho-tro')} ? 'is-active' : ''"
+               th:attr="aria-current=${path.startsWith('/nhan-vien/ho-tro') ? 'page' : null}">
+                <span>CSKH</span>
+                <span class="nav-notification-badge" th:if="${pendingSupportCount > 0}"
+                      th:text="${pendingSupportCount > 99 ? '99+' : pendingSupportCount}"
+                      th:attr="aria-label=|${pendingSupportCount} yêu cầu mới từ khách hàng|">1</span>
+            </a>
+            <a th:if="${session.LOGGED_IN_USER != null and session.LOGGED_IN_USER.role.name() != 'CUSTOMER'}"
+               th:href="@{/nhan-vien/kho-bap-nuoc}" class="nav-with-badge"
+               th:classappend="${path.startsWith('/nhan-vien/kho-bap-nuoc')} ? 'is-active' : ''"
+               th:attr="aria-current=${path.startsWith('/nhan-vien/kho-bap-nuoc') ? 'page' : null}">
+                <span>Kho bắp nước</span>
+                <span class="nav-notification-badge" th:if="${restockCount > 0}"
+                      th:text="${restockCount > 99 ? '99+' : restockCount}"
+                      th:attr="aria-label=|${restockCount} món sắp hết hoặc đã hết|">1</span>
+            </a>
+            <a th:if="${session.LOGGED_IN_USER != null and session.LOGGED_IN_USER.role.name() == 'ADMIN'}"
+               th:href="@{/admin}" th:classappend="${path.startsWith('/admin')} ? 'is-active' : ''"
+               th:attr="aria-current=${path.startsWith('/admin') ? 'page' : null}">Quản trị</a>
+
+            <a th:if="${session.LOGGED_IN_USER == null}" th:href="@{/dang-nhap}"
+               th:classappend="${path.startsWith('/dang-nhap')} ? 'is-active' : ''">Đăng nhập</a>
+            <a th:if="${session.LOGGED_IN_USER != null}" th:href="@{/tai-khoan}" class="nav-account"
+               th:classappend="${path.startsWith('/tai-khoan')} ? 'is-active' : ''"
+               th:attr="aria-current=${path.startsWith('/tai-khoan') ? 'page' : null}">
+                <span class="nav-account-avatar" aria-hidden="true"
+                      th:text="${#strings.substring(session.LOGGED_IN_USER.fullName, 0, 1)}">N</span>
+                <span class="nav-account-copy">
+                    <strong th:text="${session.LOGGED_IN_USER.fullName}">Tên tài khoản</strong>
+                    <small th:text="${session.LOGGED_IN_USER.role.name() == 'ADMIN' ? 'Quản trị viên' : (session.LOGGED_IN_USER.role.name() == 'STAFF' ? 'Nhân viên rạp' : 'Khách hàng')}">Vai trò</small>
+                </span>
+            </a>
+            <a th:if="${session.LOGGED_IN_USER != null}" th:href="@{/dang-xuat}" class="nav-logout">Đăng xuất</a>
+
+            <!--
+              Nút đổi sáng/tối. Nhãn aria-label do theme.js đặt lại theo chế độ
+              đang dùng, nên người dùng trình đọc màn hình biết bấm vào sẽ ra gì.
+            -->
+            <button type="button" class="theme-toggle" data-theme-toggle
+                    aria-label="Chuyển giao diện sáng tối">
+                <svg class="icon-to-dark" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                     stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                     aria-hidden="true" focusable="false">
+                    <path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8Z"/>
+                </svg>
+                <svg class="icon-to-light" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                     stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                     aria-hidden="true" focusable="false">
+                    <circle cx="12" cy="12" r="4.2"/>
+                    <path d="M12 2v2.5M12 19.5V22M2 12h2.5M19.5 12H22M4.9 4.9l1.8 1.8M17.3 17.3l1.8 1.8M19.1 4.9l-1.8 1.8M6.7 17.3l-1.8 1.8"/>
+                </svg>
+            </button>
+        </nav>
+    </div>
+</header>
+</body>
+</html>
