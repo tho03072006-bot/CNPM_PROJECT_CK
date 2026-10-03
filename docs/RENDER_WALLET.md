@@ -148,3 +148,15 @@ Nếu web local có voucher mà Render vẫn chạy code cũ, thao tác xem tr�
 Bản sửa kiểm tra `checkoutVersion=2` trước khi tạo QR. Khi ví chưa đồng bộ hoặc chưa kết nối được, khách quay về trang thanh toán để thử lại/chọn phương thức khác, không phát hành mã và không kéo dài giữ ghế. Cần commit/push bản đã kiểm thử lên nhánh dịch vụ đang theo dõi, **Manual Deploy → Deploy latest commit** trên dịch vụ **momo-gia-lap-nhom8**, rồi kiểm tra health và tạo QR mới. Không cần tạo dịch vụ hoặc database mới.
 
 Kiểm chứng mới: 556 bài Java và 37 bài JavaScript đạt. Test hai backend độc lập dùng chung SQL `_test` giữ đúng voucher/bắp nước khi mở ví nhiều lần, từ chối số tiền sai và bảo đảm xác nhận lặp chỉ phát hành vé/trừ tồn kho một lần. Render thực tế vẫn cần deploy và thử quét trên điện thoại; sửa source local không tự cập nhật dịch vụ online.
+
+## Lỗi `Cannot read properties of undefined (reading 'format')`
+
+Trên bản online sau deploy, `/js/money.js` trả 200 nhưng URL trong template `/js/money.js?v=20261003-money-1` trả 404: gateway cũ chặn mọi query. Vì vậy `window.CinemaMoney` không được nạp dù health UP và checkoutVersion=2.
+
+Gateway mới chỉ cho phép một tham số `v` có giá trị chữ/số/gạch ngang/gạch dưới, tối đa 80 ký tự, trên GET của bốn tài nguyên ví đã cho phép. Query trên trang giao dịch/API/health, query trùng hoặc thêm tham số khác vẫn bị chặn. Query hợp lệ được chuyển tiếp đến Spring để cache phiên bản hoạt động đúng. Cả trang ví và QR dùng `demo-wallet.js?v=20261003-wallet-assets-4`.
+
+Ví còn có định dạng tiền bằng Intl dự phòng khi thư viện chung chưa tải được. Dự phòng chỉ hiển thị số tiền backend đã qua validation; không đổi số tiền xác nhận, thời hạn giữ ghế hoặc điều kiện thanh toán.
+
+Kiểm chứng bản sửa tài nguyên: 29 bài Java không dùng database, toàn bộ 39 bài JavaScript và bốn trường hợp Chrome qua gateway thật đạt. Trường hợp gồm desktop/mobile, thiếu money.js và phản hồi sai kiểu số tiền; script có phiên bản trả 200, không lỗi JavaScript, tiền đúng và xác nhận sai bị khóa. Giao dịch trong kiểm thử trình duyệt là dữ liệu giả, không dùng cloud.
+
+Sau khi commit/push và Manual Deploy bản này, kiểm tra **đúng URL có query**: `/js/money.js?v=20261003-money-1` và `/js/demo-wallet.js?v=20261003-wallet-assets-4` phải trả 200. Chỉ kiểm tra URL không có query hoặc health không đủ để xác minh bản sửa này. Tải lại trang ví để lấy script mới, tạo QR mới nếu lượt giữ cũ đã hết hạn.

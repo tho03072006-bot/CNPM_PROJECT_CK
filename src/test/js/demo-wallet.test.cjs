@@ -13,13 +13,13 @@ class Element {
     setAttribute(name,value){this[name]=value}getAttribute(name){return this[name]}
 }
 function state(status='PENDING',expires=300000){return {publicId:id,status,seatLabels:['A1','A2'],movieTitle:'Phim Nhóm 8',roomName:'Cinema 1',showtimeStart:'2026-10-03T10:00:00',amount:150000,expiresAtMillis:expires,serverTimeMillis:0,message:status};}
-function setup({role='wallet',paymentId=id,hash='#token='+token,stored=null}={}){
+function setup({role='wallet',paymentId=id,hash='#token='+token,stored=null,loadMoney=true}={}){
     const ids=['demo-wallet','wallet-message','wallet-countdown','wallet-status','wallet-actions','wallet-confirm','wallet-cancel','wallet-consent','wallet-movie','wallet-room','wallet-showtime','wallet-seats','wallet-order','wallet-amount','wallet-theme','wallet-import-form','wallet-link-input','wallet-copy','wallet-copy-link','wallet-refresh','wallet-qr-visual'];
     const elements=new Map(ids.map(i=>[i,new Element()])),root=elements.get('demo-wallet');
     root.dataset={role,paymentId,csrf:'device-csrf',statusUrl:'/merchant/status',finishUrl:'/merchant/finish'};
     const document=new Element();document.getElementById=i=>elements.get(i);document.documentElement=new Element();document.hidden=false;
     const window=new Element();window.matchMedia=()=>({matches:false});
-    vm.runInNewContext(fs.readFileSync('src/main/resources/static/js/money.js','utf8'), {window,Intl});
+    if (loadMoney) vm.runInNewContext(fs.readFileSync('src/main/resources/static/js/money.js','utf8'), {window,Intl});
     const storage=new Map(stored?[['g8-wallet-'+id,stored]]:[]);
     const sessionStorage={getItem:k=>storage.get(k),setItem:(k,v)=>storage.set(k,v)};
     const location={hash,pathname:'/demo-wallet/pay/'+id,origin:'https://g8.test',assign:v=>{location.assigned=v},replace:v=>{location.replaced=v}};
@@ -61,6 +61,20 @@ test('Consent is required and exact server amount is sent to confirm',async()=>{
     app.consent();assert.equal(app.el('wallet-confirm').disabled,false);app.confirm();await flush();
     const posts=app.requests.filter(r=>r.url.endsWith('/confirm'));assert.equal(posts.length,1);
     assert.deepEqual(posts[0].body,{token,expectedAmount:150000,confirmed:true});assert.equal(app.el('wallet-actions').hidden,true);
+});
+
+test('A missing money asset still displays the validated amount and requires consent',async()=>{
+    const app=setup({loadMoney:false});await flush();
+    assert.equal(app.el('wallet-amount').textContent,'150.000 đ');
+    assert.equal(app.el('wallet-message').hidden,true);assert.equal(app.el('wallet-confirm').disabled,true);
+    app.consent();app.confirm();await flush();
+    assert.equal(app.requests.filter(r=>r.url.endsWith('/confirm'))[0].body.expectedAmount,150000);
+});
+
+test('Fallback formatting cannot enable payment for an invalid server amount',async()=>{
+    const app=setup({loadMoney:false});await flush();app.consent();const invalid=state();invalid.amount='150000';
+    app.server(invalid);app.refresh();await flush();assert.equal(app.el('wallet-confirm').disabled,true);
+    app.confirm();await flush();assert.equal(app.requests.filter(r=>r.url.endsWith('/confirm')).length,0);
 });
 test('Lost confirmation response reads SUCCESS without another confirm request',async()=>{
     const app=setup();await flush();app.consent();

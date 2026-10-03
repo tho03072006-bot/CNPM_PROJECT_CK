@@ -9,7 +9,11 @@
     const validId = /^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$/;
     const validToken = /^[A-Za-z0-9_-]{43}$/;
     const states = new Set(['PENDING', 'SUCCESS', 'CANCELLED', 'EXPIRED', 'INVALIDATED']);
-    const money = window.CinemaMoney;
+    const moneyFallback = new Intl.NumberFormat('vi-VN', {
+        useGrouping: true, minimumFractionDigits: 0, maximumFractionDigits: 0
+    });
+    const formatMoney = amount => typeof window.CinemaMoney?.format === 'function'
+        ? window.CinemaMoney.format(amount) : moneyFallback.format(amount) + ' đ';
     let token = null, current = null, reliable = false, busy = false, syncing = false, revision = 0;
     let sampledAt = 0, remainingAtSample = 0, expiryAsked = false;
     let pendingTimer = null, actionError = null;
@@ -67,7 +71,7 @@
             }).format(new Date(state.showtimeStart + '+07:00'));
             el('wallet-seats').textContent = state.seatLabels.join(', ');
             el('wallet-order').textContent = state.publicId;
-            el('wallet-amount').textContent = money.format(state.amount);
+            el('wallet-amount').textContent = formatMoney(state.amount);
         }
         render();
         if (state.status !== 'PENDING') {

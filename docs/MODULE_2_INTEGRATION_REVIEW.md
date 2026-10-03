@@ -81,3 +81,11 @@ Hai backend Spring độc lập đã chạy với SQL kiểm thử chung: tái h
 Frontend đối chiếu đúng publicId, số tiền nguyên dương tối đa một tỷ, danh sách ghế không rỗng/trùng, thời gian và thông tin hiển thị hợp lệ. QR/copy bị khóa khi chưa xác minh hoặc hết thời gian, thông báo kết thúc không hiển thị lặp. Các validation token, CSRF theo thiết bị, đồng ý mô phỏng, hết hạn, đổi ghế/voucher, thanh toán đồng thời và xác nhận lặp đã được kiểm thử lại. Log: `target/wallet-fix-targeted-java.log`, `target/wallet-fix-full-java.log`, `target/wallet-fix-package.log`.
 
 Chưa commit/push/deploy theo yêu cầu chủ dự án. Sau khi đưa bản sửa lên nhánh Render đang theo dõi, cần Manual Deploy dịch vụ hiện có, kiểm tra health `UP`/`checkoutVersion=2` và tạo QR mới từ lượt giữ còn hiệu lực. QR đã INVALIDATED/EXPIRED không được tự kích hoạt lại.
+
+## Kiểm chứng tải tài nguyên ví sau deploy
+
+Chủ dự án đã commit bản tích hợp `7978769`. Bản online trả health UP/checkoutVersion=2, HTML nạp money.js có tham số phiên bản, nhưng gateway chặn query nên URL money.js có `v` trả 404, gây lỗi đọc `format` trên undefined.
+
+Bản sửa tiếp theo cho phép duy nhất query phiên bản hợp lệ trên tài nguyên GET được liệt kê, giữ nguyên hạn chế cho trang/API. Ví có định dạng tiền dự phòng và phiên bản JS mới. Đã chạy 29 kiểm thử Java tập trung (gateway/health, không database), toàn bộ 39 kiểm thử JavaScript và bốn ca trình duyệt qua gateway thật. Đây là kiểm tra bổ sung sau mốc toàn bộ 556 Java/37 JavaScript ở trên; không chạy lại test dọn database cloud.
+
+Trang mobile/desktop tải đúng script có query, hiển thị 441.000đ và xác nhận giao dịch giả thành công. Thiếu money.js vẫn định dạng đúng từ số tiền hợp lệ; phản hồi số tiền sai không được xác nhận. HTML là template thật, proxy là lớp DemoWalletGateway thật, browser riêng không dùng session người dùng. Ảnh/JSON/log cục bộ: `target/wallet-runtime-review/`, `target/wallet-assets-java.log`, `target/wallet-assets-package.log`.
