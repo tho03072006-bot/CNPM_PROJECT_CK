@@ -60,6 +60,9 @@
                th:href="@{/ho-tro}" th:classappend="${path.startsWith('/ho-tro')} ? 'is-active' : ''"
                th:attr="aria-current=${path.startsWith('/ho-tro') ? 'page' : null}">Hỗ trợ</a>
             <a th:if="${session.LOGGED_IN_USER != null and session.LOGGED_IN_USER.role.name() != 'CUSTOMER'}"
+               th:href="@{/nhan-vien/suat-chieu}" th:classappend="${path.startsWith('/nhan-vien/suat-chieu')} ? 'is-active' : ''"
+               th:attr="aria-current=${path.startsWith('/nhan-vien/suat-chieu') ? 'page' : null}">Suất chiếu</a>
+            <a th:if="${session.LOGGED_IN_USER != null and session.LOGGED_IN_USER.role.name() != 'CUSTOMER'}"
                th:href="@{/nhan-vien/soat-ve}" th:classappend="${path.startsWith('/nhan-vien/soat-ve')} ? 'is-active' : ''"
                th:attr="aria-current=${path.startsWith('/nhan-vien/soat-ve') ? 'page' : null}">Soát vé</a>
             <a th:if="${session.LOGGED_IN_USER != null and session.LOGGED_IN_USER.role.name() != 'CUSTOMER'}"

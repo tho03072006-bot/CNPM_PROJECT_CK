@@ -3,8 +3,12 @@
 Tài liệu này mô tả nhóm kiểm thử phần mềm thế nào, kiểm thử những gì, và vì sao chọn cách đó.
 Số liệu trong đây lấy từ lần chạy `mvn test` thật, không phải ước lượng.
 
-**Hiện trạng: 234 test, 234 đạt, 0 hỏng** (chạy `mvn test` trên máy ngày 30/09/2026, sau khi gộp
-Module 1 của Tài - PR #44 - và phần giữ ghế của Thắng - PR #45).
+**Hiện trạng: 494 test, 494 đạt, 0 hỏng** (chạy `mvn test` trên máy ngày 03/10/2026, sau khi thêm
+trang Suất chiếu trong ngày và quy tắc khoảng nghỉ giữa hai suất - mục 3 và mục 11).
+
+Test chạy theo giờ Việt Nam (`-Duser.timezone=Asia/Ho_Chi_Minh` trong `pom.xml`). Máy chạy CI của
+GitHub để giờ UTC, lệch 7 tiếng so với giờ của nghiệp vụ đặt vé, nên trước khi thêm dòng này
+có 71 test xanh trên máy nhưng đỏ trên CI.
 
 ---
 
@@ -33,9 +37,9 @@ thúc bằng `_test` trước khi làm bất cứ việc gì. Nếu ai đó sử
 
 | Tầng | Dùng khi | Cần database? | Số test |
 |---|---|---|---|
-| Unit test | Kiểm tra logic tính toán và kiểm tra dữ liệu đầu vào | Không | 58 |
-| Test MVC | Kiểm tra Controller, template và mã HTTP trả về | Không | 9 |
-| Test tích hợp | Kiểm tra nghiệp vụ chạy thật trên database | Có | 167 |
+| Unit test | Kiểm tra logic tính toán và kiểm tra dữ liệu đầu vào | Không | 164 |
+| Test MVC | Kiểm tra Controller, template và mã HTTP trả về | Không | 13 |
+| Test tích hợp | Kiểm tra nghiệp vụ chạy thật trên database | Có | 317 |
 
 Unit test chạy trong mili giây nên viết được nhiều và chạy liên tục lúc code. Test tích hợp chậm
 hơn nhưng là thứ duy nhất chứng minh được ràng buộc database có hoạt động thật hay không.
@@ -164,6 +168,19 @@ có ngày test đỏ không rõ lý do.
 bằng bản giả ngay trong `IntegrationTestBase`, và profile test đặt `app.mail.enabled=false`.
 Chữ ký MoMo thì vẫn ký thật bằng khoá test, để chứng minh được chữ ký giả bị từ chối.
 
+### Bổ sung ngày 03/10 — suất chiếu trong ngày, khoảng nghỉ giữa hai suất (15 test)
+
+| Lớp test | Số test | Kiểm tra điều gì |
+|---|---|---|
+| `DailyShowtimeServiceIntegrationTest` | 6 | Gom suất theo phòng, đúng giờ bắt đầu / hết phim / phòng trống lại; **đánh dấu chỗ nghỉ ngắn hơn quy định**; đếm vé đã bán và đã vào phòng (vé đang giữ không tính); tình trạng từng suất theo giờ; lọc theo phòng; vạch giờ hiện tại |
+| `StaffShowtimeBoardIntegrationTest` | 4 | Nhân viên và quản trị viên mở được trang, ngày trống báo rõ, **khách hàng bị chặn 403, chưa đăng nhập thì chuyển sang trang đăng nhập** |
+| `ShowtimeBreakRuleIntegrationTest` | 4 | **Thiếu một phút nghỉ là bị từ chối** và lời báo nêu giờ sớm nhất được bắt đầu; suất mới đặt trước suất cũ cũng phải chừa đủ nghỉ; suất cũ lưu theo khoảng nghỉ ngắn hơn vẫn bị so theo luật hiện hành; sửa giờ một suất không bị chính nó chặn |
+| `ShowtimeBreakConfigIntegrationTest` | 1 | Đổi `app.showtime.break-minutes=10` thì giờ kết thúc lưu xuống và phép kiểm tra đổi theo |
+
+`DailyShowtimeService` nhận "bây giờ" làm tham số thay vì tự đọc đồng hồ, nên test tình trạng
+từng suất (sắp chiếu → mở cửa đón khách → đang chiếu → dọn phòng → đã xong) chạy ra cùng một
+kết quả bất kể chạy lúc mấy giờ.
+
 ---
 
 ## 4. Ma trận: quy tắc nghiệp vụ ↔ test bảo vệ nó
@@ -175,6 +192,9 @@ Chữ ký MoMo thì vẫn ký thật bằng khoá test, để chứng minh đư�
 | Tải lại trang không làm mất ghế hoặc đặt lại đồng hồ giữ | `SeatHoldServiceTest`, `BookingControllerTest` |
 | Một tài khoản không thể mở hai lượt giữ cho cùng suất chiếu | `SeatBookingServiceTest`, `SeatBookingServiceIntegrationTest` |
 | Một phòng không thể chiếu hai phim cùng lúc | `ShowtimeServiceIntegrationTest` |
+| Hai suất liên tiếp trong cùng phòng cách nhau ít nhất khoảng nghỉ đã thống nhất (15 phút) | `ShowtimeBreakRuleIntegrationTest`, `ShowtimeBreakConfigIntegrationTest` |
+| Nhân viên thấy được suất nào đang đón khách, phòng nào đang dọn, chỗ nghỉ nào bị thiếu | `DailyShowtimeServiceIntegrationTest` |
+| Khách hàng không xem được lịch điều phối của nhân viên | `StaffShowtimeBoardIntegrationTest` |
 | Mật khẩu không bao giờ lưu dạng thô | `AuthServiceIntegrationTest` |
 | Khách hàng không vào được khu vực quản trị | `AdminAccessIntegrationTest` |
 | Chỉ nhân viên và quản trị viên soát được vé | `StaffAccessIntegrationTest` |

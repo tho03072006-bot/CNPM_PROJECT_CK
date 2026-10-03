@@ -3119,3 +3119,123 @@ main.container {
     .inventory-history-panel > p { margin-inline: 0; }
     .inventory-history-panel > summary { padding-inline: var(--space-4); }
 }
+
+/* =====================================================================
+   Bổ sung: bảng "Suất chiếu trong ngày" của nhân viên (/nhan-vien/suat-chieu)
+   ===================================================================== */
+.day-filter {
+    display: grid;
+    gap: var(--space-3);
+    align-items: end;
+    margin-bottom: var(--space-4);
+    text-align: left;
+}
+@media (min-width: 900px) {
+    .day-filter { grid-template-columns: 200px minmax(180px, 260px) 1fr; }
+}
+.day-filter .form-field { margin: 0; }
+.day-filter-actions { display: flex; flex-wrap: wrap; gap: var(--space-2); }
+
+.day-rule { margin: 0 0 var(--space-3); color: var(--text-muted); font-size: var(--text-sm); text-align: left; }
+
+.day-summary {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-2);
+    margin: 0 0 var(--space-5);
+    padding: 0;
+    list-style: none;
+}
+.day-summary li {
+    padding: var(--space-1) var(--space-3);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-pill);
+    background: var(--surface-2);
+    font-size: var(--text-sm);
+}
+.day-summary li.is-warning { border-color: var(--danger-500); background: var(--tint-danger); color: var(--danger-700); }
+
+.day-room { margin-bottom: var(--space-5); text-align: left; }
+.day-room-head { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-2) var(--space-3); margin-bottom: var(--space-3); }
+.day-room-title { margin: 0; font-size: var(--text-lg); }
+.day-room-meta { font-size: var(--text-sm); }
+
+/* ---- Thanh thời gian của một phòng ---- */
+.day-timeline {
+    position: relative;
+    height: 48px;
+    margin: 0 0 var(--space-3);
+    border-radius: var(--radius-md);
+    background: var(--surface-2);
+    overflow: hidden;
+}
+.day-timeline-mark {
+    position: absolute;
+    top: 2px;
+    transform: translateX(-50%);
+    font-size: var(--text-xs);
+    color: var(--text-muted);
+    white-space: nowrap;
+}
+/* Mốc đầu và mốc cuối canh vào trong, không bị mép thanh cắt mất chữ. */
+.day-timeline-mark.is-first { transform: none; }
+.day-timeline-mark.is-last { transform: translateX(-100%); }
+.day-timeline-movie,
+.day-timeline-break {
+    position: absolute;
+    top: 20px;
+    height: 22px;
+}
+.day-timeline-movie { border-radius: 4px 0 0 4px; background: var(--brand-500); }
+/* Khoảng nghỉ dọn phòng: gạch chéo để khác hẳn phần chiếu phim, không chỉ khác màu. */
+.day-timeline-break {
+    border-radius: 0 4px 4px 0;
+    background: repeating-linear-gradient(45deg, var(--border-strong) 0 4px, transparent 4px 8px);
+}
+.day-timeline-movie.day-status-finished { opacity: .35; }
+.day-timeline-movie.day-status-boarding { background: var(--accent-500); }
+.day-timeline-movie.day-status-showing  { background: var(--ok-500); }
+.day-timeline-now {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    width: 2px;
+    background: var(--danger-500);
+}
+
+/* ---- Bảng ---- */
+.day-table td { vertical-align: middle; }
+.day-table .day-time { white-space: nowrap; }
+.day-table .day-time small { display: block; }
+.day-table tr.is-finished td { color: var(--text-muted); }
+.day-checkin-link { display: inline-block; margin-left: var(--space-2); font-weight: 700; }
+
+.day-status {
+    display: inline-block;
+    padding: 2px var(--space-2);
+    border: 1px solid var(--border-strong);
+    border-radius: var(--radius-pill);
+    font-size: var(--text-xs);
+    font-weight: 700;
+    white-space: nowrap;
+}
+.day-status.day-status-upcoming { background: var(--surface-2);  color: var(--text-muted); }
+.day-status.day-status-boarding { background: var(--tint-accent); color: var(--accent-600); border-color: var(--accent-500); }
+.day-status.day-status-showing  { background: var(--tint-ok);     color: var(--ok-700);     border-color: var(--ok-500); }
+.day-status.day-status-cleaning { background: var(--tint-brand);  color: var(--brand-500);  border-color: var(--brand-300); }
+.day-status.day-status-finished { background: transparent;       color: var(--text-muted); }
+
+.day-gap-warning { color: var(--danger-700); font-weight: 700; }
+
+[data-theme="dark"] .day-status.day-status-boarding,
+[data-theme="dark"] .day-status.day-status-showing,
+[data-theme="dark"] .day-status.day-status-cleaning,
+[data-theme="dark"] .day-summary li.is-warning,
+[data-theme="dark"] .day-gap-warning { color: var(--text); }
+@media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) .day-status.day-status-boarding,
+    :root:not([data-theme="light"]) .day-status.day-status-showing,
+    :root:not([data-theme="light"]) .day-status.day-status-cleaning,
+    :root:not([data-theme="light"]) .day-summary li.is-warning,
+    :root:not([data-theme="light"]) .day-gap-warning { color: var(--text); }
+}

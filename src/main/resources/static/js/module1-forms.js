@@ -59,6 +59,8 @@ document.addEventListener("DOMContentLoaded", () => {
         const movieSelect = document.querySelector("#movieId");
         const startInput = document.querySelector("#startTime");
         const range = showtimePreview.querySelector("[data-showtime-range]");
+        // Khoảng nghỉ giữa hai suất do máy chủ gửi xuống (app.showtime.break-minutes), không ghi cứng.
+        const breakMinutes = Number.parseInt(showtimePreview.dataset.breakMinutes, 10) || 0;
         const twoDigits = value => String(value).padStart(2, "0");
         const renderShowtime = () => {
             const option = movieSelect.selectedOptions[0];
@@ -68,7 +70,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 range.textContent = "Chọn phim và giờ bắt đầu";
                 return;
             }
-            const end = new Date(start.getTime() + (duration + 15) * 60 * 1000);
+            const end = new Date(start.getTime() + (duration + breakMinutes) * 60 * 1000);
             const endsNextDay = end.getFullYear() !== start.getFullYear()
                 || end.getMonth() !== start.getMonth() || end.getDate() !== start.getDate();
             range.textContent = `${twoDigits(start.getHours())}:${twoDigits(start.getMinutes())} – ${twoDigits(end.getHours())}:${twoDigits(end.getMinutes())}${endsNextDay ? " (+1 ngày)" : ""}, ${twoDigits(start.getDate())}/${twoDigits(start.getMonth() + 1)}`;

@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout" layout:decorate="~{layout/base}">
+<head><title>Suất chiếu trong ngày</title></head>
+<body><div layout:fragment="content">
+
+    <section class="module1-section-head" aria-labelledby="day-title">
+        <div>
+            <span class="module1-kicker">NHÂN VIÊN</span>
+            <h1 id="day-title">Suất chiếu trong ngày</h1>
+            <p class="text-muted">Lịch từng phòng: phim gì, chiếu từ mấy giờ tới mấy giờ, lúc nào mở cửa đón
+                khách và lúc nào phòng trống lại để dọn.</p>
+        </div>
+    </section>
+
+    <!-- GET để bấm F5 là cập nhật trạng thái, gửi link cho đồng nghiệp được. -->
+    <form class="card day-filter" method="get" th:action="@{/nhan-vien/suat-chieu}"
+          role="search" aria-label="Chọn ngày và phòng chiếu">
+        <div class="form-field">
+            <label for="ngay">Ngày</label>
+            <input class="form-control" id="ngay" name="ngay" type="date" th:value="${board.date()}">
+        </div>
+        <div class="form-field">
+            <label for="phong">Phòng chiếu</label>
+            <select class="form-control" id="phong" name="phong">
+                <option value="">Tất cả phòng</option>
+                <option th:each="room : ${rooms}" th:value="${room.id}" th:text="${room.name}"
+                        th:selected="${room.id.equals(selectedRoomId)}">Cinema 1</option>
+            </select>
+        </div>
+        <div class="day-filter-actions">
+            <button class="btn" type="submit">Xem lịch</button>
+            <a class="btn btn-ghost" th:href="@{/nhan-vien/suat-chieu(ngay=${board.date().minusDays(1)},phong=${selectedRoomId})}">← Hôm trước</a>
+            <a class="btn btn-ghost" th:unless="${board.isToday()}"
+               th:href="@{/nhan-vien/suat-chieu(phong=${selectedRoomId})}">Hôm nay</a>
+            <a class="btn btn-ghost" th:href="@{/nhan-vien/suat-chieu(ngay=${board.date().plusDays(1)},phong=${selectedRoomId})}">Hôm sau →</a>
+        </div>
+    </form>
+
+    <p class="day-rule">
+        Giữa hai suất trong cùng phòng nghỉ tối thiểu <strong th:text="|${board.breakMinutes()} phút|">15 phút</strong>
+        để khách ra về và dọn phòng. Mở cửa đón khách
+        <strong th:text="|${board.doorsOpenMinutes()} phút|">15 phút</strong> trước giờ chiếu.
+    </p>
+
+    <ul class="day-summary" aria-label="Tóm tắt trong ngày">
+        <li><strong th:text="${board.showtimeCount}">24</strong> suất ·
+            <strong th:text="${#lists.size(board.rooms())}">9</strong> phòng</li>
+        <li th:if="${board.isToday()}"><strong th:text="${board.activeCount}">2</strong> suất đang đón khách hoặc đang chiếu</li>
+        <li>Đã bán <strong th:text="${board.soldSeats}">120</strong> vé ·
+            đã vào phòng <strong th:text="${board.checkedIn}">80</strong></li>
+        <li class="is-warning" th:if="${board.shortBreakCount > 0}"
+            th:text="|${board.shortBreakCount} chỗ nghỉ giữa hai suất ngắn hơn quy định|">1 chỗ nghỉ ngắn</li>
+    </ul>
+
+    <div class="module1-empty" th:if="${#lists.isEmpty(board.rooms())}">
+        <span class="module1-empty-icon" aria-hidden="true">◷</span>
+        <h2 th:text="|Không có suất chiếu nào ngày ${#temporals.format(board.date(), 'dd/MM/yyyy')}|">Không có suất chiếu</h2>
+        <p>Chọn ngày khác hoặc xem tất cả phòng.</p>
+    </div>
+
+    <section class="card day-room" th:each="room : ${board.rooms()}"
+             th:attr="aria-labelledby=|room-${room.roomId()}|">
+        <header class="day-room-head">
+            <h2 class="day-room-title" th:id="|room-${room.roomId()}|" th:text="${room.roomName()}">Cinema 1</h2>
+            <span class="room-badge" th:classappend="|room-badge-${room.roomType().cssModifier}|"
+                  th:text="${room.roomType().label}">Phòng thường</span>
+            <span class="text-muted day-room-meta"
+                  th:text="|${#lists.size(room.entries())} suất · ${room.seatCount()} ghế|">5 suất · 140 ghế</span>
+        </header>
+
+        <!--
+          Thanh thời gian chỉ để nhìn nhanh (aria-hidden). Toàn bộ thông tin có trong bảng bên dưới
+          cho trình đọc màn hình. Khối đậm là phim, khối gạch chéo là khoảng nghỉ dọn phòng.
+        -->
+        <div class="day-timeline" aria-hidden="true">
+            <span class="day-timeline-mark" th:each="mark, it : ${board.hourMarks()}"
+                  th:classappend="${it.first} ? 'is-first' : (${it.last} ? 'is-last' : '')"
+                  th:style="|left: ${mark.left()}%|" th:text="${mark.label()}">8h</span>
+            <th:block th:each="entry : ${room.entries()}">
+                <span class="day-timeline-movie" th:classappend="|day-status-${entry.status().cssModifier}|"
+                      th:style="|left: ${entry.timelineLeft()}%; width: ${entry.timelineMovie()}%|"
+                      th:title="|${#temporals.format(entry.start(), 'HH:mm')}–${#temporals.format(entry.movieEnd(), 'HH:mm')} ${entry.movieTitle()}|"></span>
+                <span class="day-timeline-break"
+                      th:style="|left: calc(${entry.timelineLeft()}% + ${entry.timelineMovie()}%); width: ${entry.timelineBreak()}%|"></span>
+            </th:block>
+            <span class="day-timeline-now" th:if="${board.nowLeft() != null}"
+                  th:style="|left: ${board.nowLeft()}%|"></span>
+        </div>
+
+        <div class="table-wrap">
+            <table class="admin-table day-table">
+                <caption class="sr-only" th:text="|Lịch chiếu ${room.roomName()}|">Lịch chiếu</caption>
+                <thead><tr>
+                    <th scope="col">Giờ chiếu</th>
+                    <th scope="col">Phim</th>
+                    <th scope="col">Tình trạng</th>
+                    <th scope="col">Đã vào / đã bán</th>
+                    <th scope="col">Phòng trống lại</th>
+                    <th scope="col">Nghỉ tới suất sau</th>
+                </tr></thead>
+                <tbody>
+                <tr th:each="entry : ${room.entries()}"
+                    th:classappend="${entry.status().name() == 'FINISHED'} ? 'is-finished' : ''">
+                    <td class="day-time">
+                        <strong th:text="${#temporals.format(entry.start(), 'HH:mm')}">13:00</strong>
+                        – <span th:text="|${#temporals.format(entry.movieEnd(), 'HH:mm')}${entry.movieEnd().toLocalDate().isAfter(board.date()) ? ' (+1 ngày)' : ''}|">15:00</span>
+                        <small class="text-muted" th:text="|${entry.durationMin()} phút|">120 phút</small>
+                    </td>
+                    <td>
+                        <span th:text="${entry.movieTitle()}">Tên phim</span>
+                        <span class="badge badge-accent" th:if="${entry.ageRating() != null}"
+                              th:text="${entry.ageRating()}">T13</span>
+                    </td>
+                    <td>
+                        <span class="day-status" th:classappend="|day-status-${entry.status().cssModifier}|"
+                              th:text="${entry.status().label}">Sắp chiếu</span>
+                    </td>
+                    <td>
+                        <span th:text="|${entry.checkedIn()} / ${entry.soldSeats()}|">0 / 12</span>
+                        <small class="text-muted" th:text="|trên ${entry.seatCount()} ghế|">trên 140 ghế</small>
+                        <a class="day-checkin-link" th:if="${entry.checkInOpen}" th:href="@{/nhan-vien/soat-ve}">Soát vé</a>
+                    </td>
+                    <td th:text="|${#temporals.format(entry.roomReadyAt(), 'HH:mm')}${entry.roomReadyAt().toLocalDate().isAfter(board.date()) ? ' (+1 ngày)' : ''}|">15:15</td>
+                    <td>
+                        <span class="text-muted" th:if="${entry.minutesToNext() == null}">Suất cuối</span>
+                        <span th:if="${entry.minutesToNext() != null and !entry.isBreakTooShort()}"
+                              th:text="|${entry.minutesToNext()} phút|">25 phút</span>
+                        <span class="day-gap-warning" th:if="${entry.isBreakTooShort()}"
+                              th:text="${entry.minutesToNext() < 0} ? |Chồng giờ ${-entry.minutesToNext()} phút| : |Chỉ ${entry.minutesToNext()} phút|">Chỉ 5 phút</span>
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+    </section>
+
+</div></body></html>

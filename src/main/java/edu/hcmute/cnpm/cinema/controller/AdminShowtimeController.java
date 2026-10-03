@@ -140,5 +140,6 @@ public class AdminShowtimeController {
     private void addChoices(Model model) {
         model.addAttribute("movies", movieService.findActiveMovies());
         model.addAttribute("rooms", roomService.findAllRooms());
+        model.addAttribute("breakMinutes", showtimeService.getBreakMinutes());
     }
 }

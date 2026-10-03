@@ -17,7 +17,7 @@ máy cá nhân sau khi chạy `database/seed-data.sql`. Mật khẩu chung: **`1
 | Email | Mật khẩu | Vai trò | Nên thử gì |
 |---|---|---|---|
 | `khachhang@utecinema.local` | `123456` | Khách hàng | Chọn suất → chọn ghế → xem thanh toán QR MoMo/thẻ; để nhận OTP và hoàn tất thanh toán, đăng ký bằng email thật |
-| `nhanvien@utecinema.local` | `123456` | Nhân viên | Menu **Soát vé**: nhập mã vé (số `#` trên thẻ vé ở trang Vé của tôi) hoặc email khách, bấm "Cho vào phòng" |
+| `nhanvien@utecinema.local` | `123456` | Nhân viên | Menu **Suất chiếu**: lịch trong ngày theo từng phòng, suất nào đang đón khách, phòng nào đang dọn. Menu **Soát vé**: nhập mã vé (số `#` trên thẻ vé ở trang Vé của tôi) hoặc email khách, bấm "Cho vào phòng" |
 | `admin@utecinema.local` | `123456` | Quản trị | Menu **Quản trị**: thêm/sửa phim, phòng, suất chiếu (thử thêm suất trùng giờ), cấp vai trò ở `/admin/users`, xem thống kê |
 
 Cách thử nhanh cả vòng: đăng ký tài khoản bằng email thật, xác thực OTP, đặt vé và chọn
@@ -53,7 +53,7 @@ Hệ thống có bốn nhóm người dùng. Quyền được chặn ở phía m
 |---|---|---|
 | **Khách chưa đăng nhập** | Xem phim, tìm và lọc phim, lịch chiếu, bảng giá, xem sơ đồ ghế; đăng ký, đăng nhập, quên mật khẩu | Giữ ghế, thanh toán, tài khoản → chuyển sang trang đăng nhập |
 | **Khách hàng** (`CUSTOMER`) | Thêm: giữ ghế, thanh toán online (quét mã QR MoMo hoặc thẻ qua MoMo, có OTP), vé của tôi, huỷ vé có hoàn tiền, sửa hồ sơ, đổi mật khẩu | `/nhan-vien/**`, `/admin/**` → 403 |
-| **Nhân viên** (`STAFF`) | Như khách hàng, thêm trang **Soát vé**: tra vé theo mã hoặc email, cho khách vào phòng | `/admin/**` → 403 |
+| **Nhân viên** (`STAFF`) | Như khách hàng, thêm trang **Suất chiếu trong ngày** (lịch từng phòng để điều phối khách ra vào) và **Soát vé**: tra vé theo mã hoặc email, cho khách vào phòng | `/admin/**` → 403 |
 | **Quản trị** (`ADMIN`) | Tất cả những việc trên, thêm khu **Quản trị**: phim, phòng chiếu, suất chiếu, người dùng (cấp vai trò), thống kê doanh thu | — |
 
 Tài khoản mới đăng ký luôn là khách hàng. Chỉ quản trị viên cấp được vai trò nhân viên hoặc
@@ -78,9 +78,18 @@ Tài khoản tạo sẵn để thử từng vai trò: xem mục [Tài khoản d�
   50%, dưới 2 giờ hoặc đã vào phòng thì không huỷ. Vé trả qua MoMo được hoàn thẳng về MoMo.
 - **Email:** OTP đăng ký, khôi phục tài khoản/quên mật khẩu và xác thực đơn thanh toán;
   xác nhận vé, xác nhận huỷ vé (qua Gmail). Setup và kiểm thử: [`docs/MODULE3.md`](docs/MODULE3.md).
+- **Suất chiếu trong ngày** (`/nhan-vien/suat-chieu`): nhân viên chọn ngày và phòng, xem từng
+  suất có phim gì, bắt đầu và hết phim lúc mấy giờ, lúc nào phòng trống lại. Mỗi suất có tình
+  trạng (sắp chiếu, mở cửa đón khách từ 15 phút trước giờ chiếu, đang chiếu, khách ra và dọn
+  phòng, đã xong), số khách đã vào trên số vé đã bán, số phút nghỉ tới suất sau và cảnh báo khi
+  hai suất sát nhau hơn quy định.
 - **Soát vé:** nhân viên tra mã vé, ghi giờ vào phòng; một vé không dùng được hai lần.
 - **Quản trị:** thêm/sửa/ngừng chiếu/mở bán lại phim, phòng chiếu tự sinh ghế, xếp suất chiếu
   có chặn trùng giờ, cấp vai trò người dùng, thống kê doanh thu đã trừ tiền hoàn.
+- **Khoảng nghỉ giữa hai suất:** trong cùng một phòng, suất sau chỉ được bắt đầu khi suất trước
+  đã hết phim ít nhất **15 phút** (để khách ra về và dọn phòng). Xếp sai giờ thì trang quản trị
+  báo giờ sớm nhất được bắt đầu. Nhóm muốn đổi số phút (ví dụ 10) thì sửa một dòng
+  `app.showtime.break-minutes` trong `application.properties`; dữ liệu mẫu đang xếp theo 15 phút.
 
 ## Thành viên & phân công
 

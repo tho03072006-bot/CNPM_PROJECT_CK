@@ -29,6 +29,19 @@ public interface TicketRepository extends JpaRepository<Ticket, Long> {
             """)
     List<Object[]> countReservedSeatsByShowtimeIds(@Param("showtimeIds") Collection<Long> showtimeIds);
 
+    /**
+     * Số vé đã bán và số khách đã vào phòng của nhiều suất trong một truy vấn, cho bảng suất
+     * chiếu trong ngày của nhân viên. Mỗi dòng: [mã suất, số vé, số vé đã soát vào phòng].
+     */
+    @Query("""
+            select ticket.showtime.id, count(ticket.id), count(ticket.checkedInAt)
+            from Ticket ticket
+            where ticket.showtime.id in :showtimeIds and ticket.status = :status
+            group by ticket.showtime.id
+            """)
+    List<Object[]> countSoldAndCheckedInByShowtimeIds(@Param("showtimeIds") Collection<Long> showtimeIds,
+                                                      @Param("status") TicketStatus status);
+
     // ===== Module 3: thanh toán, lịch sử vé, thống kê =====
 
     /** Vé đang giữ của một khách cho một suất chiếu - dùng ở bước thanh toán. */
