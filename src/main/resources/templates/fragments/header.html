@@ -81,6 +81,12 @@
                th:href="@{/admin}" th:classappend="${path.startsWith('/admin')} ? 'is-active' : ''"
                th:attr="aria-current=${path.startsWith('/admin') ? 'page' : null}">Quản trị</a>
 
+            <details class="nav-more" hidden>
+                <summary aria-label="Hiện các danh mục khác" title="Các danh mục khác">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg>
+                </summary>
+                <div class="nav-more-menu" aria-label="Danh mục khác"></div>
+            </details>
         </nav>
         <div class="header-actions header-nav">
             <!--
@@ -104,7 +110,8 @@
             <a th:if="${session.LOGGED_IN_USER == null}" th:href="@{/dang-nhap}"
                th:classappend="${path.startsWith('/dang-nhap')} ? 'is-active' : ''">Đăng nhập</a>
             <details th:if="${session.LOGGED_IN_USER != null}" class="account-dropdown">
-            <summary class="nav-account" aria-label="Mở menu tài khoản">
+            <summary class="nav-account" aria-label="Mở menu tài khoản"
+                     th:title="${session.LOGGED_IN_USER.fullName}">
                 <span class="nav-account-avatar" aria-hidden="true"
                       th:text="${#strings.substring(session.LOGGED_IN_USER.fullName, 0, 1)}">N</span>
                 <span class="nav-account-copy">
