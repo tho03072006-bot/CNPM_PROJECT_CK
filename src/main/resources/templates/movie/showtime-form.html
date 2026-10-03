@@ -32,13 +32,16 @@
                        placeholder="75000">
                 <span class="form-error" th:if="${#fields.hasErrors('basePrice')}" th:errors="*{basePrice}"></span></div>
         </div>
-        <aside class="module1-live-preview module1-showtime-preview" data-showtime-preview>
+        <aside class="module1-live-preview module1-showtime-preview" data-showtime-preview
+               th:attr="data-break-minutes=${breakMinutes}">
             <span class="module1-preview-icon" aria-hidden="true">◷</span>
             <div><span class="module1-kicker">THỜI GIAN DỰ KIẾN</span>
                 <strong data-showtime-range>Chọn phim và giờ bắt đầu</strong>
-                <small>Bao gồm 15 phút dọn phòng sau phim</small></div>
+                <small th:text="|Bao gồm ${breakMinutes} phút nghỉ để khách ra vào và dọn phòng|">Bao gồm 15 phút nghỉ để khách ra vào và dọn phòng</small></div>
         </aside>
-        <p class="module1-form-note">Giờ kết thúc được tính tự động bằng thời lượng phim cộng 15 phút dọn phòng. Lịch trùng trong cùng phòng sẽ bị từ chối.</p>
+        <p class="module1-form-note"
+           th:text="|Phòng được dùng tới hết phim cộng ${breakMinutes} phút nghỉ. Suất tiếp theo trong cùng phòng chỉ được bắt đầu sau khoảng nghỉ đó; lịch trùng sẽ bị từ chối và báo giờ sớm nhất có thể xếp.|">
+            Phòng được dùng tới hết phim cộng 15 phút nghỉ.</p>
         <div class="module1-form-actions">
             <button class="btn" type="submit">Lưu suất chiếu</button>
             <a class="btn btn-ghost" th:href="@{/admin/showtimes}">Huỷ</a>
