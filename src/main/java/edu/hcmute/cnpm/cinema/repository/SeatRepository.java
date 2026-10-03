@@ -9,4 +9,7 @@ public interface SeatRepository extends JpaRepository<Seat, Long> {
     List<Seat> findByRoomId(Long roomId);
 
     List<Seat> findByRoomIdOrderBySeatRowAscSeatColumnAsc(Long roomId);
+
+    /** Số ghế của một phòng, cho bảng suất chiếu trong ngày. */
+    long countByRoomId(Long roomId);
 }
