@@ -28,6 +28,10 @@ public class TicketRefund {
     @Column(name = "original_ticket_id", nullable = false)
     private Long originalTicketId;
 
+    /** Hóa đơn gốc, giữ dưới dạng snapshot kể cả khi đơn bị xóa về sau. */
+    @Column(name = "booking_order_id")
+    private Long bookingOrderId;
+
     @Column(name = "user_id", nullable = false)
     private Long userId;
 
@@ -51,6 +55,9 @@ public class TicketRefund {
 
     @Column(name = "paid_price", nullable = false, precision = 10, scale = 2)
     private BigDecimal paidPrice;
+
+    @Column(name = "original_price", precision = 12, scale = 2)
+    private BigDecimal originalPrice;
 
     @Column(name = "refund_percent", nullable = false)
     private Integer refundPercent;
@@ -88,6 +95,8 @@ public class TicketRefund {
     public void setId(Long id) { this.id = id; }
     public Long getOriginalTicketId() { return originalTicketId; }
     public void setOriginalTicketId(Long originalTicketId) { this.originalTicketId = originalTicketId; }
+    public Long getBookingOrderId() { return bookingOrderId; }
+    public void setBookingOrderId(Long id) { bookingOrderId = id; }
     public Long getUserId() { return userId; }
     public void setUserId(Long userId) { this.userId = userId; }
     public Long getShowtimeId() { return showtimeId; }
@@ -102,6 +111,8 @@ public class TicketRefund {
     public void setShowtimeStart(LocalDateTime showtimeStart) { this.showtimeStart = showtimeStart; }
     public BigDecimal getPaidPrice() { return paidPrice; }
     public void setPaidPrice(BigDecimal paidPrice) { this.paidPrice = paidPrice; }
+    public BigDecimal getOriginalPrice() { return originalPrice == null ? paidPrice : originalPrice; }
+    public void setOriginalPrice(BigDecimal originalPrice) { this.originalPrice = originalPrice; }
     public Integer getRefundPercent() { return refundPercent; }
     public void setRefundPercent(Integer refundPercent) { this.refundPercent = refundPercent; }
     public BigDecimal getRefundAmount() { return refundAmount; }

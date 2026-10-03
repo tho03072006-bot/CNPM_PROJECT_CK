@@ -31,12 +31,14 @@ Các thay đổi ở máy local chưa tự xuất hiện trên GitHub. Nhánh hi
 ~~~powershell
 cd E:\Cong_Nghe_Phan_Mem\Project_Cuoi_Ky
 git status
-git add .
-git commit -m "Bổ sung ví MoMo giả lập Nhóm 8 chạy online, QR HTTPS và xác nhận thanh toán qua database chung"
+git diff --cached --stat
+git commit -m "Tích hợp lịch sử, voucher, mã vé 8 số và validation Module 2"
 git push -u origin "Hữu_Thắng"
 ~~~
 
 File secret và target đã được Git bỏ qua. Sau khi push xong:
+
+Đối với dịch vụ đã có, không tạo dịch vụ mới: chọn **momo-gia-lap-nhom8 → Manual Deploy → Deploy latest commit** trên nhánh Hữu_Thắng. Bản tích hợp ngày 03/10/2026 phải trả `checkoutVersion=2` cùng `status=UP` tại `/demo-wallet/health`, và `/js/money.js` phải trả 200. Web local và Render phải dùng cùng commit; bản ví cũ không hỗ trợ voucher mới. Xem [báo cáo kiểm chứng](MODULE_2_INTEGRATION_REVIEW.md).
 
 1. Trong Render Dashboard chọn **New → Blueprint**.
 2. Chọn repository **tho03072006-bot/CNPM_PROJECT_CK**, nhánh **Hữu_Thắng**, đường dẫn Blueprint **render.yaml**.
@@ -59,7 +61,7 @@ PORT mặc định 1433. Nếu nhóm dùng cloud.db.options khác, giữ đúng 
 
 5. Chọn triển khai và đợi service **Live**. Render tự cấp URL HTTPS riêng. Tên chính xác lấy từ Dashboard, không đoán trước.
 6. Mở **URL-HTTPS-THỰC-TẾ/demo-wallet**. Trang phải có nhãn giả lập và bản quyền Nhóm 8.
-7. Mở **URL-HTTPS-THỰC-TẾ/demo-wallet/health**: kết quả bình thường là {"status":"UP"}. HTTP 503 có nghĩa ví/database chưa sẵn sàng.
+7. Mở **URL-HTTPS-THỰC-TẾ/demo-wallet/health**: kết quả phải có `status=UP` và `checkoutVersion=2`. Chỉ có `status=UP` là ví cũ, chưa tương thích checkout/voucher hiện tại. HTTP 503 có nghĩa ví/database chưa sẵn sàng.
 
 Render tự cung cấp RENDER_EXTERNAL_URL và PORT; không cần tự điền hai biến này. Docker chỉ mở cổng gateway công khai theo PORT; Spring ở 127.0.0.1:8080 trong container. Web rạp, đăng nhập, tài khoản, quản trị và lịch sử vé không đi qua gateway. Health chỉ trả trạng thái chung, không trả mật khẩu hay dữ liệu đơn.
 
@@ -138,3 +140,23 @@ Code chấp nhận cả https://TEN-VI.onrender.com và https://TEN-VI.onrender.
 ## Bỏ ví local
 
 Profile cloud/local tắt demo-wallet.phone-enabled; các API ví local không tồn tại. Hai đường dẫn GET ví local chỉ chuyển sang HTTPS. Profile wallet-online bật giao diện/API ví trên Render. QR luôn dùng demo-wallet.public-base-url của Render và đi thẳng đến /demo-wallet/pay/{UUID} cùng khóa fragment. Script local không tạo tunnel hoặc cổng ví local nữa.
+
+## QR bị vô hiệu ngay khi điện thoại mở ví
+
+Nếu web local có voucher mà Render vẫn chạy code cũ, thao tác xem trạng thái trên điện thoại có thể ghi lại tổng chưa trừ ưu đãi và làm QR INVALIDATED. Ví dụ đơn 270.000đ vé + 198.000đ bắp nước − 27.000đ ưu đãi phải trả 441.000đ; backend cũ tính thành 468.000đ. Không bỏ kiểm tra số tiền hoặc kích hoạt lại QR cũ để xử lý lỗi này.
+
+Bản sửa kiểm tra `checkoutVersion=2` trước khi tạo QR. Khi ví chưa đồng bộ hoặc chưa kết nối được, khách quay về trang thanh toán để thử lại/chọn phương thức khác, không phát hành mã và không kéo dài giữ ghế. Cần commit/push bản đã kiểm thử lên nhánh dịch vụ đang theo dõi, **Manual Deploy → Deploy latest commit** trên dịch vụ **momo-gia-lap-nhom8**, rồi kiểm tra health và tạo QR mới. Không cần tạo dịch vụ hoặc database mới.
+
+Kiểm chứng mới: 556 bài Java và 37 bài JavaScript đạt. Test hai backend độc lập dùng chung SQL `_test` giữ đúng voucher/bắp nước khi mở ví nhiều lần, từ chối số tiền sai và bảo đảm xác nhận lặp chỉ phát hành vé/trừ tồn kho một lần. Render thực tế vẫn cần deploy và thử quét trên điện thoại; sửa source local không tự cập nhật dịch vụ online.
+
+## Lỗi `Cannot read properties of undefined (reading 'format')`
+
+Trên bản online sau deploy, `/js/money.js` trả 200 nhưng URL trong template `/js/money.js?v=20261003-money-1` trả 404: gateway cũ chặn mọi query. Vì vậy `window.CinemaMoney` không được nạp dù health UP và checkoutVersion=2.
+
+Gateway mới chỉ cho phép một tham số `v` có giá trị chữ/số/gạch ngang/gạch dưới, tối đa 80 ký tự, trên GET của bốn tài nguyên ví đã cho phép. Query trên trang giao dịch/API/health, query trùng hoặc thêm tham số khác vẫn bị chặn. Query hợp lệ được chuyển tiếp đến Spring để cache phiên bản hoạt động đúng. Cả trang ví và QR dùng `demo-wallet.js?v=20261003-wallet-assets-4`.
+
+Ví còn có định dạng tiền bằng Intl dự phòng khi thư viện chung chưa tải được. Dự phòng chỉ hiển thị số tiền backend đã qua validation; không đổi số tiền xác nhận, thời hạn giữ ghế hoặc điều kiện thanh toán.
+
+Kiểm chứng bản sửa tài nguyên: 29 bài Java không dùng database, toàn bộ 39 bài JavaScript và bốn trường hợp Chrome qua gateway thật đạt. Trường hợp gồm desktop/mobile, thiếu money.js và phản hồi sai kiểu số tiền; script có phiên bản trả 200, không lỗi JavaScript, tiền đúng và xác nhận sai bị khóa. Giao dịch trong kiểm thử trình duyệt là dữ liệu giả, không dùng cloud.
+
+Sau khi commit/push và Manual Deploy bản này, kiểm tra **đúng URL có query**: `/js/money.js?v=20261003-money-1` và `/js/demo-wallet.js?v=20261003-wallet-assets-4` phải trả 200. Chỉ kiểm tra URL không có query hoặc health không đủ để xác minh bản sửa này. Tải lại trang ví để lấy script mới, tạo QR mới nếu lượt giữ cũ đã hết hạn.

@@ -192,9 +192,7 @@ public class MomoPaymentController {
         switch (result.getOutcome()) {
             case PAID, ALREADY_PAID -> {
                 qrPayments(session).remove(orderId);
-                redirectAttributes.addFlashAttribute("paidTicketIds", result.getTicketIds());
-                addReceiptCode(result, redirectAttributes);
-                return "redirect:/thanh-toan/hoan-tat";
+                return receiptRedirect(result);
             }
             case PENDING -> {
                 redirectAttributes.addFlashAttribute(Constants.MODEL_ERROR_MESSAGE,
@@ -226,15 +224,8 @@ public class MomoPaymentController {
         }
 
         switch (result.getOutcome()) {
-            case PAID -> {
-                redirectAttributes.addFlashAttribute("paidTicketIds", result.getTicketIds());
-                addReceiptCode(result, redirectAttributes);
-                return "redirect:/thanh-toan/hoan-tat";
-            }
-            case ALREADY_PAID -> {
-                redirectAttributes.addFlashAttribute(Constants.MODEL_SUCCESS_MESSAGE,
-                        "Giao dịch MoMo này đã được xác nhận trước đó. Vé của bạn ở ngay dưới đây.");
-                return "redirect:/ve-cua-toi";
+            case PAID, ALREADY_PAID -> {
+                return receiptRedirect(result);
             }
             case FAILED -> {
                 redirectAttributes.addFlashAttribute(Constants.MODEL_ERROR_MESSAGE, result.getMessage());
@@ -277,11 +268,10 @@ public class MomoPaymentController {
         session.setAttribute(Constants.SESSION_MOMO_QR_PAYMENTS, payments);
     }
 
-    private void addReceiptCode(MomoPaymentResult result, RedirectAttributes redirectAttributes) {
-        if (!result.getTicketIds().isEmpty()) {
-            bookingOrderService.findReceiptCodeByTicketId(result.getTicketIds().get(0), result.getUserId())
-                    .ifPresent(code -> redirectAttributes.addFlashAttribute("receiptCode", code));
-        }
+    private String receiptRedirect(MomoPaymentResult result) {
+        if (result.getTicketIds().isEmpty()) return "redirect:/ve-cua-toi";
+        return bookingOrderService.findReceiptCodeByTicketId(result.getTicketIds().getFirst(), result.getUserId())
+                .map(code -> "redirect:/hoa-don/" + code).orElse("redirect:/ve-cua-toi");
     }
 
     @SuppressWarnings("unchecked")

@@ -16,7 +16,7 @@
                 <p class="form-hint">Không thấy email? Kiểm tra Thư rác hoặc gửi lại mã bên dưới.</p>
             </div>
             <div class="auth-order" th:if="${paymentTotal != null}">
-                <strong th:text="|${#lists.size(paymentTickets)} vé · ${#numbers.formatDecimal(paymentTotal, 0, 'POINT', 0, 'COMMA')} đ|"></strong>
+                <strong th:text="|${#lists.size(paymentTickets)} vé · ${@money.number(paymentTotal)} đ|"></strong>
                 <p class="form-hint">Ghế vẫn chỉ được giữ trong 5 phút kể từ lúc chọn. OTP không gia hạn giữ ghế.</p>
             </div>
             <form th:action="@{${otpAction}}" method="post" class="auth-otp-form">

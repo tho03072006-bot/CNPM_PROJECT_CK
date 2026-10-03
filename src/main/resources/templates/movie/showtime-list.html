@@ -56,7 +56,7 @@
                       <small th:text="${showtime.room.name}">Phòng 1</small></span></div></td>
             <td th:text="${#temporals.format(showtime.startTime, 'dd/MM/yyyy HH:mm')}">Bắt đầu</td>
             <td th:text="${#temporals.format(showtime.endTime, 'dd/MM/yyyy HH:mm')}">Kết thúc</td>
-            <td th:text="|${#numbers.formatDecimal(showtime.basePrice, 0, 'POINT', 0, 'COMMA')} đ|">Giá</td>
+            <td th:text="|${@money.number(showtime.basePrice)} đ|">Giá</td>
             <td th:with="availability=${availabilityByShowtimeId[showtime.id]}">
                 <div class="module1-admin-occupancy">
                     <strong th:text="|${availability.occupancyPercent}%|">0%</strong>

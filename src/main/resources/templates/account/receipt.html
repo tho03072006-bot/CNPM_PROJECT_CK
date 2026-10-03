@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="vi" xmlns:th="http://www.thymeleaf.org"
       xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout" layout:decorate="~{layout/base}">
-<head><title>Hóa đơn điện tử</title><link rel="stylesheet" th:href="@{/css/booking-history.css(v='20261002-3')}"></head>
+<head><title>Hóa đơn thanh toán</title></head>
 <body><div layout:fragment="content">
     <!--
       Bố cục theo hóa đơn bán hàng thật: đơn vị bán, số hóa đơn, người mua, bảng hàng hóa
@@ -10,7 +10,7 @@
     -->
     <div class="receipt-toolbar receipt-actions">
         <a class="btn btn-ghost receipt-back" th:href="@{/lich-su-dat-ve}">← Về lịch sử đặt vé</a>
-        <button class="btn btn-accent" type="button" onclick="window.print()">In hóa đơn</button>
+        <button class="btn btn-accent" type="button" onclick="window.print()">In hóa đơn và vé</button>
     </div>
 
     <article class="receipt invoice-paper" aria-labelledby="receipt-title">
@@ -36,6 +36,7 @@
                 năm <strong th:text="${#temporals.format(order.paidAt, 'yyyy')}">2026</strong>
             </p>
             <span class="invoice-stamp">Đã thanh toán</span>
+            <p class="invoice-payment-status" role="status">Thanh toán thành công</p>
         </div>
 
         <dl class="invoice-parties">
@@ -75,6 +76,7 @@
                     <td class="invoice-item">
                         <strong th:text="${line.description()}">Vé xem phim - Ghế C5</strong>
                         <small th:text="${line.detail()}">Ghế thường</small>
+                        <small th:if="${line.refunded()}">Vé đã hủy · Không dùng để vào rạp</small>
                     </td>
                     <td th:text="${line.unit()}">Vé</td>
                     <td th:text="${line.quantity()}">1</td>
@@ -89,18 +91,39 @@
             <dl class="invoice-totals">
                 <div><dt>Cộng tiền vé</dt><dd th:text="${#numbers.formatDecimal(order.ticketSubtotal, 0, 'POINT', 0, 'COMMA')}">225.000</dd></div>
                 <div><dt>Cộng tiền bắp nước</dt><dd th:text="${#numbers.formatDecimal(order.concessionSubtotal, 0, 'POINT', 0, 'COMMA')}">55.000</dd></div>
-                <div th:if="${order.discountAmount.signum() > 0}"><dt>Ưu đãi đã áp dụng <span th:if="${order.appliedVoucherCode != null}" th:text="|(${order.appliedVoucherCode})|"></span></dt><dd th:text="|−${#numbers.formatDecimal(order.discountAmount, 0, 'POINT', 0, 'COMMA')}">−20.000</dd></div>
+                <div th:if="${order.discountAmount.signum() > 0}"><dt>Ưu đãi <span th:if="${order.appliedVoucherCode != null}" th:text="|(${order.appliedVoucherCode})|"></span></dt><dd th:text="|−${#numbers.formatDecimal(order.discountAmount, 0, 'POINT', 0, 'COMMA')} đ|">−20.000 đ</dd></div>
                 <div class="invoice-grand-total">
                     <dt>Tổng cộng thanh toán</dt>
                     <dd th:text="|${#numbers.formatDecimal(order.totalAmount, 0, 'POINT', 0, 'COMMA')} đ|">280.000 đ</dd>
                 </div>
             </dl>
-            <p th:if="${order.appliedVoucherName != null}" th:text="${order.appliedVoucherName}">Tên ưu đãi đã áp dụng</p>
+            <p th:if="${order.appliedVoucherName != null}" th:text="${order.appliedVoucherName}">Ưu đãi đã áp dụng</p>
             <p class="invoice-words">
                 <span>Số tiền viết bằng chữ:</span>
                 <em th:text="${receipt.amountInWords()}">Hai trăm tám mươi nghìn đồng chẵn.</em>
             </p>
         </div>
+
+        <section class="invoice-admission" th:if="${!#lists.isEmpty(receipt.admissionTickets())}" aria-label="Mã vé vào rạp">
+            <div class="invoice-admission-details">
+                <h2 th:text="${#lists.size(receipt.admissionTickets()) == 1} ? 'Vé vào rạp' : 'Vé vào rạp · QR chung cho hóa đơn'">Vé vào rạp</h2>
+                <p>Xuất trình QR này để kiểm tra các ghế bên dưới. Có thể nhập mã 8 số của từng ghế.</p>
+                <table class="admission-seats">
+                    <thead><tr><th>Ghế</th><th>Mã vé (8 số)</th><th>Trạng thái</th></tr></thead>
+                    <tbody><tr th:each="ticket : ${receipt.admissionTickets()}">
+                        <td th:text="${ticket.seatLabel()}">C5</td>
+                        <td class="invoice-ticket-number" th:text="${ticket.code()}">12345678</td>
+                        <td th:text="${ticket.state() == 'REFUNDED'} ? 'Đã hủy' : (${ticket.state() == 'CHECKED_IN'} ? 'Đã sử dụng' : (${ticket.state() == 'INVALID'} ? 'Không còn hiệu lực' : 'Đã thanh toán'))">Đã thanh toán</td>
+                    </tr></tbody>
+                </table>
+            </div>
+            <div th:if="${receipt.admissionQrSvg() != null}" class="invoice-admission-qr">
+                <div class="ticket-entry-qr" th:utext="${receipt.admissionQrSvg()}"></div>
+                <a class="receipt-actions" th:href="@{/hoa-don/{code}/qr.png(code=${order.receiptCode})}"
+                   th:download="|${order.receiptCode}-ve.png|">Lưu ảnh QR</a>
+            </div>
+            <p th:if="${receipt.admissionQrSvg() == null}">Các vé đã hủy, không dùng để vào rạp.</p>
+        </section>
 
         <div class="invoice-signatures">
             <div class="invoice-sign">
@@ -119,12 +142,8 @@
             </div>
         </div>
 
-        <section class="invoice-ticket-codes" aria-label="Mã và QR từng vé">
-            <h2>Mã vé và QR vào phòng</h2>
-            <div th:replace="~{booking/ticket-passes :: passes(${receipt.tickets()},${order.receiptCode},null,false)}"></div>
-        </section>
         <footer class="invoice-footer">
-            <p>Xuất trình mã vé tại cửa phòng chiếu và đọc mã tra cứu ở quầy combo để nhận bắp nước.</p>
+            <p>Xuất trình QR chung hoặc mã 8 số của từng ghế tại cửa phòng chiếu và đọc mã tra cứu ở quầy combo để nhận bắp nước.</p>
             <p class="invoice-thanks">Cảm ơn quý khách và hẹn gặp lại!</p>
         </footer>
     </article>

@@ -1,5 +1,6 @@
 package edu.hcmute.cnpm.cinema.controller;
 
+import edu.hcmute.cnpm.cinema.util.MoneyFormatter;
 import edu.hcmute.cnpm.cinema.constants.Constants;
 import edu.hcmute.cnpm.cinema.entity.TicketRefund;
 import edu.hcmute.cnpm.cinema.entity.User;
@@ -16,7 +17,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.time.LocalDateTime;
-import java.util.Locale;
 
 /**
  * Khách tự huỷ vé đã thanh toán. Hai bước: xem trước được hoàn bao nhiêu, rồi mới bấm
@@ -62,7 +62,7 @@ public class TicketCancelController {
         try {
             TicketRefund refund = ticketRefundService.cancelPaidTicket(customer.getId(), ticketId, LocalDateTime.now());
             ticketMailService.sendRefundConfirmation(customer, refund);
-            String amount = String.format(Locale.US, "%,d đ", refund.getRefundAmount().longValue()).replace(',', '.');
+            String amount = MoneyFormatter.format(refund.getRefundAmount());
             String where = refund.getRefundRef() != null ? "về ví MoMo" : "tại quầy vé khi bạn tới rạp";
             redirectAttributes.addFlashAttribute(Constants.MODEL_SUCCESS_MESSAGE,
                     "Đã huỷ vé #" + ticketId + ". Bạn được hoàn " + amount + " (" + refund.getRefundPercent()

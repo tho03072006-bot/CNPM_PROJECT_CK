@@ -30,7 +30,8 @@
     </script>
 
     <!-- Đổi tham số v khi sửa giao diện để Chrome không dùng lại CSS cũ. -->
-    <link rel="stylesheet" th:href="@{/css/style.css(v='20261002-inventory-2')}">
+    <link rel="stylesheet" th:href="@{/css/style.css(v='20261003-concession-icon-3')}">
+    <script th:src="@{/js/money.js(v='20261003-money-1')}"></script>
 </head>
 <body>
     <div th:replace="~{fragments/header :: header}"></div>
@@ -47,5 +48,6 @@
     <div th:replace="~{fragments/footer :: footer}"></div>
 
     <script th:src="@{/js/theme.js}"></script>
+    <script th:src="@{/js/account-menu.js}"></script>
 </body>
 </html>

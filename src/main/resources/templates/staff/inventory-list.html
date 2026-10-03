@@ -60,7 +60,7 @@
                     <span class="badge" th:classappend="${item.level().badgeClass}" th:text="${item.level().label}">Còn hàng</span>
                 </div>
                 <dl class="inventory-product-meta">
-                    <div><dt>Giá bán lẻ</dt><dd th:text="|${#numbers.formatDecimal(item.price(), 0, 'POINT', 0, 'COMMA')} đ|">55.000 đ</dd></div>
+                    <div><dt>Giá bán lẻ</dt><dd th:text="|${@money.number(item.price())} đ|">55.000 đ</dd></div>
                     <div><dt>Ngưỡng cảnh báo</dt><dd th:text="|≤ ${item.lowStockThreshold()} phần|">≤ 20 phần</dd></div>
                 </dl>
                 <p class="inventory-product-combos" th:unless="${#lists.isEmpty(item.usedInCombos())}"
@@ -87,7 +87,7 @@
                 <span class="inventory-icon" aria-hidden="true" th:text="${combo.icon()}">🍿🥤</span>
                 <div class="inventory-combo-body">
                     <h3 th:text="${combo.name()}">Combo một người</h3>
-                    <p class="inventory-combo-price" th:text="|${#numbers.formatDecimal(combo.price(), 0, 'POINT', 0, 'COMMA')} đ|">79.000 đ</p>
+                    <p class="inventory-combo-price" th:text="|${@money.number(combo.price())} đ|">79.000 đ</p>
                     <ul class="inventory-recipe">
                         <li th:each="line : ${combo.recipe()}" th:text="${line}">1 × Bắp rang cỡ vừa</li>
                     </ul>

@@ -12,7 +12,7 @@
                 <span class="module1-kicker" th:text="|MÃ ${item.code()}|">MÃ POPCORN-M</span>
                 <h1 th:text="${item.name()}">Bắp rang cỡ vừa</h1>
                 <p class="text-muted">
-                    Giá bán <strong th:text="|${#numbers.formatDecimal(item.price(), 0, 'POINT', 0, 'COMMA')} đ|">55.000 đ</strong>
+                    Giá bán <strong th:text="|${@money.number(item.price())} đ|">55.000 đ</strong>
                     <span th:unless="${#lists.isEmpty(item.usedInCombos())}"
                           th:text="| · Dùng trong ${#strings.listJoin(item.usedInCombos(), ', ')}|"> · Dùng trong Combo</span>
                 </p>

@@ -69,6 +69,6 @@ public class BookingSnapshotService {
 
     private BookedTicketSnapshot fromTicket(Ticket ticket) {
         return new BookedTicketSnapshot(ticket.getId(), ticket.getSeat().getSeatRow() + ticket.getSeat().getSeatColumn(),
-                ticket.getSeat().getSeatType(), ticket.getPrice(), ticket.getHeldAt());
+                ticket.getSeat().getSeatType(), ticket.getOriginalPrice(), ticket.getHeldAt());
     }
 }

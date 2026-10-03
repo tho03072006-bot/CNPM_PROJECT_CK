@@ -44,7 +44,7 @@ public class BookingHistoryService {
         });
     }
 
-    @Transactional(readOnly = true)
+    @Transactional
     public BookingDetailView findDetail(String receiptCode, Long userId) {
         // Lọc chủ sở hữu ngay trong truy vấn, kể cả người xem là nhân viên/quản trị.
         BookingOrder order = orders.findByReceiptCodeAndUserId(receiptCode, userId)
@@ -56,7 +56,7 @@ public class BookingHistoryService {
         return refunds.quoteCancellableTickets(userId, clock.now());
     }
 
-    @Transactional(readOnly = true)
+    @Transactional
     public String findTicketQr(String receiptCode, Long ticketId, Long userId) {
         return findDetail(receiptCode, userId).tickets().stream()
                 .filter(ticket -> ticket.ticketId().equals(ticketId) && ticket.qrSvg() != null)

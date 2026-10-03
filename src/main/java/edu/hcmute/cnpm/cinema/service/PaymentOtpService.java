@@ -38,6 +38,6 @@ public class PaymentOtpService {
         List<Ticket> tickets = payments.findPayableTickets(userId, showtimeId);
         if (tickets.isEmpty()) throw new BusinessException("Đã hết thời gian giữ ghế. Bạn hãy chọn ghế lại.");
         return tickets.stream().map(t -> t.getId() + ":" + t.getPrice() + ":" + t.getHeldAt()).sorted()
-                .reduce("", (a, b) -> a + "|" + b);
+                .reduce("", (a, b) -> a + "|" + b) + "|total:" + payments.totalDue(userId, showtimeId);
     }
 }

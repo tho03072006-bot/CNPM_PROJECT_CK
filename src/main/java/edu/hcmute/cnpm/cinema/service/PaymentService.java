@@ -16,7 +16,9 @@ public class PaymentService {
     private final BookingOrderService bookingOrderService;
     private final BookingLockService locks;
     private final BookingClock clock;
-    public PaymentService(TicketRepository tickets, BookingOrderService orders, BookingLockService locks, BookingClock clock) {
+    private final TicketCodeService codes;
+    public PaymentService(TicketRepository tickets, BookingOrderService orders, BookingLockService locks, BookingClock clock, TicketCodeService codes) {
+        this.codes = codes;
         ticketRepository = tickets; bookingOrderService = orders; this.locks = locks; this.clock = clock;
     }
     @Transactional(readOnly = true)
@@ -52,6 +54,7 @@ public class PaymentService {
         if (expectedAmount != null && bookingOrderService.prepareForPayment(userId, showtimeId)
                 .getTotalAmount().setScale(0, RoundingMode.HALF_UP).longValueExact() != expectedAmount)
             throw new InvalidBookingException("Số tiền thanh toán không khớp với đơn hàng hiện tại.");
+        codes.codesFor(held.stream().map(Ticket::getId).toList());
         LocalDateTime paidAt = clock.now();
         bookingOrderService.completeOrder(userId, showtimeId, held, method, ref, paidAt);
         for (Ticket ticket : held) {

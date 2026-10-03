@@ -1,5 +1,7 @@
 package edu.hcmute.cnpm.cinema.dto.pricing;
 
+import edu.hcmute.cnpm.cinema.util.MoneyFormatter;
+
 import java.math.BigDecimal;
 import java.util.List;
 
@@ -72,16 +74,6 @@ public class PriceRow {
     }
 
     private static String formatThousands(BigDecimal price) {
-        String digits = price.setScale(0, java.math.RoundingMode.HALF_UP).toPlainString();
-        StringBuilder grouped = new StringBuilder();
-        int countFromRight = 0;
-        for (int index = digits.length() - 1; index >= 0; index--) {
-            grouped.append(digits.charAt(index));
-            countFromRight++;
-            if (countFromRight % 3 == 0 && index > 0) {
-                grouped.append('.');
-            }
-        }
-        return grouped.reverse().toString();
+        return MoneyFormatter.digits(price);
     }
 }

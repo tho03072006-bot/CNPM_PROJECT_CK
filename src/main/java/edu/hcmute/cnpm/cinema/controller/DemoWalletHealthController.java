@@ -1,6 +1,7 @@
 package edu.hcmute.cnpm.cinema.controller;
 
 import edu.hcmute.cnpm.cinema.config.DemoWalletSettings;
+import edu.hcmute.cnpm.cinema.config.DemoWalletCompatibility;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.Map;
@@ -25,7 +26,8 @@ public class DemoWalletHealthController {
     public ResponseEntity<Map<String, String>> health() {
         if (!settings.isEnabled()) return unavailable();
         try (Connection connection = dataSource.getConnection()) {
-            if (connection.isValid(1)) return ResponseEntity.ok(Map.of("status", "UP"));
+            if (connection.isValid(1)) return ResponseEntity.ok(Map.of(
+                    "status", "UP", "checkoutVersion", DemoWalletCompatibility.CHECKOUT_VERSION));
         } catch (SQLException ignored) {
             // Không trả lỗi JDBC hay thông tin database cho người truy cập Internet.
         }

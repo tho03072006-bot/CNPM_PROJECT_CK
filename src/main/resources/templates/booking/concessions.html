@@ -19,11 +19,13 @@
                 <article class="card concession-card" th:each="product : ${products}"
                          th:with="available=${availableQuantities[product.id] ?: 0}, maxQuantity=${available < 10 ? available : 10}"
                          th:classappend="${available == 0} ? 'is-sold-out' : ''">
-                    <div class="concession-icon" aria-hidden="true" th:text="${product.icon}">🍿</div>
+                    <div class="concession-icon" aria-hidden="true"
+                         th:classappend="${#strings.length(product.icon) > 2} ? 'concession-icon--compact' : ''"
+                         th:text="${product.icon}">🍿</div>
                     <div class="concession-info">
                         <h2 th:text="${product.name}">Combo bắp nước</h2>
                         <p th:text="${product.description}">Mô tả</p>
-                        <strong th:text="|${#numbers.formatDecimal(product.price, 0, 'POINT', 0, 'COMMA')} đ|">79.000 đ</strong>
+                        <strong th:text="|${@money.number(product.price)} đ|">79.000 đ</strong>
                         <span class="concession-stock is-out" th:if="${available == 0}">Tạm hết hàng</span>
                         <span class="concession-stock is-low" th:if="${available > 0 and available <= 10}"
                               th:text="|Chỉ còn ${available} phần|">Chỉ còn 3 phần</span>
@@ -46,7 +48,7 @@
                 <p class="text-muted" th:text="|${order.roomName} · ${#temporals.format(order.showtimeStart, 'HH:mm dd/MM/yyyy')}|">Phòng · giờ</p>
                 <div class="account-summary-line">
                     <span th:text="|${#lists.size(tickets)} vé|">2 vé</span>
-                    <strong th:text="|${#numbers.formatDecimal(order.ticketSubtotal, 0, 'POINT', 0, 'COMMA')} đ|">230.000 đ</strong>
+                    <strong th:text="|${@money.number(order.ticketSubtotal)} đ|">230.000 đ</strong>
                 </div>
                 <div class="account-summary-line">
                     <span>Bắp nước</span>
@@ -69,7 +71,7 @@
             const concessionTotal = document.getElementById('concession-live-total');
             const orderTotal = document.getElementById('order-live-total');
             const ticketTotal = Number(orderTotal.dataset.ticketTotal || 0);
-            const formatter = new Intl.NumberFormat('vi-VN', {style: 'currency', currency: 'VND'});
+            const formatter = window.CinemaMoney;
             function updateTotal() {
                 const foodTotal = selects.reduce((sum, select) => sum + Number(select.dataset.price) * Number(select.value), 0);
                 concessionTotal.textContent = formatter.format(foodTotal);

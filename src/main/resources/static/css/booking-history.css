@@ -94,7 +94,6 @@
     .booking-status-filter { width: 100%; }
     .booking-status-filter select { min-width: 0; flex: 1; }
     .booking-detail-layout { grid-template-columns: 1fr; }
-    .booking-detail-sidebar { grid-row: 1; }
     .booking-detail-film { grid-template-columns: 120px minmax(0, 1fr); gap: var(--space-4); }
     .booking-detail-poster { height: auto; align-self: start; }
     .booking-detail-film-copy { padding: var(--space-4) var(--space-4) var(--space-4) 0; }

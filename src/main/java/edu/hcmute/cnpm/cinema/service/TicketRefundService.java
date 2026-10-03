@@ -43,14 +43,17 @@ public class TicketRefundService {
     public static final int PARTIAL_REFUND_PERCENT = 50;
 
     private final BookingLockService locks;
+    private final TicketCodeService codes;
     private final TicketRepository ticketRepository;
     private final TicketRefundRepository refundRepository;
     private final MomoApiClient momoApiClient;
     private final BookingSnapshotService snapshots;
 
     public TicketRefundService(TicketRepository ticketRepository, TicketRefundRepository refundRepository,
-                               MomoApiClient momoApiClient, BookingLockService locks, BookingSnapshotService snapshots) {
+                               MomoApiClient momoApiClient, BookingLockService locks, TicketCodeService codes,
+                               BookingSnapshotService snapshots) {
         this.locks = locks;
+        this.codes = codes;
         this.ticketRepository = ticketRepository;
         this.refundRepository = refundRepository;
         this.momoApiClient = momoApiClient;
@@ -100,6 +103,7 @@ public class TicketRefundService {
         locks.lock(showtimeId);
         RefundQuote quote = quote(userId, ticketId, now);
         Ticket ticket = quote.getTicket();
+        codes.codeFor(ticket.getId()); // Giữ mã vĩnh viễn trước khi xóa vé.
         TicketRefund refund = snapshot(ticket, quote, now);
 
         // Xoá có điều kiện ngay trong câu lệnh: nhân viên vừa soát vé ở cửa đúng lúc khách
@@ -155,6 +159,7 @@ public class TicketRefundService {
     private TicketRefund snapshot(Ticket ticket, RefundQuote quote, LocalDateTime now) {
         TicketRefund refund = new TicketRefund();
         refund.setOriginalTicketId(ticket.getId());
+        refund.setBookingOrderId(ticket.getBookingOrder() == null ? null : ticket.getBookingOrder().getId());
         refund.setUserId(ticket.getUser().getId());
         refund.setShowtimeId(ticket.getShowtime().getId());
         refund.setMovieTitle(ticket.getShowtime().getMovie().getTitle());
@@ -162,6 +167,7 @@ public class TicketRefundService {
         refund.setSeatLabel(ticket.getSeat().getSeatRow() + ticket.getSeat().getSeatColumn());
         refund.setShowtimeStart(ticket.getShowtime().getStartTime());
         refund.setPaidPrice(paidPriceAfterDiscount(ticket));
+        refund.setOriginalPrice(ticket.getOriginalPrice());
         refund.setRefundPercent(quote.getRefundPercent());
         refund.setRefundAmount(quote.getRefundAmount());
         // Vé trả trước ngày có cột payment_method để trống: coi như trả tại quầy.
@@ -174,6 +180,9 @@ public class TicketRefundService {
 
     /** Phân bổ ưu đãi theo giá gốc, cộng dồn để không hoàn nhiều hơn số tiền đã trả. */
     private BigDecimal paidPriceAfterDiscount(Ticket ticket) {
+        // Voucher đã phân bổ trực tiếp trên giá vé: không trừ ưu đãi lần thứ hai.
+        if (ticket.getBookingOrder() != null && ticket.getBookingOrder().getVoucherCode() != null)
+            return ticket.getPrice();
         var order = ticket.getBookingOrder();
         if (order == null || order.getDiscountAmount().signum() == 0) return ticket.getPrice();
         BigDecimal subtotal = order.getTicketSubtotal().add(order.getConcessionSubtotal());

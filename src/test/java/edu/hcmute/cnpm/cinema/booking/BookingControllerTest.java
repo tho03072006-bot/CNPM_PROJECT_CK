@@ -44,6 +44,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 /** Test MVC và template thật với service giả; không sử dụng database. */
 @WebMvcTest(BookingController.class)
+@org.springframework.context.annotation.Import(edu.hcmute.cnpm.cinema.util.MoneyFormatter.class)
 class BookingControllerTest {
     @Autowired
     private MockMvc mockMvc;
@@ -102,7 +103,7 @@ class BookingControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(content().string(containsString("data-held-seat-ids=\"1\"")))
                 .andExpect(content().string(containsString("A1")))
-                .andExpect(content().string(containsString("75.000 ₫")))
+                .andExpect(content().string(containsString("75.000 đ")))
                 .andExpect(content().string(containsString("/bap-nuoc/1")));
     }
 

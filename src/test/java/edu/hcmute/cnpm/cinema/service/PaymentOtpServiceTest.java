@@ -28,6 +28,7 @@ class PaymentOtpServiceTest {
         when(auth.findById(1L)).thenReturn(user);
         Ticket ticket = new Ticket(); ticket.setId(1L); ticket.setPrice(new BigDecimal("100000")); ticket.setHeldAt(LocalDateTime.now());
         when(payments.findPayableTickets(1L, 2L)).thenReturn(List.of(ticket));
+        when(payments.totalDue(1L, 2L)).thenReturn(new BigDecimal("100000"));
         var service = new PaymentOtpService(auth, payments, new OtpService(mail));
         String id = service.begin(1L, 2L, "momo-qr");
         assertThatThrownBy(() -> service.verify(id, 3L, 2L, "momo-qr", code[0], () -> true)).hasMessageContaining("thay đổi");
@@ -36,6 +37,9 @@ class PaymentOtpServiceTest {
         ticket.setPrice(new BigDecimal("200000"));
         assertThatThrownBy(() -> service.verify(id, 1L, 2L, "momo-qr", code[0], () -> true)).hasMessageContaining("thay đổi");
         ticket.setPrice(new BigDecimal("100000"));
+        when(payments.totalDue(1L, 2L)).thenReturn(new BigDecimal("90000"));
+        assertThatThrownBy(() -> service.verify(id, 1L, 2L, "momo-qr", code[0], () -> true)).hasMessageContaining("thay đổi");
+        when(payments.totalDue(1L, 2L)).thenReturn(new BigDecimal("100000"));
         assertThat(service.verify(id, 1L, 2L, "momo-qr", code[0], () -> true)).isTrue();
     }
 }

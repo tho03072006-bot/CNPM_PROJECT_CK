@@ -42,6 +42,7 @@ function setup(initial = snapshot(), capacity = 1) {
     elements.get('suggest-admissions').value = '2'; elements.get('suggest-type').value = 'ANY';
     elements.get('suggest-budget').value = '';
     const window = new Element('window'), document = new Element('document');
+    vm.runInNewContext(fs.readFileSync('src/main/resources/static/js/money.js','utf8'), {window,Intl});
     document.getElementById = id => elements.get(id); document.hidden = false;
     let now = 0, server = structuredClone(initial), offline = false, nextPost = null, nextGet = null;
     const requests = [], intervals = [], broadcasts = [];

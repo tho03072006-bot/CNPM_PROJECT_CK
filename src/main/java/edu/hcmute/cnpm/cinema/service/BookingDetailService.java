@@ -27,7 +27,7 @@ public class BookingDetailService {
         if (invoice == null) {
             for (BookingOrderItem item : order.getItems()) {
                 lines.add(new ReceiptLine(lines.size() + 1, item.getProductName(), "Nhận tại quầy bắp nước",
-                        "Phần", item.getQuantity(), item.getUnitPrice(), item.getLineTotal(), false));
+                        "Phần", item.getQuantity(), item.getUnitPrice(), item.getLineTotal(), false, null, null));
             }
         }
         BigDecimal refunded = invoice == null ? data.refundedAmount() : invoice.refundedAmount();

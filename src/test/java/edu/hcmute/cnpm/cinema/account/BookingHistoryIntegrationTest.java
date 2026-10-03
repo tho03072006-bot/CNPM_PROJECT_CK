@@ -34,6 +34,7 @@ class BookingHistoryIntegrationTest extends IntegrationTestBase {
     @Autowired private PaymentService payments;
     @Autowired private TicketRefundService refunds;
     @Autowired private ReceiptService receipts;
+    @Autowired private edu.hcmute.cnpm.cinema.service.TicketCodeService codes;
     @Autowired private edu.hcmute.cnpm.cinema.service.SeatHoldService holds;
 
     @Test
@@ -100,7 +101,10 @@ class BookingHistoryIntegrationTest extends IntegrationTestBase {
         var detail = history.findDetail(code, owner.getId());
         assertThat(detail.lines()).isEqualTo(receipts.findReceipt(code, owner).lines());
         assertThat(detail.order().getTotalAmount()).isEqualByComparingTo("229000");
-        assertThat(detail.tickets()).hasSize(2).allSatisfy(ticket -> assertThat(ticket.qrSvg()).contains("Mã QR vé " + ticket.ticketId()));
+        assertThat(detail.tickets()).hasSize(2).allSatisfy(ticket -> {
+            assertThat(ticket.publicCode()).matches("[1-9][0-9]{7}").isEqualTo(codes.codeFor(ticket.ticketId()));
+            assertThat(ticket.qrSvg()).contains("QR vé " + ticket.publicCode());
+        });
         // Tên phim trên chứng từ phải giữ nguyên khi quản trị đổi tên phim sau khi mua.
         Movie movie = movieRepository.findById(showtime.getMovie().getId()).orElseThrow();
         movie.setTitle("Tên phim đã thay đổi");
@@ -111,7 +115,7 @@ class BookingHistoryIntegrationTest extends IntegrationTestBase {
                 .andExpect(content().string(containsString("Phim lịch sử")))
                 .andExpect(content().string(containsString("Bắp nước test")))
                 .andExpect(content().string(containsString("Không áp dụng")))
-                .andExpect(content().string(containsString("Mã QR vé " + paid.getFirst().getId())));
+                .andExpect(content().string(containsString("QR vé " + codes.codeFor(paid.getFirst().getId()))));
     }
 
     @Test
@@ -145,7 +149,7 @@ class BookingHistoryIntegrationTest extends IntegrationTestBase {
         assertThat(history.findHistory(owner.getId(), 0, null).getTotalElements()).isEqualTo(1);
         mvc.perform(get("/lich-su-dat-ve/{code}", code).sessionAttr(Constants.SESSION_USER, owner))
                 .andExpect(status().isOk()).andExpect(content().string(containsString("Đã hoàn tiền")))
-                .andExpect(content().string(containsString("#" + paid.getId())));
+                .andExpect(content().string(containsString(codes.codeFor(paid.getId()))));
     }
 
     @Test
@@ -255,7 +259,7 @@ class BookingHistoryIntegrationTest extends IntegrationTestBase {
         mvc.perform(get(url).sessionAttr(Constants.SESSION_USER, other)).andExpect(status().isNotFound());
         mvc.perform(get(url).sessionAttr(Constants.SESSION_USER, owner))
                 .andExpect(status().isOk()).andExpect(header().string("Cache-Control", "no-store, private"))
-                .andExpect(content().string(containsString("Mã QR vé " + paid.getId())));
+                .andExpect(content().string(containsString("QR vé " + codes.codeFor(paid.getId()))));
         refunds.cancelPaidTicket(owner.getId(), paid.getId(), LocalDateTime.now());
         mvc.perform(get(url).sessionAttr(Constants.SESSION_USER, owner)).andExpect(status().isNotFound());
     }

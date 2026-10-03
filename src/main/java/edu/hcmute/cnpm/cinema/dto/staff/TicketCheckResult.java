@@ -20,7 +20,8 @@ public class TicketCheckResult {
         /** Vé của suất chiếu ngày khác, chưa tới ngày. */
         WRONG_DAY,
         /** Suất chiếu đã kết thúc. */
-        ENDED
+        ENDED,
+        INVALID
     }
 
     private final Ticket ticket;
@@ -34,6 +35,7 @@ public class TicketCheckResult {
     }
 
     public Ticket getTicket() { return ticket; }
+    public String getTicketCode() { return ticket.getAdmissionCode(); }
     public Verdict getVerdict() { return verdict; }
     public String getMessage() { return message; }
 

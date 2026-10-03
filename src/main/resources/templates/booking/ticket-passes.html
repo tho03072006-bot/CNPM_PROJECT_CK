@@ -1,12 +1,12 @@
 <!DOCTYPE html>
 <html lang="vi" xmlns:th="http://www.thymeleaf.org"><body>
-<!-- Dùng chung trên hóa đơn và trang chi tiết, mỗi QR cùng tham chiếu đến ID số của vé. -->
+<!-- QR vé riêng trên trang chi tiết dùng cùng mã công khai 8 số với hóa đơn. -->
 <div th:fragment="passes(ticketViews,receiptCode,refundQuotes,interactive)" class="booking-ticket-passes">
     <article class="booking-ticket-pass" th:each="ticket : ${ticketViews}" th:classappend="${ticket.refunded()} ? 'is-refunded' : ''">
         <div class="booking-ticket-pass-copy">
             <p class="booking-ticket-seat" th:text="|Ghế ${ticket.seatLabel()}|">Ghế D6</p>
             <p class="text-muted" th:text="${ticket.seatTypeLabel()}">Ghế thường</p>
-            <dl><div><dt>Mã vé</dt><dd th:text="|#${ticket.ticketId()}|">#48</dd></div><div><dt>Giá vé</dt><dd th:text="|${#numbers.formatDecimal(ticket.price(), 0, 'POINT', 0, 'COMMA')} đ|">135.000 đ</dd></div></dl>
+            <dl><div><dt>Mã vé</dt><dd th:text="${ticket.publicCode() != null ? ticket.publicCode() : 'Chưa phát hành'}">12345678</dd></div><div><dt>Giá vé</dt><dd th:text="|${#numbers.formatDecimal(ticket.price(), 0, 'POINT', 0, 'COMMA')} đ|">135.000 đ</dd></div></dl>
             <span class="booking-ticket-state" th:text="${ticket.statusLabel()}">Đã thanh toán</span>
             <div class="booking-ticket-actions" th:if="${interactive}">
                 <a class="module1-card-link" th:if="${ticket.qrSvg() != null}"

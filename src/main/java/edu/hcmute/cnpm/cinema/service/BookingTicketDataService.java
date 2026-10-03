@@ -20,11 +20,15 @@ public class BookingTicketDataService {
     private final TicketRefundService refunds;
     private final QrCodeService qrCodes;
     private final BookingClock clock;
+    private final TicketCodeService codes;
+    private final edu.hcmute.cnpm.cinema.repository.BookingOrderRepository orders;
     private static final DateTimeFormatter REFUND_TIME = DateTimeFormatter.ofPattern("HH:mm dd/MM/yyyy");
 
     public BookingTicketDataService(BookingSnapshotService snapshots, TicketRefundService refunds,
-                                    QrCodeService qrCodes, BookingClock clock) {
+                                    QrCodeService qrCodes, BookingClock clock, TicketCodeService codes,
+                                    edu.hcmute.cnpm.cinema.repository.BookingOrderRepository orders) {
         this.snapshots = snapshots; this.refunds = refunds; this.qrCodes = qrCodes; this.clock = clock;
+        this.codes = codes; this.orders = orders;
     }
 
     public record Data(List<BookingHistoryTicket> tickets, List<ReceiptLine> lines, String seats,
@@ -38,7 +42,13 @@ public class BookingTicketDataService {
         List<ReceiptLine> lines = new ArrayList<>();
         StringJoiner seats = new StringJoiner(", ");
         Set<Long> included = new HashSet<>();
-        for (BookedTicketSnapshot saved : snapshots.read(order)) {
+        List<BookedTicketSnapshot> savedTickets = snapshots.read(order).stream()
+                .sorted(Comparator.comparing(BookedTicketSnapshot::seatLabel).thenComparing(BookedTicketSnapshot::ticketId)).toList();
+        Set<Long> publicIds = new LinkedHashSet<>(cancelled.keySet());
+        if (order.getStatus() == BookingOrderStatus.PAID)
+            savedTickets.forEach(ticket -> publicIds.add(ticket.ticketId()));
+        Map<Long, String> publicCodes = codes.codesFor(publicIds);
+        for (BookedTicketSnapshot saved : savedTickets) {
             included.add(saved.ticketId());
             Ticket ticket = live.get(saved.ticketId());
             TicketRefund refund = cancelled.get(saved.ticketId());
@@ -52,36 +62,41 @@ public class BookingTicketDataService {
             BigDecimal price = saved.price() == null ? BigDecimal.ZERO : saved.price();
             tickets.add(new BookingHistoryTicket(saved.ticketId(), saved.seatLabel(), seatType(saved.seatType()),
                     price, status, refund != null,
-                    paid ? qrCodes.toSvg(saved.ticketId().toString(), "Mã QR vé " + saved.ticketId()) : null));
+                    paid ? qrCodes.toSvg(codes.payload(publicCodes.get(saved.ticketId())), "QR vé " + publicCodes.get(saved.ticketId())) : null,
+                    publicCodes.get(saved.ticketId())));
             seats.add(saved.seatLabel());
-            lines.add(line(lines.size() + 1, saved.seatLabel(), seatType(saved.seatType()), price, refund));
+            lines.add(line(lines.size() + 1, saved.seatLabel(), seatType(saved.seatType()), price, refund, publicCodes.get(saved.ticketId())));
         }
         // Chứng từ cũ trước khi có snapshot vẫn khôi phục được vé hủy từ biên nhận.
         for (TicketRefund refund : cancelled.values().stream().sorted(Comparator.comparing(TicketRefund::getOriginalTicketId)).toList()) {
             if (included.contains(refund.getOriginalTicketId())) continue;
             tickets.add(new BookingHistoryTicket(refund.getOriginalTicketId(), refund.getSeatLabel(), "Vé đã hủy",
-                    refund.getPaidPrice(), refundState(refund), true, null));
+                    refund.getOriginalPrice(), refundState(refund), true, null, publicCodes.get(refund.getOriginalTicketId())));
             seats.add(refund.getSeatLabel());
-            lines.add(line(lines.size() + 1, refund.getSeatLabel(), "Vé đã hủy", refund.getPaidPrice(), refund));
+            lines.add(line(lines.size() + 1, refund.getSeatLabel(), "Vé đã hủy", refund.getOriginalPrice(), refund, publicCodes.get(refund.getOriginalTicketId())));
         }
         return new Data(List.copyOf(tickets), List.copyOf(lines), seats.toString(), cancelled.values().stream()
                 .map(TicketRefund::getRefundAmount).reduce(BigDecimal.ZERO, BigDecimal::add));
     }
 
-    private ReceiptLine line(int number, String seat, String type, BigDecimal price, TicketRefund refund) {
+    private ReceiptLine line(int number, String seat, String type, BigDecimal price, TicketRefund refund, String publicCode) {
         String detail = refund == null ? type : "Đã hủy lúc " + refund.getRefundedAt().format(REFUND_TIME)
                 + ", hoàn lại " + money(refund.getRefundAmount());
-        return new ReceiptLine(number, "Vé xem phim - Ghế " + seat, detail, "Vé", 1, price, price, refund != null);
+        return new ReceiptLine(number, "Vé xem phim - Ghế " + seat, detail, "Vé", 1, price, price, refund != null, publicCode, null);
     }
 
     private List<TicketRefund> findRefunds(BookingOrder order) {
         if (order.getPaidAt() == null) return List.of();
         return refunds.findRefundHistory(order.getUser().getId()).stream()
-                .filter(refund -> refund.getShowtimeId().equals(order.getShowtime().getId()))
-                .filter(refund -> refund.getPaidAt() != null && refund.getPaidAt().truncatedTo(ChronoUnit.MICROS)
-                        .equals(order.getPaidAt().truncatedTo(ChronoUnit.MICROS)))
-                .filter(refund -> refund.getPaymentRef() == null || order.getPaymentRef() == null
-                        || Objects.equals(refund.getPaymentRef(), order.getPaymentRef())).toList();
+                .filter(refund -> {
+                    if (refund.getBookingOrderId() != null) return refund.getBookingOrderId().equals(order.getId());
+                    return refund.getShowtimeId().equals(order.getShowtime().getId())
+                            && refund.getPaidAt() != null && refund.getPaidAt().truncatedTo(ChronoUnit.MICROS)
+                                .equals(order.getPaidAt().truncatedTo(ChronoUnit.MICROS))
+                            && Objects.equals(refund.getPaymentRef(), order.getPaymentRef())
+                            && orders.countLegacyRefundMatches(order.getUser().getId(), order.getShowtime().getId(),
+                                refund.getPaidAt(), refund.getPaymentRef()) == 1;
+                }).toList();
     }
 
     private String seatType(String type) {
